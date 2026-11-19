@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {"label": "Kampus: Jalankan aplikasi", "type": "shell", "command": ".\\scripts\\dev.ps1 -Task Run", "problemMatcher": []},
+    {"label": "Kampus: Build dan test", "type": "shell", "command": ".\\scripts\\dev.ps1 -Task Package", "group": {"kind": "build", "isDefault": true}, "problemMatcher": []},
+    {"label": "Kampus: Uji koneksi MySQL", "type": "shell", "command": ".\\scripts\\dev.ps1 -Task VerifyDatabase", "problemMatcher": []},
+    {"label": "Kampus: Periksa Java dan Maven", "type": "shell", "command": ".\\scripts\\dev.ps1 -Task Info", "problemMatcher": []}
+  ]
+}

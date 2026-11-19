@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title} + ' | Fasilitas Kampus'">Fasilitas Kampus</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <script defer th:src="@{/js/app.js}"></script>
+</head>
+<body>
+<header th:fragment="navbar" class="site-header">
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <div class="container header-inner">
+    <a class="brand" th:href="@{/}"><span class="brand-mark" aria-hidden="true">F</span><span>Fasilitas Kampus<small>Universitas Negeri Malang</small></span></a>
+    <nav aria-label="Navigasi utama">
+      <a th:href="@{/}">Beranda</a>
+      <a th:href="@{/mahasiswa}">Mahasiswa</a>
+      <a th:href="@{/admin}">Admin</a>
+      <a th:href="@{/petugas}">Petugas</a>
+    </nav>
+  </div>
+</header>
+<footer th:fragment="footer" class="site-footer">
+  <div class="container footer-inner"><p>Advance Programming · Kelompok 5 · Offering C</p><p>Teknik Informatika, Universitas Negeri Malang</p></div>
+</footer>
+<main th:fragment="roleContent" id="main" class="container role-main">
+  <a class="back-link" th:href="@{/}">Kembali ke beranda</a>
+  <div class="page-heading"><p class="context">Ruang kerja</p><h1 th:text="${role}">Peran</h1><p class="lead" th:text="${description}">Deskripsi modul.</p></div>
+  <section class="notice" aria-labelledby="module-title">
+    <h2 id="module-title">Modul sedang disiapkan</h2>
+    <p>Halaman ini menjadi titik awal pengembangan modul oleh anggota kelompok. Fitur akan ditambahkan pada tahap berikutnya.</p>
+    <p>Anda masuk sebagai <strong th:text="${username}">pengguna</strong>.</p>
+  </section>
+  <form class="logout-form" th:action="@{/logout}" method="post"><button class="button secondary" type="submit">Keluar akun</button></form>
+</main>
+</body>
+</html>

@@ -1,44 +1,37 @@
-# Arsitektur dan kontrak awal
 
-Proyek Advance Programming Kelompok 5, Offering C, Teknik Informatika Universitas Negeri Malang. Monolith Spring MVC: browser mengirim request ke Controller, Controller memanggil service/domain, repository mengakses MySQL, lalu Thymeleaf merender HTML. Tidak ada frontend build atau REST API terpisah.
+# Arsitektur aplikasi
 
-## Pemetaan rancangan OOP
+Spring MVC menerima request dan mengembalikan halaman Thymeleaf. Controller menangani binding form, validasi, identitas demo, dan redirect. `SistemPelaporan` mengoordinasikan transaksi perubahan data. `PantauanPelaporan` menyediakan pembacaan untuk dashboard, daftar, dan detail. Repository menggunakan Spring Data JPA dan basis data MySQL. Relasi yang dibutuhkan template dimuat sebelum transaksi pembacaan berakhir.
 
-| Class/interface | Package yang disepakati | Tanggung jawab / pemilik |
-| --- | --- | --- |
-| Pengguna (abstract) | model | Identitas bersama; kontrak disepakati integrator |
-| Mahasiswa | model | Peran pelapor; integrator + backend pelaporan |
-| Admin | model | Peran verifikator; integrator |
-| Petugas | model | Pelaksana perbaikan; backend prioritas/perbaikan |
-| Fasilitas | model | Data fasilitas; backend pelaporan |
-| LaporanKerusakan | model | Laporan individual; backend pelaporan |
-| KasusKerusakan | model | Kelompok laporan untuk satu kerusakan; backend pelaporan |
-| SistemPelaporan | service | Orkestrasi use case pelaporan; backend pelaporan |
-| StrategiPrioritas (interface) | service.prioritas | Kontrak perhitungan prioritas; backend prioritas/perbaikan |
-| PrioritasBerbasisRisiko | service.prioritas | Implementasi strategi; backend prioritas/perbaikan |
-| TugasPerbaikan | model | Penugasan dan progres pekerjaan; backend prioritas/perbaikan |
+```mermaid
+flowchart LR
+    browser["Browser"] --> mvc["Spring MVC"]
+    mvc --> Thymeleaf
+    mvc --> tulis["SistemPelaporan"]
+    mvc --> baca["PantauanPelaporan"]
+    tulis --> prioritas["StrategiPrioritas"]
+    tulis --> domain["Model OOP"]
+    tulis --> repository["Repository JPA"]
+    baca --> repository
+    repository --> mysql["MySQL"]
+```
 
-Class bisnis belum dibuat: fondasi ini tidak mengarang atribut, rumus risiko, status, atau relasi yang belum disepakati. Package disediakan lewat package-info.java, bukan banyak class kosong. Controller, SecurityConfig, dan konfigurasi demo adalah pendukung framework, bukan tambahan domain.
+## Penyimpanan
 
-## Keputusan JPA
+| Tabel | Isi |
+| --- | --- |
+| `pengguna` | Mahasiswa, admin, dan petugas dengan discriminator `peran`. Keahlian, jadwal, dan kesibukan tersedia untuk petugas. |
+| `fasilitas` | Jenis, gedung, ruang, jumlah unit, dan kondisi. |
+| `laporan_kerusakan` | Satu pengiriman mahasiswa, terkait fasilitas dan kasus. |
+| `kasus_kerusakan` | Sekumpulan laporan terkait, status, hasil verifikasi, dan alasan prioritas. |
+| `tugas_perbaikan` | Satu penugasan per kasus, petugas dan admin terkait, waktu dan catatan. |
 
-- Tidak ada entity atau tabel bisnis saat setup. `ddl-auto=validate` tidak membuat/menghapus tabel; setelah entity pertama ditambahkan, tim perlu menyediakan skrip migrasi skema yang ditinjau sebelum startup.
-- Pertahankan Pengguna abstract. Pilihan `@MappedSuperclass` versus `@Entity` dengan inheritance harus disepakati setelah kebutuhan query lintas peran dan relasi diketahui. Jangan menambah tabel pengguna ganda tanpa kesepakatan.
-- Entity memerlukan ID stabil serta constructor tanpa argumen setidaknya protected. Tetap gunakan constructor/method domain untuk menjaga invariant, dan kode Java eksplisit tanpa Lombok.
-- SistemPelaporan dan strategi adalah objek service, bukan entity. Aturan bisnis di model/strategi, bukan template atau Controller; transaksi use case nantinya di service.
-- `open-in-view=false`: service menyediakan data yang diperlukan view selama transaksi, jangan mengandalkan lazy loading dari template.
-- Akun in-memory hanya profil local. Belum ada repository autentikasi produksi. Di luar local, autentikasi menolak semua akun sampai mekanisme produksi dibuat.
+Foreign key menjaga referensi dan batas unik pada `tugas_perbaikan.kasus_id` mencegah dua tugas untuk satu kasus. Flyway menyimpan versi skema dan seed pada `flyway_schema_history`.
 
-## Kontrak halaman
+## Transaksi dan konsistensi
 
-| Route | View | Akses | Pemilik |
-| --- | --- | --- | --- |
-| GET / | index | Publik | Integrator |
-| GET /login | login | Publik | Integrator |
-| POST /login | Spring Security | CSRF wajib | Integrator |
-| POST /logout | Spring Security | CSRF wajib | Integrator |
-| GET /mahasiswa | mahasiswa/index | MAHASISWA | Frontend mahasiswa |
-| GET /admin | admin/index | ADMIN | Frontend admin/petugas |
-| GET /petugas | petugas/index | PETUGAS | Frontend admin/petugas |
-
-Sebelum memperluas modul, sepakati atribut/tipe ID, enum status, aturan transisi status, signature StrategiPrioritas, nama model attribute Thymeleaf, route dan validasi form. Jangan menganggap placeholder sebagai kontrak data bisnis final.
+- Semua perubahan bisnis menggunakan transaksi dengan isolasi `READ_COMMITTED`. Laporan, verifikasi, pemisahan, dan progres memakai lock tulis pada baris fasilitas terkait. Laporan paralel untuk fasilitas yang sama mencari kasus setelah mendapat lock tersebut.
+- Kunci penggabungan otomatis memakai fasilitas, jenis kerusakan, status aktif, dan penanda pengelompokan otomatis. Pemisahan administratif membuat kasus baru di luar pengelompokan otomatis. Kasus asal dan kasus terpisah masing-masing memiliki laporan untuk diperiksa.
+- Penugasan dan penyelesaian mengambil lock fasilitas terlebih dulu, lalu lock petugas. Penugasan memeriksa tugas aktif, jadwal, dan keahlian dalam transaksi yang sama. Penyelesaian memperbarui tugas, kasus, dan petugas, lalu menghitung kondisi fasilitas dari kasus yang masih aktif.
+- Submit berhasil memakai pola Post/Redirect/Get. Validasi form dicetak ulang untuk mempertahankan input. Akses detail yang tidak ditemukan atau tidak terkait dengan akun demo yang dipilih mengembalikan HTTP 404. Spring Security mempertahankan token CSRF untuk form POST pada sesi demo.
+- Jam kerja, pencatatan laporan, dan penugasan menggunakan `Clock` berzona `Asia/Jakarta`. Jam mulai dan selesai yang sama merepresentasikan ketersediaan 24 jam pada demo. Shift yang melewati tengah malam juga didukung.

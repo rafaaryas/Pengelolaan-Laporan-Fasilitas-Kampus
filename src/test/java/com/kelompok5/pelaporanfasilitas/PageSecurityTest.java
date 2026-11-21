@@ -1,90 +1,59 @@
 package com.kelompok5.pelaporanfasilitas;
 
-import java.util.UUID;
-import com.kelompok5.pelaporanfasilitas.config.LocalDemoUsersConfig;
-import com.kelompok5.pelaporanfasilitas.controller.PageController;
-import com.kelompok5.pelaporanfasilitas.security.SecurityConfig;
+import com.kelompok5.pelaporanfasilitas.repository.PenggunaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PageController.class)
-@Import({SecurityConfig.class, LocalDemoUsersConfig.class})
-@ActiveProfiles("local")
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class PageSecurityTest {
-    private static final String PASSWORD = UUID.randomUUID().toString();
     @Autowired private MockMvc mvc;
-
-    @DynamicPropertySource
-    static void demoPasswords(DynamicPropertyRegistry registry) {
-        for (String role : new String[]{"MAHASISWA", "ADMIN", "PETUGAS"}) {
-            registry.add("DEMO_" + role + "_PASSWORD", () -> PASSWORD);
-        }
-    }
-
-    @Test
-    void landingIsPublicAndRendered() throws Exception {
-        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"))
-            .andExpect(content().string(containsString("Bersama merawat")))
-            .andExpect(content().string(containsString("href=\"/css/app.css\"")));
-        mvc.perform(get("/login")).andExpect(status().isOk())
-            .andExpect(content().string(containsString("name=\"_csrf\"")));
-    }
+    @Autowired private PenggunaRepository pengguna;
 
     @ParameterizedTest
-    @CsvSource({"/mahasiswa,MAHASISWA,Mahasiswa", "/admin,ADMIN,Admin", "/petugas,PETUGAS,Petugas"})
-    void roleRoutesRequireTheCorrectRole(String route, String role, String label) throws Exception {
-        mvc.perform(get(route)).andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login"));
-        mvc.perform(get(route).with(user("anggota").roles(role))).andExpect(status().isOk())
-            .andExpect(content().string(containsString(label)))
-            .andExpect(content().string(containsString("anggota")));
-        mvc.perform(get(route).with(user("lain").roles("OTHER"))).andExpect(status().isForbidden());
+    @ValueSource(strings = {"/", "/mahasiswa", "/mahasiswa/laporan", "/mahasiswa/laporan/baru", "/admin",
+            "/admin/kasus", "/admin/petugas", "/petugas", "/petugas/verifikasi", "/petugas/tugas"})
+    void halamanDemoTerbukaLangsung(String route) throws Exception {
+        mvc.perform(get(route)).andExpect(status().isOk())
+                .andExpect(content().string(containsString("Demo Mode")))
+                .andExpect(content().string(not(containsString("type=\"password\""))));
     }
 
     @Test
-    void mahasiswaCannotOpenAdminAndPetugasPages() throws Exception {
-        for (String route : new String[]{"/admin", "/petugas"}) {
-            mvc.perform(get(route).with(user("mahasiswa").roles("MAHASISWA"))).andExpect(status().isForbidden());
-        }
-    }
-
-    @ParameterizedTest
-    @CsvSource({"mahasiswa", "admin", "petugas"})
-    void localAccountsCanActuallyLogin(String username) throws Exception {
-        mvc.perform(formLogin().user(username).password(PASSWORD)).andExpect(authenticated().withUsername(username));
-    }
-
-    @Test
-    void incorrectPasswordFails() throws Exception {
-        mvc.perform(formLogin().user("admin").password(UUID.randomUUID().toString())).andExpect(unauthenticated());
+    void identitasDemoPersistenDalamSesiDenganCsrf() throws Exception {
+        var session = new MockHttpSession();
+        String budi = pengguna.mahasiswaDemo().stream().filter(a -> a.getNama().equals("Budi"))
+                .findFirst().orElseThrow().getId().toString();
+        mvc.perform(post("/mahasiswa/identitas").session(session).param("id", budi))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/mahasiswa/identitas").session(session).with(csrf()).param("id", budi))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/mahasiswa"));
+        mvc.perform(get("/mahasiswa/laporan/baru").session(session))
+                .andExpect(content().string(containsString("name=\"mahasiswaId\" value=\"" + budi + "\"")));
     }
 
     @Test
-    void csrfIsRequiredForLoginAndLogout() throws Exception {
-        mvc.perform(post("/login").param("username", "admin").param("password", PASSWORD)).andExpect(status().isForbidden());
-        mvc.perform(post("/logout").with(user("admin").roles("ADMIN"))).andExpect(status().isForbidden());
-        mvc.perform(post("/logout").with(user("admin").roles("ADMIN")).with(csrf()))
-            .andExpect(status().is3xxRedirection()).andExpect(unauthenticated());
-    }
-
-    @Test
-    void staticAssetsArePublic() throws Exception {
-        mvc.perform(get("/css/app.css")).andExpect(status().isOk()).andExpect(content().string(containsString(":root")));
-        mvc.perform(get("/js/app.js")).andExpect(status().isOk()).andExpect(content().string(containsString("password-toggle")));
+    void inputLaporanKosongMenghasilkanValidasiDanDataTidakDitemukanTampilRamah() throws Exception {
+        var mahasiswa = pengguna.mahasiswaDemo().getFirst();
+        mvc.perform(post("/mahasiswa/laporan").with(csrf()).param("mahasiswaId", mahasiswa.getId().toString()))
+                .andExpect(status().isOk()).andExpect(view().name("mahasiswa/form"))
+                .andExpect(content().string(containsString("Isi deskripsi kerusakan.")));
+        mvc.perform(get("/admin/kasus/9999999")).andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Kasus tidak ditemukan.")));
+        mvc.perform(get("/login")).andExpect(status().isNotFound());
     }
 }

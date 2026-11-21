@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="antrean(daftar)" class="task-list">
+  <div th:if="${daftar.isEmpty()}"><p th:replace="~{fragments/common :: empty('Tidak ada kasus menunggu verifikasi', 'Kasus baru akan muncul setelah laporan diterima.')}"></p></div>
+  <article class="task-row" th:each="kasus : ${daftar}">
+    <div><p class="task-id" th:text="|K-${kasus.id} · ${kasus.pelaporUnik} pelapor unik|"></p><h3 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h3><p class="small muted" th:text="${kasus.fasilitas.lokasi}"></p></div>
+    <a class="button secondary compact" th:href="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}">Periksa kasus <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </article>
+</div>
+<div th:fragment="tugas(daftar)" class="task-list">
+  <div th:if="${daftar.isEmpty()}"><p th:replace="~{fragments/common :: empty('Belum ada tugas perbaikan', 'Tugas dari admin akan muncul di akun petugas yang ditunjuk.')}"></p></div>
+  <article class="task-row" th:each="tugas : ${daftar}">
+    <div><p class="task-id" th:text="|K-${tugas.kasus.id} · Tugas T-${tugas.id}|"></p><h3 th:text="|${tugas.kasus.fasilitas.nama} · ${tugas.kasus.jenisKerusakan.label}|"></h3><p class="small muted" th:text="${tugas.kasus.fasilitas.lokasi}"></p>
+      <div class="badge-row"><span th:replace="~{fragments/common :: status(${tugas.status})}"></span><span th:replace="~{fragments/common :: priority(${tugas.kasus.prioritas})}"></span></div>
+    </div>
+    <a class="button secondary compact" th:href="@{/petugas/tugas/{id}(id=${tugas.id})}">Lihat tugas <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </article>
+</div>
+</html>

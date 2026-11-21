@@ -1,5 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Admin')}"></head>
-<body><header th:replace="~{fragments/common :: navbar}"></header><main th:replace="~{fragments/common :: roleContent}"></main><footer th:replace="~{fragments/common :: footer}"></footer></body>
+<head th:replace="~{fragments/common :: head('Dashboard Admin')}"></head>
+<body th:replace="~{fragments/common :: shell('Admin', 'dashboard', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<header class="page-heading"><div><h1>Dashboard Admin</h1><p>Pantau laporan, kasus aktif, dan perbaikan fasilitas kampus.</p></div><a class="button secondary" th:href="@{/admin/kasus}">Buka daftar kasus <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></header>
+  <section class="metrics metrics-admin" aria-label="Ringkasan penanganan">
+    <article th:replace="~{fragments/common :: metric('Total laporan', ${ringkasan.totalLaporan}, 'blue', 'file')}"></article>
+    <article th:replace="~{fragments/common :: metric('Kasus aktif', ${ringkasan.kasusAktif}, 'blue', 'grid')}"></article>
+    <article th:replace="~{fragments/common :: metric('Menunggu verifikasi', ${ringkasan.menungguVerifikasi}, 'amber', 'clock')}"></article>
+    <article th:replace="~{fragments/common :: metric('Kasus kritis aktif', ${ringkasan.kritis}, 'red', 'alert')}"></article>
+    <article th:replace="~{fragments/common :: metric('Sedang diperbaiki', ${ringkasan.dikerjakan}, 'indigo', 'tool')}"></article>
+    <article th:replace="~{fragments/common :: metric('Kasus selesai', ${ringkasan.selesai}, 'green', 'check')}"></article>
+  </section>
+  <section class="panel inset list-panel">
+    <div class="section-heading"><h2>Kasus dengan laporan terbaru</h2><a class="text-link" th:href="@{/admin/kasus}">Lihat semua <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+    <div th:if="${ringkasan.terbaru.isEmpty()}"><p th:replace="~{fragments/common :: empty('Belum ada kasus', 'Kasus akan muncul setelah mahasiswa mengirim laporan.')}"></p></div>
+    <div th:unless="${ringkasan.terbaru.isEmpty()}" th:insert="~{fragments/kasus :: tabel(${ringkasan.terbaru})}"></div>
+  </section>
+</main>
+</body>
 </html>

@@ -1,5 +1,7 @@
 # Setup pengembangan Windows
 
+> Catatan fondasi awal sebelum MVP. Panduan menjalankan aplikasi dan ruang kerja demo saat ini ada di [README](../README.md).
+
 ## JDK dan editor
 
 JDK 21 LTS wajib, Maven global tidak diperlukan. Distribusi resmi: [Eclipse Temurin](https://adoptium.net/temurin/releases/?version=21). Gunakan ZIP Windows x64 jika tidak ingin mengubah sistem: ekstrak folder jdk-21... ke `.tools`. Jangan menghapus JDK lama.

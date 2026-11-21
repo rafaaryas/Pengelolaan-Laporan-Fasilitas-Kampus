@@ -1,5 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Petugas')}"></head>
-<body><header th:replace="~{fragments/common :: navbar}"></header><main th:replace="~{fragments/common :: roleContent}"></main><footer th:replace="~{fragments/common :: footer}"></footer></body>
+<head th:replace="~{fragments/common :: head('Dashboard Petugas')}"></head>
+<body th:replace="~{fragments/common :: shell('Petugas', 'dashboard', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<header class="page-heading"><div><h1 th:text="|Selamat datang, ${akun.nama}|"></h1><p>Periksa kerusakan dan pantau tugas perbaikan yang ditugaskan kepadamu.</p></div></header>
+  <section class="metrics" aria-label="Ringkasan pekerjaan">
+    <article th:replace="~{fragments/common :: metric('Perlu diverifikasi', ${jumlahVerifikasi}, 'amber', 'clock')}"></article>
+    <article th:replace="~{fragments/common :: metric('Tugas aktif saya', ${aktif}, 'blue', 'file')}"></article>
+    <article th:replace="~{fragments/common :: metric('Sedang diperbaiki', ${proses}, 'indigo', 'tool')}"></article>
+    <article th:replace="~{fragments/common :: metric('Tugas selesai', ${selesai}, 'green', 'check')}"></article>
+  </section>
+  <div class="split-grid">
+    <section class="panel inset"><div class="section-heading"><h2>Tugas Saya</h2><a class="text-link" th:href="@{/petugas/tugas}">Lihat semua <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div><div th:replace="~{fragments/petugas :: tugas(${daftarTugas})}"></div></section>
+    <aside class="hero staff-focus"><div><h2 th:text="|${aktif} tugas aktif|"></h2><p th:text="${akun.keahlian.label}"></p></div><a class="button light" th:href="@{/petugas/tugas}">Buka Tugas Saya <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>
+  </div>
+  <section class="panel inset list-panel"><div class="section-heading"><h2>Menunggu verifikasi</h2><a class="text-link" th:href="@{/petugas/verifikasi}">Lihat antrean <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div><div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div></section>
+</main>
+</body>
 </html>

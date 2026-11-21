@@ -1,5 +1,7 @@
 # Laporan setup — 19 November 2026
 
+> Catatan fondasi awal sebelum MVP. Panduan menjalankan aplikasi dan ruang kerja demo saat ini ada di [README](../README.md).
+
 **Status: fondasi selesai dan terverifikasi berjalan secara lokal.**
 
 Proyek aktif: `C:\Users\USER\source\pelaporan-fasilitas-kampus`.

@@ -1,5 +1,7 @@
 # Kerja kelompok selama 14 hari
 
+> Catatan fondasi awal sebelum MVP. Panduan menjalankan aplikasi dan ruang kerja demo saat ini ada di [README](../README.md).
+
 Satu repository, satu proyek Spring Boot. Jangan generate ulang proyek di branch anggota. Branch utama adalah `main`; anggota mengembangkan modul di feature branch dan menggabungkannya melalui pull request.
 
 | Anggota | Branch yang disarankan | Area utama |

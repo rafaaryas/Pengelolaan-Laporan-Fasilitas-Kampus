@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Laporan Saya')}"></head>
+<body th:replace="~{fragments/common :: shell('Mahasiswa', 'laporan', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<header class="page-heading"><div><h1>Laporan Saya</h1><p>Pantau perkembangan laporan yang sudah kamu kirim.</p></div>
+    <a class="button" th:href="@{/mahasiswa/laporan/baru}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Buat laporan</a></header>
+  <section class="panel inset list-panel">
+    <form class="filters" th:action="@{/mahasiswa/laporan}" method="get">
+      <div class="field search-field"><label for="q">Cari laporan</label><div class="search-input"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="q" type="search" name="q" th:value="${q}" placeholder="ID, fasilitas, atau lokasi"></div></div>
+      <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Semua status</option><option th:each="item : ${semuaStatus}" th:value="${item}" th:selected="${item == statusFilter}" th:text="${item.label}"></option></select></div>
+      <button class="button secondary" type="submit">Terapkan</button>
+    </form>
+    <div th:if="${riwayat.isEmpty()}"><p th:replace="~{fragments/common :: empty('Tidak ada laporan untuk ditampilkan', 'Coba ubah filter atau buat laporan baru.')}"></p></div>
+    <div th:unless="${riwayat.isEmpty()}" th:insert="~{fragments/laporan :: daftar(${riwayat})}"></div>
+    <p class="result-count" th:unless="${riwayat.isEmpty()}" th:text="|${riwayat.size()} laporan|"></p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,22 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Beranda')}"></head>
-<body>
-<header th:replace="~{fragments/common :: navbar}"></header>
-<main id="main" class="container">
-  <section class="hero" aria-labelledby="hero-title">
-    <div><p class="context">Pelaporan fasilitas kampus</p><h1 id="hero-title">Bersama merawat<br>ruang belajar kita.</h1><p class="lead">Sistem Pelaporan, Prioritas, dan Monitoring Kerusakan Fasilitas Kampus. Satu tempat untuk menghubungkan laporan mahasiswa dengan penanganan fasilitas.</p><a class="button" href="#akses">Pilih ruang kerja</a></div>
-    <aside class="process" aria-label="Alur penanganan"><h2>Dari laporan ke perbaikan</h2><ol><li><strong>Laporkan</strong><span>Mahasiswa menyampaikan kerusakan fasilitas.</span></li><li><strong>Tinjau dan prioritaskan</strong><span>Admin memverifikasi dan menentukan penanganan.</span></li><li><strong>Perbaiki dan pantau</strong><span>Petugas memperbarui progres pekerjaan.</span></li></ol></aside>
-  </section>
-  <section id="akses" class="access-section" aria-labelledby="access-title">
-    <div class="section-heading"><h2 id="access-title">Masuk sesuai peran Anda</h2><p>Gunakan akun yang sesuai untuk membuka ruang kerja.</p></div>
-    <div class="role-grid">
-      <article class="role-option"><h3>Mahasiswa</h3><p>Sampaikan kerusakan dan ikuti perkembangan laporan Anda.</p><a class="button secondary" th:href="@{/mahasiswa}">Halaman mahasiswa</a></article>
-      <article class="role-option"><h3>Admin</h3><p>Tinjau laporan, atur penugasan, dan pantau penanganan.</p><a class="button secondary" th:href="@{/admin}">Halaman admin</a></article>
-      <article class="role-option"><h3>Petugas</h3><p>Lihat penugasan dan perbarui progres perbaikan fasilitas.</p><a class="button secondary" th:href="@{/petugas}">Halaman petugas</a></article>
+<head th:replace="~{fragments/common :: head('Pilih ruang kerja')}"></head>
+<body class="landing">
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <header class="landing-bar"><a th:replace="~{fragments/common :: brand}"></a><span class="demo">Demo Mode</span></header>
+  <main id="main" class="landing-main">
+    <div class="landing-intro">
+      <h1>Sistem Pelaporan<br>Fasilitas Kampus</h1>
+      <p>Laporkan kerusakan, tentukan prioritas, dan pantau perbaikan fasilitas Universitas Negeri Malang.</p>
     </div>
-  </section>
-</main>
-<footer th:replace="~{fragments/common :: footer}"></footer>
+    <h2>Pilih ruang kerja</h2>
+    <div class="role-grid">
+      <a class="panel role-card" th:href="@{/mahasiswa}"><svg aria-hidden="true"><use href="#i-file"/></svg><h3>Mahasiswa</h3><p>Buat laporan kerusakan dan pantau penanganannya.</p><span>Ruang mahasiswa <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+      <a class="panel role-card" th:href="@{/admin}"><svg aria-hidden="true"><use href="#i-grid"/></svg><h3>Admin</h3><p>Tinjau kasus, lihat prioritas, dan tugaskan perbaikan.</p><span>Ruang admin <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+      <a class="panel role-card" th:href="@{/petugas}"><svg aria-hidden="true"><use href="#i-tool"/></svg><h3>Petugas</h3><p>Verifikasi kerusakan dan perbarui progres tugas.</p><span>Ruang petugas <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+    </div>
+    <footer>Advance Programming · Kelompok 5 · Offering C<br>Teknik Informatika, Universitas Negeri Malang</footer>
+  </main>
 </body>
 </html>

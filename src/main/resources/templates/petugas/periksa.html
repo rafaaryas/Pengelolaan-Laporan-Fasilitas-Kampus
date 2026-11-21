@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Periksa Kasus')}"></head>
+<body th:replace="~{fragments/common :: shell('Petugas', 'verifikasi', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<a class="back-link" th:href="@{/petugas/verifikasi}">← Kembali ke antrean verifikasi</a>
+  <header class="page-heading"><div><h1>Verifikasi kasus</h1><p th:text="|K-${kasus.id} · ${kasus.fasilitas.lokasi}|"></p></div></header>
+  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
+  <div class="split-grid case-grid">
+    <div class="detail-aside"><section th:replace="~{fragments/laporan :: temuan(${kasus})}"></section><section th:replace="~{fragments/laporan :: aduan(${kasus}, false)}"></section></div>
+    <aside class="panel inset">
+      <h2>Hasil pemeriksaan</h2><p class="small muted" th:text="|Petugas: ${akun.nama}|"></p>
+      <div th:if="${kasus.terverifikasi}">
+        <p class="note blue" th:text="|Kasus sudah diverifikasi oleh ${kasus.pemeriksa.nama}.|"></p>
+        <span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span>
+        <p class="small" th:text="${kasus.alasanPrioritas}"></p>
+      </div>
+      <form class="form-stack assignment" th:unless="${kasus.terverifikasi}" th:action="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}" th:object="${form}" method="post">
+        <input type="hidden" name="petugasId" th:value="${akun.id}">
+        <p class="field-error" th:if="${#fields.hasErrors('petugasId')}" th:errors="*{petugasId}"></p>
+        <div class="field"><label for="bahayaKritis">Bahaya keselamatan kritis *</label><select id="bahayaKritis" required th:field="*{bahayaKritis}"><option value="">Pilih hasil pemeriksaan</option><option value="false">Tidak ada</option><option value="true">Ada bahaya kritis</option></select><p class="field-error" th:errors="*{bahayaKritis}"></p></div>
+        <div class="field"><label for="gangguan">Tingkat gangguan *</label><select id="gangguan" required th:field="*{gangguan}"><option value="">Pilih tingkat gangguan</option><option th:each="item : ${tingkatGangguan}" th:value="${item}" th:text="${item.label}"></option></select><p class="field-error" th:errors="*{gangguan}"></p></div>
+        <div class="field"><label for="unitRusak">Jumlah unit rusak *</label><input id="unitRusak" type="number" min="1" th:max="${kasus.fasilitas.jumlahUnit}" required th:field="*{unitRusak}" aria-describedby="unit-help"><small id="unit-help" class="muted" th:text="|Jumlah unit di lokasi: ${kasus.fasilitas.jumlahUnit}|"></small><p class="field-error" th:errors="*{unitRusak}"></p></div>
+        <div class="field"><label for="catatan">Catatan pemeriksaan</label><textarea id="catatan" rows="4" maxlength="1000" th:field="*{catatan}"></textarea><p class="field-error" th:errors="*{catatan}"></p></div>
+        <button class="button" type="submit"><svg aria-hidden="true"><use href="#i-check"/></svg>Simpan verifikasi</button>
+      </form>
+    </aside>
+  </div>
+</main>
+</body>
+</html>

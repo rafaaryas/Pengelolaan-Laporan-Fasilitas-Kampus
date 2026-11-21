@@ -1,5 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Mahasiswa')}"></head>
-<body><header th:replace="~{fragments/common :: navbar}"></header><main th:replace="~{fragments/common :: roleContent}"></main><footer th:replace="~{fragments/common :: footer}"></footer></body>
+<head th:replace="~{fragments/common :: head('Dashboard Mahasiswa')}"></head>
+<body th:replace="~{fragments/common :: shell('Mahasiswa', 'dashboard', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<header class="page-heading">
+    <div><h1 th:text="|Selamat datang, ${akun.nama}|"></h1><p>Laporkan kendala dan pantau perbaikan fasilitas kampus.</p></div>
+  </header>
+  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
+  <div class="split-grid dashboard-hero">
+    <section class="hero">
+      <div><h2>Kampus nyaman,<br>belajar lebih tenang.</h2><p>Menemukan fasilitas rusak? Sampaikan lokasinya agar bisa diperiksa.</p></div>
+      <a class="button light" th:href="@{/mahasiswa/laporan/baru}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Laporkan kerusakan</a>
+    </section>
+    <aside class="panel inset steps">
+      <h2>Alur laporan</h2>
+      <ol><li><strong>Laporkan kerusakan</strong><span>Pilih fasilitas dan jelaskan yang terjadi.</span></li><li><strong>Petugas memeriksa</strong><span>Hasil verifikasi menentukan prioritas.</span></li><li><strong>Pantau perbaikan</strong><span>Lihat perkembangan di Laporan Saya.</span></li></ol>
+    </aside>
+  </div>
+  <section aria-labelledby="ringkasan-heading">
+    <div class="section-heading"><h2 id="ringkasan-heading">Ringkasan laporan saya</h2><span class="count-label" th:text="|${total} laporan terkirim|"></span></div>
+    <div class="metrics">
+      <article th:replace="~{fragments/common :: metric('Menunggu verifikasi', ${menunggu}, 'amber', 'clock')}"></article>
+      <article th:replace="~{fragments/common :: metric('Terverifikasi', ${terverifikasi}, 'blue', 'check')}"></article>
+      <article th:replace="~{fragments/common :: metric('Sedang diperbaiki', ${diperbaiki}, 'indigo', 'tool')}"></article>
+      <article th:replace="~{fragments/common :: metric('Selesai', ${selesai}, 'green', 'check')}"></article>
+    </div>
+  </section>
+  <section class="panel inset list-panel">
+    <div class="section-heading"><h2>Laporan terakhir</h2><a class="text-link" th:href="@{/mahasiswa/laporan}">Lihat semua <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+    <div th:if="${riwayat.isEmpty()}"><p th:replace="~{fragments/common :: empty('Belum ada laporan', 'Laporan yang kamu kirim akan muncul di sini.')}"></p></div>
+    <div th:unless="${riwayat.isEmpty()}" th:insert="~{fragments/laporan :: daftar(${riwayat})}"></div>
+  </section>
+</main>
+</body>
 </html>

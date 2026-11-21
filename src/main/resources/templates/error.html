@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Terjadi kesalahan')}"></head>
+<body class="landing">
+  <header class="landing-bar"><a th:replace="~{fragments/common :: brand}"></a><span class="demo">Demo Mode</span></header>
+  <main class="landing-main">
+    <div class="panel inset error-page">
+      <h1 th:text="${status == 404 || pesan != null ? 'Data tidak ditemukan' : 'Permintaan tidak dapat diproses'}"></h1>
+      <p th:text="${pesan != null ? pesan : 'Periksa alamat dan data yang dimasukkan, lalu coba lagi dari ruang kerja.'}"></p>
+      <a class="button" th:href="@{/}">Pilih ruang kerja</a>
+    </div>
+  </main>
+</body>
+</html>

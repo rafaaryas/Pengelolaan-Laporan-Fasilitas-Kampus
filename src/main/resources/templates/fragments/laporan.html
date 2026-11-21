@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="daftar(riwayat)" class="report-list">
+  <article th:each="laporan : ${riwayat}" class="report-row">
+    <div class="report-id"><a th:href="@{/mahasiswa/laporan/{id}(id=${laporan.id})}" th:text="|UM-${laporan.id}|"></a><span th:text="${#temporals.format(laporan.waktuLaporan, 'dd MMM yyyy')}"></span></div>
+    <div class="report-info">
+      <h3><a th:href="@{/mahasiswa/laporan/{id}(id=${laporan.id})}" th:text="|${laporan.fasilitas.nama} · ${laporan.jenisKerusakan.label}|"></a></h3>
+      <p th:text="|${laporan.fasilitas.lokasi} · Kasus K-${laporan.kasus.id}|"></p>
+    </div>
+    <div class="report-state">
+      <span th:replace="~{fragments/common :: status(${laporan.kasus.status})}"></span>
+      <span th:if="${laporan.kasus.prioritas != null}" th:remove="tag"><span th:replace="~{fragments/common :: priority(${laporan.kasus.prioritas})}"></span></span>
+    </div>
+    <a class="report-arrow" th:href="@{/mahasiswa/laporan/{id}(id=${laporan.id})}" th:aria-label="|Lihat laporan UM-${laporan.id}|"><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </article>
+</div>
+<section th:fragment="aduan(kasus, dapatPisahkan)" class="panel inset">
+  <div class="section-heading"><h2>Laporan terkait</h2><span class="count-label" th:text="|${kasus.daftarLaporan.size()} laporan · ${kasus.pelaporUnik} pelapor unik|"></span></div>
+  <article class="aduan" th:each="laporan : ${kasus.daftarLaporan}">
+    <div class="aduan-heading">
+      <div><strong th:text="${laporan.pelapor.nama}"></strong><small th:text="|UM-${laporan.id} · ${#temporals.format(laporan.waktuLaporan, 'dd MMM yyyy, HH:mm')} WIB|"></small></div>
+      <form th:if="${dapatPisahkan}" th:action="@{/admin/kasus/{id}/laporan/{laporanId}/pisahkan(id=${kasus.id},laporanId=${laporan.id})}" method="post" data-confirm="Pisahkan laporan ini menjadi kasus baru untuk diverifikasi?">
+        <button class="button secondary compact" type="submit">Pisahkan laporan</button>
+      </form>
+    </div>
+    <p class="user-text" th:text="${laporan.deskripsi}"></p>
+  </article>
+</section>
+<section th:fragment="temuan(kasus)" class="panel inset">
+  <div class="section-heading"><h2>Informasi kasus</h2><span th:replace="~{fragments/common :: status(${kasus.status})}"></span></div>
+  <h3 class="detail-title" th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h3>
+  <dl class="facts">
+    <div><dt>Lokasi</dt><dd th:text="${kasus.fasilitas.lokasi}"></dd></div>
+    <div><dt>Kondisi fasilitas</dt><dd th:text="${kasus.fasilitas.kondisi.label}"></dd></div>
+    <div><dt>Jumlah unit fasilitas</dt><dd th:text="${kasus.fasilitas.jumlahUnit}"></dd></div>
+    <div><dt>Keahlian yang dibutuhkan</dt><dd th:text="${kasus.fasilitas.jenis.label}"></dd></div>
+  </dl>
+</section>
+</html>

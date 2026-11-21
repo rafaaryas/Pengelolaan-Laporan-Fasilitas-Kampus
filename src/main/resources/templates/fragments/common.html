@@ -1,37 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head(title)">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="${title} + ' | Fasilitas Kampus'">Fasilitas Kampus</title>
+  <title th:text="|${title} · UM Peduli|">UM Peduli</title>
+  <link rel="icon" th:href="@{/images/um-emblem.png}">
   <link rel="stylesheet" th:href="@{/css/app.css}">
   <script defer th:src="@{/js/app.js}"></script>
 </head>
-<body>
-<header th:fragment="navbar" class="site-header">
+<body th:fragment="shell(role, active, content)" th:with="rolePath=${role.toLowerCase()}">
   <a class="skip-link" href="#main">Lewati ke konten</a>
-  <div class="container header-inner">
-    <a class="brand" th:href="@{/}"><span class="brand-mark" aria-hidden="true">F</span><span>Fasilitas Kampus<small>Universitas Negeri Malang</small></span></a>
-    <nav aria-label="Navigasi utama">
-      <a th:href="@{/}">Beranda</a>
-      <a th:href="@{/mahasiswa}">Mahasiswa</a>
-      <a th:href="@{/admin}">Admin</a>
-      <a th:href="@{/petugas}">Petugas</a>
-    </nav>
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" th:replace="~{fragments/common :: brand}"></a>
+      <p class="sidebar-label" th:text="|Ruang ${role}|">Ruang kerja</p>
+      <nav class="nav" aria-label="Ruang kerja">
+        <a th:href="@{/{role}(role=${rolePath})}" th:attr="aria-current=${active == 'dashboard' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-grid"/></svg>Dashboard</a>
+        <a th:if="${role == 'Mahasiswa'}" th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${active == 'baru' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</a>
+        <a th:if="${role == 'Mahasiswa'}" th:href="@{/mahasiswa/laporan}" th:attr="aria-current=${active == 'laporan' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-file"/></svg>Laporan Saya</a>
+        <a th:if="${role == 'Admin'}" th:href="@{/admin/kasus}" th:attr="aria-current=${active == 'kasus' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-file"/></svg>Kasus</a>
+        <a th:if="${role == 'Admin'}" th:href="@{/admin/petugas}" th:attr="aria-current=${active == 'petugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-users"/></svg>Petugas</a>
+        <a th:if="${role == 'Petugas'}" th:href="@{/petugas/verifikasi}" th:attr="aria-current=${active == 'verifikasi' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-check"/></svg>Verifikasi</a>
+        <a th:if="${role == 'Petugas'}" th:href="@{/petugas/tugas}" th:attr="aria-current=${active == 'tugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-tool"/></svg>Tugas Saya</a>
+      </nav>
+      <div class="sidebar-foot">
+        <a th:href="@{/}"><span>Pilih ruang kerja</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <small>Proyek OOP · Kelompok 5</small>
+      </div>
+    </aside>
+    <div class="app-main">
+      <header class="topbar">
+        <a class="mobile-brand" th:href="@{/}" aria-label="UM Peduli, pilih ruang kerja"><img th:src="@{/images/um-emblem.png}" alt="" width="42" height="42"><span><strong>UM Peduli</strong><small>Universitas Negeri Malang</small></span></a>
+        <div class="topbar-title"><strong>Sistem Pelaporan Fasilitas</strong><small>Universitas Negeri Malang</small></div>
+        <div class="topbar-actions">
+          <span class="demo">Demo Mode</span>
+          <form class="account" th:if="${akun != null}" th:action="@{/{role}/identitas(role=${rolePath})}" method="post">
+            <label class="sr-only" for="identitas-demo" th:text="|Identitas demo ${role}|">Identitas demo</label>
+            <select id="identitas-demo" name="id">
+              <option th:each="pilihan : ${pilihanAkun}" th:value="${pilihan.id}" th:selected="${pilihan.id == akun.id}" th:text="${pilihan.nama}"></option>
+            </select>
+            <button class="account-button" type="submit">Ganti</button>
+          </form>
+          <div class="admin-account" th:if="${role == 'Admin'}"><strong>Administrator</strong><small>Admin</small></div>
+        </div>
+      </header>
+      <th:block th:replace="${content}"></th:block>
+    </div>
   </div>
-</header>
-<footer th:fragment="footer" class="site-footer">
-  <div class="container footer-inner"><p>Advance Programming · Kelompok 5 · Offering C</p><p>Teknik Informatika, Universitas Negeri Malang</p></div>
-</footer>
-<main th:fragment="roleContent" id="main" class="container role-main">
-  <a class="back-link" th:href="@{/}">Kembali ke beranda</a>
-  <div class="page-heading"><p class="context">Ruang kerja</p><h1 th:text="${role}">Peran</h1><p class="lead" th:text="${description}">Deskripsi modul.</p></div>
-  <section class="notice" aria-labelledby="module-title">
-    <h2 id="module-title">Modul sedang disiapkan</h2>
-    <p>Halaman ini menjadi titik awal pengembangan modul oleh anggota kelompok. Fitur akan ditambahkan pada tahap berikutnya.</p>
-    <p>Anda masuk sebagai <strong th:text="${username}">pengguna</strong>.</p>
-  </section>
-  <form class="logout-form" th:action="@{/logout}" method="post"><button class="button secondary" type="submit">Keluar akun</button></form>
-</main>
 </body>
+<a th:fragment="brand" class="brand" th:href="@{/}">
+  <img th:src="@{/images/um-emblem.png}" alt="" width="46" height="46"><span><strong>UM Peduli</strong><small>Fasilitas kampus</small></span>
+</a>
+<th:block th:fragment="feedback">
+  <div class="alert success" role="status" th:if="${sukses != null}" th:text="${sukses}"></div>
+  <div class="alert error" role="alert" th:if="${kesalahan != null}" th:text="${kesalahan}"></div>
+</th:block>
+<span th:fragment="status(status)" th:class="|badge status-${status.name()}|" th:text="${status.label}"></span>
+<span th:fragment="priority(prioritas)" th:class="${prioritas == null ? 'badge neutral' : 'badge prioritas-' + prioritas.name()}" th:text="${prioritas == null ? 'Belum dinilai' : prioritas.label}"></span>
+<p th:fragment="empty(title, description)" class="empty"><strong th:text="${title}"></strong><span th:text="${description}"></span></p>
+<article th:fragment="metric(label, value, tone, icon)" class="panel metric">
+  <span class="metric-label" th:text="${label}"></span>
+  <div class="metric-foot"><strong th:text="${value}"></strong><span th:class="|metric-icon ${tone}|" aria-hidden="true"><svg aria-hidden="true"><use th:href="|#i-${icon}|"/></svg></span></div>
+</article>
+<svg th:fragment="symbols" class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M21 7.5a5.5 5.5 0 0 1-7.3 5.2l-7.1 7.1a2.1 2.1 0 0 1-3-3l7.1-7.1A5.5 5.5 0 0 1 16 2.5L13.6 5l.6 2.8 2.8.6L19.5 6z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2m18 0v-2a4 4 0 0 0-3-3.9M16 3.2a4 4 0 0 1 0 7.6"/><circle cx="9.5" cy="7" r="4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m12 3 9 17H3zM12 9v4m0 3v.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></symbol>
+</svg>
 </html>

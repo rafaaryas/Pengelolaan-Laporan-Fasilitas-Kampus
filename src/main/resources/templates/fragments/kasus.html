@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="tabel(daftar)" class="table-wrap" role="region" aria-label="Daftar kasus" tabindex="0">
+  <table role="table">
+    <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Fasilitas</th><th role="columnheader" scope="col">Lokasi</th><th role="columnheader" scope="col">Jenis kerusakan</th><th role="columnheader" scope="col">Pelapor unik</th><th role="columnheader" scope="col">Status</th><th role="columnheader" scope="col">Prioritas</th><th role="columnheader" scope="col">Laporan terbaru</th></tr></thead>
+    <tbody role="rowgroup">
+      <tr role="row" th:each="item : ${daftar}">
+        <th role="rowheader" scope="row"><a class="case-link" th:href="@{/admin/kasus/{id}(id=${item.id})}"><span th:text="${item.fasilitas.nama}"></span><small th:text="|K-${item.id} · Lihat detail|"></small></a></th>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Lokasi</span><span th:text="${item.fasilitas.lokasi}"></span></td>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Kerusakan</span><span th:text="${item.jenisKerusakan.label}"></span></td>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Pelapor unik</span><span th:text="${item.pelaporUnik}"></span></td>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Status</span><span th:replace="~{fragments/common :: status(${item.status})}"></span></td>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Prioritas</span><span th:replace="~{fragments/common :: priority(${item.prioritas})}"></span></td>
+        <td role="cell"><span class="cell-label" aria-hidden="true">Laporan terbaru</span><span th:text="${#temporals.format(item.laporanTerbaru, 'dd MMM yyyy')}"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</html>

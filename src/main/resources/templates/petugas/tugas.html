@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Tugas Saya')}"></head>
+<body th:replace="~{fragments/common :: shell('Petugas', 'tugas', ~{::main})}">
+<main id="main" tabindex="-1" class="workspace">
+<header class="page-heading"><div><h1>Tugas Saya</h1><p th:text="|Penugasan perbaikan untuk ${akun.nama}.|"></p></div></header>
+  <section class="panel inset"><div class="section-heading"><h2>Daftar tugas</h2><span class="count-label" th:text="|${daftarTugas.size()} tugas|"></span></div><div th:replace="~{fragments/petugas :: tugas(${daftarTugas})}"></div></section>
+</main>
+</body>
+</html>

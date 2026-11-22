@@ -38,7 +38,7 @@ class PageSecurityTest {
     @ValueSource(strings = {"/mahasiswa", "/mahasiswa/laporan", "/mahasiswa/laporan/baru", "/admin", "/admin/kasus",
             "/admin/petugas", "/petugas", "/petugas/verifikasi", "/petugas/tugas"})
     void ruangKerjaMemintaMasukTerlebihDahulu(String route) throws Exception {
-        mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrlPattern("**/login"));
+        mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
     }
 
     @ParameterizedTest

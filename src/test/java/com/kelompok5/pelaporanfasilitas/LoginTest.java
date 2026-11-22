@@ -108,8 +108,9 @@ class LoginTest {
     void sesiDigantiSetelahMasuk() throws Exception {
         var sesi = new MockHttpSession();
         String sebelum = sesi.getId();
-        Masuk.lanjut(mvc, sesi, "admin@example.invalid");
-        assertNotEquals(sebelum, sesi.getId());
+        var hasil = mvc.perform(post("/login").session(sesi).with(csrf()).param("identitas", "admin@example.invalid"))
+                .andExpect(status().isOk()).andReturn();
+        assertNotEquals(sebelum, hasil.getRequest().getSession(false).getId());
     }
 
     @Test
@@ -134,7 +135,7 @@ class LoginTest {
     @Test
     void kembaliKeTujuanSemulaSetelahMasuk() throws Exception {
         var sesi = new MockHttpSession();
-        mvc.perform(get("/admin/kasus").param("status", "SELESAI").session(sesi)).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/admin/kasus?status=SELESAI").session(sesi)).andExpect(status().is3xxRedirection());
         mvc.perform(post("/login").session(sesi).with(csrf()).param("identitas", "admin@example.invalid"))
                 .andExpect(model().attribute("tujuan", "/admin/kasus?status=SELESAI"));
 
@@ -151,7 +152,7 @@ class LoginTest {
         mvc.perform(post("/logout").session(sesi).with(csrf()))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/?keluar"));
         assertTrue(sesi.isInvalid());
-        mvc.perform(get("/admin")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrlPattern("**/login"));
+        mvc.perform(get("/admin")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
         mvc.perform(get("/?keluar")).andExpect(content().string(containsString("Anda sudah keluar")));
     }
 

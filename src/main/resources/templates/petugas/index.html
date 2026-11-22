@@ -1,20 +1,26 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Dashboard Petugas')}"></head>
-<body th:replace="~{fragments/common :: shell('Petugas', 'dashboard', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<header class="page-heading"><div><h1 th:text="|Selamat datang, ${akun.nama}|"></h1><p>Periksa kerusakan dan pantau tugas perbaikan yang ditugaskan kepadamu.</p></div></header>
-  <section class="metrics" aria-label="Ringkasan pekerjaan">
-    <article th:replace="~{fragments/common :: metric('Perlu diverifikasi', ${jumlahVerifikasi}, 'amber', 'clock')}"></article>
-    <article th:replace="~{fragments/common :: metric('Tugas aktif saya', ${aktif}, 'blue', 'file')}"></article>
-    <article th:replace="~{fragments/common :: metric('Sedang diperbaiki', ${proses}, 'indigo', 'tool')}"></article>
-    <article th:replace="~{fragments/common :: metric('Tugas selesai', ${selesai}, 'green', 'check')}"></article>
+<head th:replace="~{fragments/common :: head('Hari ini')}"></head>
+<body th:replace="~{fragments/common :: petugas('beranda', ~{::main})}">
+<main id="main" tabindex="-1" class="p-main">
+  <header class="p-judul">
+    <h1>Hari ini</h1>
+    <p th:text="|${akun.nama} · ${akun.keahlian.label} · ${akun.jamMulai == akun.jamSelesai ? 'siaga 24 jam' : 'jam kerja ' + akun.jamMulai + '–' + akun.jamSelesai + ' WIB'}|"></p>
+  </header>
+  <nav class="p-angka" aria-label="Ringkasan pekerjaan">
+    <a th:href="@{/petugas/tugas}"><strong th:text="${aktif}">0</strong><span>Tugas aktif</span></a>
+    <a th:href="@{/petugas/tugas}"><strong th:text="${proses}">0</strong><span>Sedang dikerjakan</span></a>
+    <a th:href="@{/petugas/verifikasi}"><strong th:text="${jumlahVerifikasi}">0</strong><span>Perlu diperiksa</span></a>
+    <a th:href="@{/petugas/tugas}"><strong th:text="${selesai}">0</strong><span>Selesai</span></a>
+  </nav>
+  <section class="p-bagian" aria-labelledby="judul-tugas">
+    <div class="bagian-kepala"><h2 id="judul-tugas">Tugas perbaikan</h2><a class="tautan" th:href="@{/petugas/tugas}">Semua tugas<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+    <div th:replace="~{fragments/petugas :: tugas(${daftarTugas})}"></div>
   </section>
-  <div class="split-grid">
-    <section class="panel inset"><div class="section-heading"><h2>Tugas Saya</h2><a class="text-link" th:href="@{/petugas/tugas}">Lihat semua <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div><div th:replace="~{fragments/petugas :: tugas(${daftarTugas})}"></div></section>
-    <aside class="hero staff-focus"><div><h2 th:text="|${aktif} tugas aktif|"></h2><p th:text="${akun.keahlian.label}"></p></div><a class="button light" th:href="@{/petugas/tugas}">Buka Tugas Saya <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></aside>
-  </div>
-  <section class="panel inset list-panel"><div class="section-heading"><h2>Menunggu verifikasi</h2><a class="text-link" th:href="@{/petugas/verifikasi}">Lihat antrean <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div><div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div></section>
+  <section class="p-bagian" aria-labelledby="judul-antrean">
+    <div class="bagian-kepala"><h2 id="judul-antrean">Menunggu pemeriksaan</h2><a class="tautan" th:href="@{/petugas/verifikasi}" th:text="|Antrean lengkap (${jumlahVerifikasi})|"></a></div>
+    <div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div>
+  </section>
 </main>
 </body>
 </html>

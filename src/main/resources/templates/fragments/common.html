@@ -3,77 +3,122 @@
 <head th:fragment="head(title)">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
   <title th:text="|${title} · UM Peduli|">UM Peduli</title>
   <link rel="icon" th:href="@{/images/um-emblem.png}">
+  <link rel="preload" th:href="@{/fonts/public-sans-latin.woff2}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
   <link rel="stylesheet" th:href="@{/css/app.css}">
   <script defer th:src="@{/js/app.js}"></script>
 </head>
-<body th:fragment="shell(role, active, content)" th:with="rolePath=${role.toLowerCase()}">
+
+<!-- ===== Shell Mahasiswa: navigasi atas, satu kolom, banyak ruang ===== -->
+<body th:fragment="mahasiswa(active, content)" class="ruang ruang-mahasiswa">
   <a class="skip-link" href="#main">Lewati ke konten</a>
   <svg th:replace="~{fragments/common :: symbols}"></svg>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <a class="brand" th:replace="~{fragments/common :: brand}"></a>
-      <p class="sidebar-label" th:text="|Ruang ${role}|">Ruang kerja</p>
-      <nav class="nav" aria-label="Ruang kerja">
-        <a th:href="@{/{role}(role=${rolePath})}" th:attr="aria-current=${active == 'dashboard' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-grid"/></svg>Dashboard</a>
-        <a th:if="${role == 'Mahasiswa'}" th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${active == 'baru' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</a>
-        <a th:if="${role == 'Mahasiswa'}" th:href="@{/mahasiswa/laporan}" th:attr="aria-current=${active == 'laporan' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-file"/></svg>Laporan Saya</a>
-        <a th:if="${role == 'Admin'}" th:href="@{/admin/kasus}" th:attr="aria-current=${active == 'kasus' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-file"/></svg>Kasus</a>
-        <a th:if="${role == 'Admin'}" th:href="@{/admin/petugas}" th:attr="aria-current=${active == 'petugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-users"/></svg>Petugas</a>
-        <a th:if="${role == 'Petugas'}" th:href="@{/petugas/verifikasi}" th:attr="aria-current=${active == 'verifikasi' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-check"/></svg>Verifikasi</a>
-        <a th:if="${role == 'Petugas'}" th:href="@{/petugas/tugas}" th:attr="aria-current=${active == 'tugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-tool"/></svg>Tugas Saya</a>
+  <header class="m-bar">
+    <div class="m-bar-inner">
+      <a class="brand" th:href="@{/mahasiswa}"><img th:src="@{/images/um-emblem.png}" alt="" width="36" height="36"><span><strong>UM Peduli</strong><small>Ruang mahasiswa</small></span></a>
+      <nav class="m-nav" aria-label="Ruang mahasiswa">
+        <a th:href="@{/mahasiswa}" th:attr="aria-current=${active == 'beranda' ? 'page' : null}">Beranda</a>
+        <a th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${active == 'baru' ? 'page' : null}">Lapor kerusakan</a>
+        <a th:href="@{/mahasiswa/laporan}" th:attr="aria-current=${active == 'laporan' ? 'page' : null}">Laporan saya</a>
       </nav>
-      <div class="sidebar-foot">
-        <a th:href="@{/}"><span>Pilih ruang kerja</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <small>Proyek OOP · Kelompok 5</small>
-      </div>
+      <div th:replace="~{fragments/common :: akun('m-akun')}"></div>
+    </div>
+  </header>
+  <th:block th:replace="${content}"></th:block>
+  <footer th:replace="~{fragments/common :: kaki('m-foot')}"></footer>
+</body>
+
+<!-- ===== Shell Petugas: kontras tinggi, tab bawah di ponsel, target sentuh besar ===== -->
+<body th:fragment="petugas(active, content)" class="ruang ruang-petugas">
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <header class="p-bar">
+    <a class="brand brand-invert" th:href="@{/petugas}"><img th:src="@{/images/um-emblem.png}" alt="" width="34" height="34"><span><strong>UM Peduli</strong><small>Petugas lapangan</small></span></a>
+    <div th:replace="~{fragments/common :: akun('p-akun')}"></div>
+  </header>
+  <nav class="p-tabs" aria-label="Ruang petugas">
+    <a th:href="@{/petugas}" th:attr="aria-current=${active == 'beranda' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Hari ini</span></a>
+    <a th:href="@{/petugas/verifikasi}" th:attr="aria-current=${active == 'verifikasi' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Verifikasi</span></a>
+    <a th:href="@{/petugas/tugas}" th:attr="aria-current=${active == 'tugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-tool"/></svg><span>Tugas saya</span></a>
+  </nav>
+  <th:block th:replace="${content}"></th:block>
+  <footer th:replace="~{fragments/common :: kaki('p-foot')}"></footer>
+</body>
+
+<!-- ===== Shell Admin: sidebar tetap, area konten lebar dan padat ===== -->
+<body th:fragment="admin(active, content)" class="ruang ruang-admin">
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <div class="a-layout">
+    <aside class="a-side">
+      <a class="brand brand-invert" th:href="@{/admin}"><img th:src="@{/images/um-emblem.png}" alt="" width="34" height="34"><span><strong>UM Peduli</strong><small>Administrasi</small></span></a>
+      <nav class="a-nav" aria-label="Ruang admin">
+        <a th:href="@{/admin}" th:attr="aria-current=${active == 'beranda' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-grid"/></svg>Ringkasan</a>
+        <a th:href="@{/admin/kasus}" th:attr="aria-current=${active == 'kasus' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-list"/></svg>Kasus</a>
+        <a th:href="@{/admin/petugas}" th:attr="aria-current=${active == 'petugas' ? 'page' : null}"><svg aria-hidden="true"><use href="#i-users"/></svg>Petugas</a>
+      </nav>
+      <div th:replace="~{fragments/common :: akun('a-akun')}"></div>
     </aside>
-    <div class="app-main">
-      <header class="topbar">
-        <a class="mobile-brand" th:href="@{/}" aria-label="UM Peduli, pilih ruang kerja"><img th:src="@{/images/um-emblem.png}" alt="" width="42" height="42"><span><strong>UM Peduli</strong><small>Universitas Negeri Malang</small></span></a>
-        <div class="topbar-title"><strong>Sistem Pelaporan Fasilitas</strong><small>Universitas Negeri Malang</small></div>
-        <div class="topbar-actions">
-          <span class="demo">Demo Mode</span>
-          <form class="account" th:if="${akun != null}" th:action="@{/{role}/identitas(role=${rolePath})}" method="post">
-            <label class="sr-only" for="identitas-demo" th:text="|Identitas demo ${role}|">Identitas demo</label>
-            <select id="identitas-demo" name="id">
-              <option th:each="pilihan : ${pilihanAkun}" th:value="${pilihan.id}" th:selected="${pilihan.id == akun.id}" th:text="${pilihan.nama}"></option>
-            </select>
-            <button class="account-button" type="submit">Ganti</button>
-          </form>
-          <div class="admin-account" th:if="${role == 'Admin'}"><strong>Administrator</strong><small>Admin</small></div>
-        </div>
-      </header>
+    <div class="a-main">
       <th:block th:replace="${content}"></th:block>
+      <footer th:replace="~{fragments/common :: kaki('a-foot')}"></footer>
     </div>
   </div>
 </body>
-<a th:fragment="brand" class="brand" th:href="@{/}">
-  <img th:src="@{/images/um-emblem.png}" alt="" width="46" height="46"><span><strong>UM Peduli</strong><small>Fasilitas kampus</small></span>
-</a>
+
+<!-- ===== Komponen bersama ===== -->
+<div th:fragment="akun(kelas)" th:class="|akun ${kelas}|" th:if="${akunMasuk != null}">
+  <p class="akun-nama"><span class="sr-only">Masuk sebagai </span><strong th:text="${akunMasuk.nama}">Nama</strong><small th:text="${akunMasuk.identitas}">email</small></p>
+  <form th:action="@{/logout}" method="post"><button class="tombol-keluar" type="submit"><svg aria-hidden="true"><use href="#i-logout"/></svg>Keluar</button></form>
+</div>
+
+<footer th:fragment="kaki(kelas)" th:class="|kaki ${kelas}|">
+  <p>Advance Programming · Kelompok 5 · Offering C · Teknik Informatika, Universitas Negeri Malang</p>
+  <p class="kaki-mode">Mode demo akademik: masuk tanpa kata sandi.</p>
+</footer>
+
+<header th:fragment="bar-publik" class="pub-bar">
+  <a class="brand" th:href="@{/}"><img th:src="@{/images/um-emblem.png}" alt="" width="40" height="40"><span><strong>UM Peduli</strong><small>Pelaporan fasilitas kampus · Universitas Negeri Malang</small></span></a>
+</header>
+
 <th:block th:fragment="feedback">
-  <div class="alert success" role="status" th:if="${sukses != null}" th:text="${sukses}"></div>
-  <div class="alert error" role="alert" th:if="${kesalahan != null}" th:text="${kesalahan}"></div>
+  <div class="alert alert-sukses" role="status" th:if="${sukses != null}"><svg aria-hidden="true"><use href="#i-check"/></svg><p th:text="${sukses}"></p></div>
+  <div class="alert alert-galat" role="alert" th:if="${kesalahan != null}"><svg aria-hidden="true"><use href="#i-alert"/></svg><p th:text="${kesalahan}"></p></div>
 </th:block>
-<span th:fragment="status(status)" th:class="|badge status-${status.name()}|" th:text="${status.label}"></span>
-<span th:fragment="priority(prioritas)" th:class="${prioritas == null ? 'badge neutral' : 'badge prioritas-' + prioritas.name()}" th:text="${prioritas == null ? 'Belum dinilai' : prioritas.label}"></span>
-<p th:fragment="empty(title, description)" class="empty"><strong th:text="${title}"></strong><span th:text="${description}"></span></p>
-<article th:fragment="metric(label, value, tone, icon)" class="panel metric">
-  <span class="metric-label" th:text="${label}"></span>
-  <div class="metric-foot"><strong th:text="${value}"></strong><span th:class="|metric-icon ${tone}|" aria-hidden="true"><svg aria-hidden="true"><use th:href="|#i-${icon}|"/></svg></span></div>
-</article>
+
+<span th:fragment="status(status)" th:class="|status st-${status.name()}|"><span class="status-tanda" aria-hidden="true"></span><span th:text="${status.label}"></span></span>
+
+<span th:fragment="priority(prioritas)" th:class="${prioritas == null ? 'prio prio-NONE' : 'prio prio-' + prioritas.name()}"><span class="prio-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span th:text="${prioritas == null ? 'Belum dinilai' : 'Prioritas ' + prioritas.label}"></span></span>
+
+<div th:fragment="tahap(status)" class="tahap" th:with="i=${status.ordinal()}">
+  <ol class="tahap-garis" aria-hidden="true">
+    <li th:each="n : ${#numbers.sequence(0, 4)}" th:class="${n < i or i == 4 ? 'lewat' : (n == i ? 'kini' : '')}"></li>
+  </ol>
+  <p class="tahap-teks"><span class="angka" th:text="|Tahap ${i + 1}/5|"></span> <span th:text="${status.label}"></span></p>
+</div>
+
+<div th:fragment="empty(title, description)" class="kosong"><p class="kosong-judul" th:text="${title}"></p><p th:text="${description}"></p></div>
+
 <svg th:fragment="symbols" class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></symbol>
   <symbol id="i-tool" viewBox="0 0 24 24"><path d="M21 7.5a5.5 5.5 0 0 1-7.3 5.2l-7.1 7.1a2.1 2.1 0 0 1-3-3l7.1-7.1A5.5 5.5 0 0 1 16 2.5L13.6 5l.6 2.8 2.8.6L19.5 6z"/></symbol>
   <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2m18 0v-2a4 4 0 0 0-3-3.9M16 3.2a4 4 0 0 1 0 7.6"/><circle cx="9.5" cy="7" r="4"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m12 3 9 17H3zM12 9v4m0 3v.5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H5m6 6-6-6 6-6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21 19.5H3zM12 10v4m0 2.6v.2"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/></symbol>
 </svg>
 </html>

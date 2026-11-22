@@ -34,7 +34,7 @@
       <p class="teks-pengguna kutipan" th:text="${laporan.deskripsi}"></p>
       <dl class="fakta">
         <div><dt>Pelapor</dt><dd th:text="${laporan.pelapor.nama}"></dd></div>
-        <div><dt>Kasus terkait</dt><dd><span class="kode" th:text="|K-${kasus.id}|"></span> · <span th:text="|${kasus.pelaporUnik} pelapor|"></span></dd></div>
+        <div><dt>Kasus terkait</dt><dd><span class="kode" th:text="|K-${kasus.id}|"></span></dd></div>
         <div><dt>Kondisi fasilitas</dt><dd th:text="${laporan.fasilitas.kondisi.label}"></dd></div>
       </dl>
       <div th:if="${kasus.prioritas != null}" class="sorot"><h3>Hasil penilaian petugas</h3><p th:text="${kasus.alasanPrioritas}"></p></div>

@@ -1,11 +1,14 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Antrean Verifikasi')}"></head>
-<body th:replace="~{fragments/common :: shell('Petugas', 'verifikasi', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<header class="page-heading"><div><h1>Antrean verifikasi</h1><p>Periksa bahaya, tingkat gangguan, dan jumlah unit yang rusak.</p></div></header>
+<head th:replace="~{fragments/common :: head('Antrean verifikasi')}"></head>
+<body th:replace="~{fragments/common :: petugas('verifikasi', ~{::main})}">
+<main id="main" tabindex="-1" class="p-main">
+  <header class="p-judul">
+    <h1>Antrean verifikasi</h1>
+    <p th:text="|${daftarVerifikasi.size()} kasus menunggu. Periksa bahaya, tingkat gangguan, dan jumlah unit yang rusak di lokasi.|"></p>
+  </header>
   <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <section class="panel inset"><div class="section-heading"><h2>Kasus menunggu pemeriksaan</h2><span class="count-label" th:text="|${daftarVerifikasi.size()} kasus|"></span></div><div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div></section>
+  <div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div>
 </main>
 </body>
 </html>

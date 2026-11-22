@@ -1,19 +1,29 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="antrean(daftar)" class="task-list">
-  <div th:if="${daftar.isEmpty()}"><p th:replace="~{fragments/common :: empty('Tidak ada kasus menunggu verifikasi', 'Kasus baru akan muncul setelah laporan diterima.')}"></p></div>
-  <article class="task-row" th:each="kasus : ${daftar}">
-    <div><p class="task-id" th:text="|K-${kasus.id} · ${kasus.pelaporUnik} pelapor unik|"></p><h3 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h3><p class="small muted" th:text="${kasus.fasilitas.lokasi}"></p></div>
-    <a class="button secondary compact" th:href="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}">Periksa kasus <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-  </article>
+<!-- Antrean kasus yang menunggu pemeriksaan: lokasi paling menonjol -->
+<div th:fragment="antrean(daftar)" class="p-daftar-wadah">
+  <th:block th:if="${daftar.isEmpty()}"><div th:replace="~{fragments/common :: empty('Tidak ada kasus menunggu pemeriksaan', 'Kasus baru muncul di sini begitu mahasiswa mengirim laporan.')}"></div></th:block>
+  <ul class="p-daftar" th:unless="${daftar.isEmpty()}">
+    <li class="p-kartu" th:each="kasus : ${daftar}">
+      <p class="p-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><strong th:text="${kasus.fasilitas.gedung}"></strong><span th:text="${kasus.fasilitas.ruang}"></span></p>
+      <h3 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h3>
+      <p class="p-meta"><span class="kode" th:text="|K-${kasus.id}|"></span><span th:text="|${kasus.pelaporUnik} pelapor|"></span><span th:text="|laporan terakhir ${#temporals.format(kasus.laporanTerbaru, 'd MMM, HH:mm')}|"></span></p>
+      <a class="tombol tombol-utama tombol-penuh" th:href="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}">Periksa kasus<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </li>
+  </ul>
 </div>
-<div th:fragment="tugas(daftar)" class="task-list">
-  <div th:if="${daftar.isEmpty()}"><p th:replace="~{fragments/common :: empty('Belum ada tugas perbaikan', 'Tugas dari admin akan muncul di akun petugas yang ditunjuk.')}"></p></div>
-  <article class="task-row" th:each="tugas : ${daftar}">
-    <div><p class="task-id" th:text="|K-${tugas.kasus.id} · Tugas T-${tugas.id}|"></p><h3 th:text="|${tugas.kasus.fasilitas.nama} · ${tugas.kasus.jenisKerusakan.label}|"></h3><p class="small muted" th:text="${tugas.kasus.fasilitas.lokasi}"></p>
-      <div class="badge-row"><span th:replace="~{fragments/common :: status(${tugas.status})}"></span><span th:replace="~{fragments/common :: priority(${tugas.kasus.prioritas})}"></span></div>
-    </div>
-    <a class="button secondary compact" th:href="@{/petugas/tugas/{id}(id=${tugas.id})}">Lihat tugas <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-  </article>
+
+<!-- Tugas perbaikan milik petugas -->
+<div th:fragment="tugas(daftar)" class="p-daftar-wadah">
+  <th:block th:if="${daftar.isEmpty()}"><div th:replace="~{fragments/common :: empty('Belum ada tugas perbaikan', 'Tugas dari admin muncul di sini setelah kasus diverifikasi dan kamu ditunjuk.')}"></div></th:block>
+  <ul class="p-daftar" th:unless="${daftar.isEmpty()}">
+    <li class="p-kartu" th:each="tugas : ${daftar}" th:classappend="${tugas.status.name() == 'SELESAI'} ? 'p-kartu-selesai'">
+      <p class="p-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><strong th:text="${tugas.kasus.fasilitas.gedung}"></strong><span th:text="${tugas.kasus.fasilitas.ruang}"></span></p>
+      <h3 th:text="|${tugas.kasus.fasilitas.nama} · ${tugas.kasus.jenisKerusakan.label}|"></h3>
+      <p class="p-meta"><span class="kode" th:text="|T-${tugas.id}|"></span><span th:replace="~{fragments/common :: status(${tugas.status})}"></span><span th:replace="~{fragments/common :: priority(${tugas.kasus.prioritas})}"></span></p>
+      <a class="tombol tombol-penuh" th:classappend="${tugas.status.name() == 'SELESAI'} ? 'tombol-garis' : 'tombol-utama'" th:href="@{/petugas/tugas/{id}(id=${tugas.id})}">
+        <span th:text="${tugas.status.name() == 'DITUGASKAN' ? 'Buka dan mulai perbaikan' : (tugas.status.name() == 'DIKERJAKAN' ? 'Lanjutkan perbaikan' : 'Lihat hasil perbaikan')}"></span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </li>
+  </ul>
 </div>
 </html>

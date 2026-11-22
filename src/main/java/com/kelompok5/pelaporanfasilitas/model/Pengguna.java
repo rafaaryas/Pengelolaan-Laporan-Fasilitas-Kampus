@@ -15,6 +15,11 @@ public abstract class Pengguna {
 
     protected Pengguna() {}
 
+    protected Pengguna(String nama, String kontak) {
+        this.nama = nama;
+        this.kontak = kontak;
+    }
+
     public Long getId() { return id; }
     public String getNama() { return nama; }
     public String getKontak() { return kontak; }

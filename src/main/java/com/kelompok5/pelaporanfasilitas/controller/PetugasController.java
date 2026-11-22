@@ -1,10 +1,11 @@
 package com.kelompok5.pelaporanfasilitas.controller;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import com.kelompok5.pelaporanfasilitas.model.*;
+import com.kelompok5.pelaporanfasilitas.security.AkunMasuk;
 import com.kelompok5.pelaporanfasilitas.service.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,19 +15,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/petugas")
 public class PetugasController {
-    private final IdentitasDemo identitas;
+    private final IdentitasMasuk identitas;
     private final SistemPelaporan sistem;
     private final PantauanPelaporan pantauan;
 
-    public PetugasController(IdentitasDemo identitas, SistemPelaporan sistem, PantauanPelaporan pantauan) {
+    public PetugasController(IdentitasMasuk identitas, SistemPelaporan sistem, PantauanPelaporan pantauan) {
         this.identitas = identitas;
         this.sistem = sistem;
         this.pantauan = pantauan;
     }
 
     @GetMapping
-    String dashboard(HttpSession session, Model model) {
-        Petugas akun = identitas.petugas(session, model);
+    String dashboard(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
         var verifikasi = pantauan.daftarKasus("", StatusKasus.MENUNGGU_VERIFIKASI, null);
         var tugas = pantauan.tugasPetugas(akun.getId());
         model.addAttribute("jumlahVerifikasi", verifikasi.size());
@@ -38,30 +39,25 @@ public class PetugasController {
         return "petugas/index";
     }
 
-    @PostMapping("/identitas")
-    String pilihIdentitas(@RequestParam long id, HttpSession session) {
-        identitas.pilihPetugas(id, session);
-        return "redirect:/petugas";
-    }
 
     @GetMapping("/verifikasi")
-    String daftarVerifikasi(HttpSession session, Model model) {
-        identitas.petugas(session, model);
+    String daftarVerifikasi(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        identitas.petugas(masuk, model);
         model.addAttribute("daftarVerifikasi", pantauan.daftarKasus("", StatusKasus.MENUNGGU_VERIFIKASI, null));
         return "petugas/verifikasi";
     }
 
     @GetMapping("/kasus/{id}/verifikasi")
-    String formVerifikasi(@PathVariable long id, HttpSession session, Model model) {
-        Petugas akun = identitas.petugas(session, model);
+    String formVerifikasi(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
         model.addAttribute("form", new VerifikasiForm(akun.getId(), null, null, null, ""));
         return siapkanVerifikasi(id, model);
     }
 
     @PostMapping("/kasus/{id}/verifikasi")
     String verifikasi(@PathVariable long id, @Valid @ModelAttribute("form") VerifikasiForm form, BindingResult hasil,
-                      HttpSession session, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(session, model);
+                      @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
         if (hasil.hasErrors()) return siapkanVerifikasi(id, model);
         try {
             identitas.pastikanSama(akun, form.petugasId());
@@ -75,15 +71,15 @@ public class PetugasController {
     }
 
     @GetMapping("/tugas")
-    String daftarTugas(HttpSession session, Model model) {
-        Petugas akun = identitas.petugas(session, model);
+    String daftarTugas(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
         model.addAttribute("daftarTugas", pantauan.tugasPetugas(akun.getId()));
         return "petugas/tugas";
     }
 
     @GetMapping("/tugas/{id}")
-    String detailTugas(@PathVariable long id, HttpSession session, Model model) {
-        Petugas akun = identitas.petugas(session, model);
+    String detailTugas(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
         var tugas = pantauan.detailTugas(id, akun.getId());
         model.addAttribute("tugas", tugas);
         model.addAttribute("kasus", tugas.getKasus());
@@ -91,22 +87,22 @@ public class PetugasController {
     }
 
     @PostMapping("/tugas/{id}/mulai")
-    String mulai(@PathVariable long id, HttpSession session, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(session, model);
+    String mulai(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
         return ubahTugas(id, flash, "Perbaikan dimulai.", () -> sistem.mulaiTugas(id, akun.getId()));
     }
 
     @PostMapping("/tugas/{id}/progres")
     String progres(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
-                   HttpSession session, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(session, model);
+                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
         return ubahTugas(id, flash, "Catatan progres disimpan.", () -> sistem.catatProgres(id, akun.getId(), catatan));
     }
 
     @PostMapping("/tugas/{id}/selesai")
     String selesai(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
-                   HttpSession session, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(session, model);
+                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
         return ubahTugas(id, flash, "Perbaikan selesai. Status kasus dan kondisi fasilitas telah diperbarui.",
                 () -> sistem.selesaikanTugas(id, akun.getId(), catatan));
     }
@@ -128,7 +124,7 @@ public class PetugasController {
     }
 
     public record VerifikasiForm(
-            @NotNull(message = "Pilih identitas petugas.") Long petugasId,
+            @NotNull(message = "Sesi petugas tidak ditemukan.") Long petugasId,
             @NotNull(message = "Pilih hasil pemeriksaan keselamatan.") Boolean bahayaKritis,
             @NotNull(message = "Pilih tingkat gangguan.") Gangguan gangguan,
             @NotNull(message = "Isi jumlah unit rusak.") @Min(value = 1, message = "Jumlah unit rusak minimal 1.") Integer unitRusak,

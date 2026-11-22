@@ -1,11 +1,12 @@
 package com.kelompok5.pelaporanfasilitas.controller;
 
 import java.util.EnumMap;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import com.kelompok5.pelaporanfasilitas.model.*;
+import com.kelompok5.pelaporanfasilitas.security.AkunMasuk;
 import com.kelompok5.pelaporanfasilitas.service.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,19 +16,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/mahasiswa")
 public class MahasiswaController {
-    private final IdentitasDemo identitas;
+    private final IdentitasMasuk identitas;
     private final SistemPelaporan sistem;
     private final PantauanPelaporan pantauan;
 
-    public MahasiswaController(IdentitasDemo identitas, SistemPelaporan sistem, PantauanPelaporan pantauan) {
+    public MahasiswaController(IdentitasMasuk identitas, SistemPelaporan sistem, PantauanPelaporan pantauan) {
         this.identitas = identitas;
         this.sistem = sistem;
         this.pantauan = pantauan;
     }
 
     @GetMapping
-    String dashboard(HttpSession session, Model model) {
-        Mahasiswa akun = identitas.mahasiswa(session, model);
+    String dashboard(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Mahasiswa akun = identitas.mahasiswa(masuk, model);
         var riwayat = pantauan.laporanMahasiswa(akun.getId(), "", null);
         var ringkasan = new EnumMap<StatusKasus, Long>(StatusKasus.class);
         for (StatusKasus status : StatusKasus.values()) ringkasan.put(status, 0L);
@@ -41,16 +42,11 @@ public class MahasiswaController {
         return "mahasiswa/index";
     }
 
-    @PostMapping("/identitas")
-    String pilihIdentitas(@RequestParam long id, HttpSession session) {
-        identitas.pilihMahasiswa(id, session);
-        return "redirect:/mahasiswa";
-    }
 
     @GetMapping("/laporan")
     String riwayat(@RequestParam(defaultValue = "") String q, @RequestParam(required = false) StatusKasus status,
-                   HttpSession session, Model model) {
-        Mahasiswa akun = identitas.mahasiswa(session, model);
+                   @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Mahasiswa akun = identitas.mahasiswa(masuk, model);
         model.addAttribute("riwayat", pantauan.laporanMahasiswa(akun.getId(), q, status));
         model.addAttribute("q", q);
         model.addAttribute("statusFilter", status);
@@ -59,16 +55,16 @@ public class MahasiswaController {
     }
 
     @GetMapping("/laporan/baru")
-    String form(HttpSession session, Model model) {
-        Mahasiswa akun = identitas.mahasiswa(session, model);
+    String form(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Mahasiswa akun = identitas.mahasiswa(masuk, model);
         model.addAttribute("form", new LaporanForm(akun.getId(), null, null, ""));
         return siapkanForm(model);
     }
 
     @PostMapping("/laporan")
-    String buat(@Valid @ModelAttribute("form") LaporanForm form, BindingResult hasil, HttpSession session,
+    String buat(@Valid @ModelAttribute("form") LaporanForm form, BindingResult hasil, @AuthenticationPrincipal AkunMasuk masuk,
                 Model model, RedirectAttributes flash) {
-        Mahasiswa akun = identitas.mahasiswa(session, model);
+        Mahasiswa akun = identitas.mahasiswa(masuk, model);
         if (hasil.hasErrors()) return siapkanForm(model);
         try {
             identitas.pastikanSama(akun, form.mahasiswaId());
@@ -82,8 +78,8 @@ public class MahasiswaController {
     }
 
     @GetMapping("/laporan/{id}")
-    String detail(@PathVariable long id, HttpSession session, Model model) {
-        Mahasiswa akun = identitas.mahasiswa(session, model);
+    String detail(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Mahasiswa akun = identitas.mahasiswa(masuk, model);
         var detail = pantauan.detailLaporan(id, akun.getId());
         model.addAttribute("laporan", detail.laporan());
         model.addAttribute("tugas", detail.tugas());
@@ -97,7 +93,7 @@ public class MahasiswaController {
     }
 
     public record LaporanForm(
-            @NotNull(message = "Pilih identitas mahasiswa.") Long mahasiswaId,
+            @NotNull(message = "Sesi mahasiswa tidak ditemukan.") Long mahasiswaId,
             @NotNull(message = "Pilih fasilitas.") Long fasilitasId,
             @NotNull(message = "Pilih jenis kerusakan.") JenisKerusakan jenisKerusakan,
             @NotBlank(message = "Isi deskripsi kerusakan.") @Size(max = 1600, message = "Deskripsi maksimal 1600 karakter.") String deskripsi) {}

@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Terjadi kesalahan')}"></head>
-<body class="landing">
-  <header class="landing-bar"><a th:replace="~{fragments/common :: brand}"></a><span class="demo">Demo Mode</span></header>
-  <main class="landing-main">
-    <div class="panel inset error-page">
-      <h1 th:text="${status == 404 || pesan != null ? 'Data tidak ditemukan' : 'Permintaan tidak dapat diproses'}"></h1>
-      <p th:text="${pesan != null ? pesan : 'Periksa alamat dan data yang dimasukkan, lalu coba lagi dari ruang kerja.'}"></p>
-      <a class="button" th:href="@{/}">Pilih ruang kerja</a>
+<head th:replace="~{fragments/common :: head(${status == 404 ? 'Tidak ditemukan' : 'Terjadi kesalahan'})}"></head>
+<body class="publik">
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <header th:replace="~{fragments/common :: bar-publik}"></header>
+  <main id="main" class="halaman-status" th:with="hilang=${status == 404 or pesan != null}">
+    <p class="kode-status" th:text="${status != null ? status : 'Galat'}">404</p>
+    <h1 th:text="${hilang ? 'Data tidak ditemukan' : (status == 403 ? 'Akses ditolak' : 'Permintaan tidak dapat diproses')}"></h1>
+    <p th:text="${pesan != null ? pesan : (hilang ? 'Alamat yang dibuka tidak ada atau sudah dipindahkan.' : 'Periksa data yang dimasukkan, lalu coba lagi dari ruang kerja Anda.')}"></p>
+    <div class="aksi-baris">
+      <a class="tombol tombol-utama" th:if="${akunMasuk != null}" th:href="@{${akunMasuk.beranda()}}">Kembali ke ruang <span th:text="${akunMasuk.peran.label}"></span></a>
+      <a class="tombol tombol-utama" th:unless="${akunMasuk != null}" th:href="@{/}">Ke halaman awal</a>
     </div>
   </main>
 </body>

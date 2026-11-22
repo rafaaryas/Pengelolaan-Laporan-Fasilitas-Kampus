@@ -1,32 +1,45 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Detail Laporan')}"></head>
-<body th:replace="~{fragments/common :: shell('Mahasiswa', 'laporan', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<a class="back-link" th:href="@{/mahasiswa/laporan}">← Kembali ke Laporan Saya</a>
-  <header class="page-heading">
-    <div><h1>Detail laporan</h1><p th:text="|UM-${laporan.id} · Dikirim ${#temporals.format(laporan.waktuLaporan, 'dd MMM yyyy, HH:mm')} WIB|"></p></div>
-  </header>
+<head th:replace="~{fragments/common :: head('Detail laporan')}"></head>
+<body th:replace="~{fragments/common :: mahasiswa('laporan', ~{::main})}">
+<main id="main" tabindex="-1" class="m-main" th:with="kasus=${laporan.kasus}, tahap=${laporan.kasus.status.ordinal()}">
+  <a class="tautan-kembali" th:href="@{/mahasiswa/laporan}"><svg aria-hidden="true"><use href="#i-back"/></svg>Laporan saya</a>
   <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <div class="split-grid" th:with="kasus=${laporan.kasus}, tahap=${kasus.status.ordinal()}">
-    <section class="panel inset">
-      <div class="badge-row"><span th:replace="~{fragments/common :: status(${kasus.status})}"></span><span th:if="${kasus.prioritas != null}" th:remove="tag"><span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span></span></div>
-      <h2 class="detail-title" th:text="|${laporan.fasilitas.nama} · ${laporan.jenisKerusakan.label}|"></h2>
-      <dl class="facts"><div><dt>Nama pelapor</dt><dd th:text="${laporan.pelapor.nama}"></dd></div><div><dt>Kasus terkait</dt><dd th:text="|K-${kasus.id}|"></dd></div><div><dt>Gedung dan ruang</dt><dd th:text="${laporan.fasilitas.lokasi}"></dd></div><div><dt>Kondisi fasilitas</dt><dd th:text="${laporan.fasilitas.kondisi.label}"></dd></div></dl>
-      <h3 class="minor-heading">Deskripsi kerusakan</h3><p class="user-text" th:text="${laporan.deskripsi}"></p>
-      <div th:if="${kasus.prioritas != null}" class="highlight"><h3>Hasil penilaian</h3><p th:text="${kasus.alasanPrioritas}"></p></div>
-      <div th:if="${tugas != null and tugas.catatan != null}" class="highlight"><h3>Pembaruan perbaikan</h3><p class="user-text" th:text="${tugas.catatan}"></p></div>
-    </section>
-    <aside class="panel inset">
-      <h2>Perkembangan laporan</h2>
-      <ol class="timeline">
-        <li class="completed"><strong>Laporan diterima</strong><span th:text="|${#temporals.format(laporan.waktuLaporan, 'dd MMM yyyy, HH:mm')} WIB|"></span></li>
-        <li th:class="${tahap == 0 ? 'current' : 'completed'}"><strong>Menunggu verifikasi</strong><span th:text="${tahap == 0 ? 'Petugas akan memeriksa kerusakan.' : 'Pemeriksaan selesai.'}"></span></li>
-        <li th:class="${tahap == 1 ? 'current' : (tahap > 1 ? 'completed' : '')}"><strong>Menunggu penugasan</strong><span th:text="${tahap > 1 ? 'Admin sudah memilih petugas.' : 'Admin menugaskan petugas setelah verifikasi.'}"></span></li>
-        <li th:class="${tahap == 3 ? 'current' : (tahap > 3 ? 'completed' : '')}"><strong>Dalam perbaikan</strong><span th:if="${tugas != null and tugas.waktuMulai != null}" th:text="|Dimulai ${#temporals.format(tugas.waktuMulai, 'dd MMM yyyy, HH:mm')} WIB|"></span><span th:if="${tahap == 2}">Petugas ditugaskan. Pekerjaan belum dimulai.</span></li>
-        <li th:class="${tahap == 4 ? 'completed' : ''}"><strong>Selesai</strong><span th:if="${tugas != null and tugas.waktuSelesai != null}" th:text="|${#temporals.format(tugas.waktuSelesai, 'dd MMM yyyy, HH:mm')} WIB|"></span></li>
+  <header class="m-detail-kepala">
+    <p class="label-kecil"><span class="kode" th:text="|UM-${laporan.id}|"></span> · dikirim <span th:text="|${#temporals.format(laporan.waktuLaporan, 'd MMM yyyy, HH:mm')} WIB|"></span></p>
+    <h1 th:text="|${laporan.fasilitas.nama} · ${laporan.jenisKerusakan.label}|"></h1>
+    <p class="lap-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><span th:text="${laporan.fasilitas.lokasi}"></span></p>
+    <div class="m-detail-status"><div th:replace="~{fragments/common :: tahap(${kasus.status})}"></div><th:block th:if="${kasus.prioritas != null}"><span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span></th:block></div>
+  </header>
+
+  <div class="m-detail-isi">
+    <section class="m-bagian" aria-labelledby="judul-linimasa">
+      <h2 id="judul-linimasa">Perkembangan</h2>
+      <ol class="linimasa">
+        <li class="lewat"><strong>Laporan diterima</strong><span th:text="|${#temporals.format(laporan.waktuLaporan, 'd MMM yyyy, HH:mm')} WIB · tergabung di kasus K-${kasus.id}|"></span></li>
+        <li th:class="${tahap == 0 ? 'kini' : 'lewat'}"><strong>Pemeriksaan petugas</strong><span th:text="${tahap == 0 ? 'Menunggu petugas memeriksa lokasi.' : 'Selesai diperiksa' + (kasus.waktuVerifikasi != null ? ' pada ' + #temporals.format(kasus.waktuVerifikasi, 'd MMM yyyy, HH:mm') + ' WIB.' : '.')}"></span></li>
+        <li th:class="${tahap == 1 ? 'kini' : (tahap > 1 ? 'lewat' : '')}"><strong>Penugasan petugas</strong><span th:text="${tahap > 1 ? 'Admin sudah menugaskan petugas perbaikan.' : 'Admin menugaskan petugas setelah pemeriksaan.'}"></span></li>
+        <li th:class="${tahap == 2 or tahap == 3 ? 'kini' : (tahap > 3 ? 'lewat' : '')}"><strong>Perbaikan</strong>
+          <span th:if="${tugas != null and tugas.waktuMulai != null}" th:text="|Dimulai ${#temporals.format(tugas.waktuMulai, 'd MMM yyyy, HH:mm')} WIB.|"></span>
+          <span th:if="${tahap == 2}">Petugas sudah ditugaskan, pekerjaan belum dimulai.</span>
+          <span th:if="${tahap < 2}">Belum dimulai.</span></li>
+        <li th:class="${tahap == 4 ? 'lewat' : ''}"><strong>Selesai</strong>
+          <span th:if="${tugas != null and tugas.waktuSelesai != null}" th:text="|${#temporals.format(tugas.waktuSelesai, 'd MMM yyyy, HH:mm')} WIB.|"></span>
+          <span th:unless="${tahap == 4}">Belum selesai.</span></li>
       </ol>
-    </aside>
+    </section>
+
+    <section class="m-bagian" aria-labelledby="judul-rincian">
+      <h2 id="judul-rincian">Isi laporanmu</h2>
+      <p class="teks-pengguna kutipan" th:text="${laporan.deskripsi}"></p>
+      <dl class="fakta">
+        <div><dt>Pelapor</dt><dd th:text="${laporan.pelapor.nama}"></dd></div>
+        <div><dt>Kasus terkait</dt><dd><span class="kode" th:text="|K-${kasus.id}|"></span> · <span th:text="|${kasus.pelaporUnik} pelapor|"></span></dd></div>
+        <div><dt>Kondisi fasilitas</dt><dd th:text="${laporan.fasilitas.kondisi.label}"></dd></div>
+      </dl>
+      <div th:if="${kasus.prioritas != null}" class="sorot"><h3>Hasil penilaian petugas</h3><p th:text="${kasus.alasanPrioritas}"></p></div>
+      <div th:if="${tugas != null and tugas.catatan != null}" class="sorot"><h3 th:text="${tahap == 4 ? 'Hasil perbaikan' : 'Catatan perbaikan terbaru'}"></h3><p class="teks-pengguna" th:text="${tugas.catatan}"></p></div>
+    </section>
   </div>
 </main>
 </body>

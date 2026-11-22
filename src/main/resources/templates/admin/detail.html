@@ -1,55 +1,72 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Detail Kasus')}"></head>
-<body th:replace="~{fragments/common :: shell('Admin', 'kasus', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<a class="back-link" th:href="@{/admin/kasus}">← Kembali ke daftar kasus</a>
-  <header class="page-heading"><div><h1>Detail kasus</h1><p th:text="|K-${kasus.id} · ${kasus.fasilitas.lokasi}|"></p></div></header>
+<head th:replace="~{fragments/common :: head('Detail kasus')}"></head>
+<body th:replace="~{fragments/common :: admin('kasus', ~{::main})}">
+<main id="main" tabindex="-1" class="a-isi">
+  <a class="tautan-kembali" th:href="@{/admin/kasus}"><svg aria-hidden="true"><use href="#i-back"/></svg>Daftar kasus</a>
+  <header class="a-kepala a-kepala-kasus">
+    <div>
+      <p class="label-kecil"><span class="kode" th:text="|K-${kasus.id}|"></span> · <span th:text="${kasus.fasilitas.lokasi}"></span></p>
+      <h1 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h1>
+    </div>
+    <div class="a-kepala-status"><span th:replace="~{fragments/common :: status(${kasus.status})}"></span><span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span></div>
+  </header>
   <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <div class="split-grid case-grid">
-    <div class="detail-aside">
-      <section th:replace="~{fragments/laporan :: temuan(${kasus})}"></section>
+
+  <div class="a-detail">
+    <div class="a-detail-utama">
+      <section class="blok" aria-labelledby="judul-info">
+        <div class="blok-kepala"><h2 id="judul-info">Fasilitas</h2></div>
+        <dl class="fakta fakta-empat">
+          <div><dt>Lokasi</dt><dd th:text="${kasus.fasilitas.lokasi}"></dd></div>
+          <div><dt>Kondisi</dt><dd th:text="${kasus.fasilitas.kondisi.label}"></dd></div>
+          <div><dt>Jumlah unit</dt><dd class="angka" th:text="${kasus.fasilitas.jumlahUnit}"></dd></div>
+          <div><dt>Keahlian dibutuhkan</dt><dd th:text="${kasus.fasilitas.jenis.label}"></dd></div>
+        </dl>
+      </section>
       <section th:replace="~{fragments/laporan :: aduan(${kasus}, ${!kasus.terverifikasi and kasus.daftarLaporan.size() > 1})}"></section>
     </div>
-    <aside class="detail-aside">
-      <section class="panel inset">
-        <div class="section-heading"><h2>Verifikasi dan prioritas</h2></div>
-        <p th:unless="${kasus.terverifikasi}" class="muted">Petugas perlu memeriksa kasus ini sebelum prioritas bisa ditetapkan.</p>
-        <div th:if="${kasus.terverifikasi}">
-          <div class="badge-row"><span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span></div>
+
+    <aside class="a-detail-samping">
+      <section class="blok" aria-labelledby="judul-verifikasi">
+        <div class="blok-kepala"><h2 id="judul-verifikasi">Verifikasi dan prioritas</h2></div>
+        <p th:unless="${kasus.terverifikasi}" class="redup">Belum diperiksa. Prioritas ditetapkan setelah petugas memverifikasi di lokasi.</p>
+        <th:block th:if="${kasus.terverifikasi}">
           <p th:text="${kasus.alasanPrioritas}"></p>
-          <dl class="facts single">
-            <div><dt>Diperiksa oleh</dt><dd th:text="${kasus.pemeriksa.nama}"></dd><dd class="muted small" th:text="|${#temporals.format(kasus.waktuVerifikasi, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
+          <dl class="fakta fakta-satu">
+            <div><dt>Diperiksa oleh</dt><dd><span th:text="${kasus.pemeriksa.nama}"></span><br><span class="redup angka" th:text="|${#temporals.format(kasus.waktuVerifikasi, 'dd MMM yyyy, HH:mm')} WIB|"></span></dd></div>
             <div><dt>Bahaya kritis</dt><dd th:text="${kasus.bahayaKritis ? 'Ada' : 'Tidak ada'}"></dd></div>
             <div><dt>Tingkat gangguan</dt><dd th:text="${kasus.gangguan.label}"></dd></div>
-            <div><dt>Unit rusak</dt><dd th:text="|${kasus.unitRusak} dari ${kasus.fasilitas.jumlahUnit}|"></dd></div>
-            <div th:if="${kasus.catatanPemeriksaan != null}"><dt>Catatan pemeriksaan</dt><dd class="user-text" th:text="${kasus.catatanPemeriksaan}"></dd></div>
+            <div><dt>Unit rusak</dt><dd class="angka" th:text="|${kasus.unitRusak} dari ${kasus.fasilitas.jumlahUnit}|"></dd></div>
+            <div th:if="${kasus.catatanPemeriksaan != null}"><dt>Catatan pemeriksaan</dt><dd class="teks-pengguna" th:text="${kasus.catatanPemeriksaan}"></dd></div>
           </dl>
-        </div>
-        <p class="small muted fine-print">Prioritas menggunakan kebijakan simulasi akademik.</p>
+        </th:block>
+        <p class="catatan-kecil">Aturan prioritas adalah kebijakan simulasi akademik Kelompok 5.</p>
       </section>
-      <section class="panel inset" th:if="${jadwal != null}">
-        <h2>Tugaskan perbaikan</h2>
-        <p class="muted small" th:text="|Keahlian dibutuhkan: ${kasus.fasilitas.jenis.label}|"></p>
-        <ul class="availability" th:unless="${jadwal.isEmpty()}">
-          <li th:each="item : ${jadwal}"><div><strong th:text="${item.petugas.nama}"></strong><small th:text="${item.jam()}"></small></div><span th:class="${item.tersedia ? 'badge status-SELESAI' : 'badge neutral'}" th:text="${item.status()}"></span></li>
+
+      <section class="blok blok-aksi" th:if="${jadwal != null}" aria-labelledby="judul-tugaskan">
+        <div class="blok-kepala"><h2 id="judul-tugaskan">Tugaskan perbaikan</h2></div>
+        <p class="redup" th:text="|Petugas dengan keahlian ${kasus.fasilitas.jenis.label}:|"></p>
+        <ul class="daftar-petugas" th:unless="${jadwal.isEmpty()}">
+          <li th:each="item : ${jadwal}"><span><strong th:text="${item.petugas.nama}"></strong><small class="angka" th:text="${item.jam()}"></small></span><span th:class="${item.tersedia ? 'status st-SELESAI' : 'status st-NETRAL'}"><span class="status-tanda" aria-hidden="true"></span><span th:text="${item.status()}"></span></span></li>
         </ul>
-        <p class="note amber" th:if="${jadwal.?[tersedia].isEmpty()}">Belum ada petugas dengan keahlian yang sesuai dan sedang tersedia. Kasus tetap menunggu penugasan.</p>
-        <form class="form-stack assignment" th:unless="${jadwal.?[tersedia].isEmpty()}" th:action="@{/admin/kasus/{id}/penugasan(id=${kasus.id})}" method="post">
-          <div class="field"><label for="petugasId">Petugas *</label><select id="petugasId" name="petugasId" required><option value="">Pilih petugas tersedia</option><option th:each="item : ${jadwal}" th:if="${item.tersedia}" th:value="${item.petugas.id}" th:text="${item.petugas.nama}"></option></select></div>
-          <div class="field"><label for="catatan">Catatan penugasan</label><textarea id="catatan" name="catatan" rows="3" maxlength="1000"></textarea></div>
-          <button class="button" type="submit">Tugaskan petugas <svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <p class="alert alert-waspada" th:if="${jadwal.?[tersedia].isEmpty()}">Belum ada petugas dengan keahlian ini yang tersedia sekarang. Kasus tetap menunggu penugasan.</p>
+        <form class="a-form" th:unless="${jadwal.?[tersedia].isEmpty()}" th:action="@{/admin/kasus/{id}/penugasan(id=${kasus.id})}" method="post">
+          <div class="field"><label for="petugasId">Petugas</label><select id="petugasId" name="petugasId" required><option value="">Pilih petugas yang tersedia</option><option th:each="item : ${jadwal}" th:if="${item.tersedia}" th:value="${item.petugas.id}" th:text="${item.petugas.nama}"></option></select></div>
+          <div class="field"><label for="catatan">Pesan untuk petugas <span class="redup">(opsional)</span></label><textarea id="catatan" name="catatan" rows="3" maxlength="1000"></textarea></div>
+          <button class="tombol tombol-utama tombol-penuh" type="submit">Tugaskan petugas</button>
         </form>
       </section>
-      <section class="panel inset" th:if="${tugas != null}">
-        <div class="section-heading"><h2>Tugas perbaikan</h2><span th:replace="~{fragments/common :: status(${tugas.status})}"></span></div>
-        <dl class="facts single">
+
+      <section class="blok" th:if="${tugas != null}" aria-labelledby="judul-tugas">
+        <div class="blok-kepala"><h2 id="judul-tugas">Tugas perbaikan</h2><span th:replace="~{fragments/common :: status(${tugas.status})}"></span></div>
+        <dl class="fakta fakta-satu">
           <div><dt>Petugas</dt><dd th:text="${tugas.petugas.nama}"></dd></div>
-          <div><dt>Waktu penugasan</dt><dd th:text="|${#temporals.format(tugas.waktuPenugasan, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
-          <div th:if="${tugas.waktuMulai != null}"><dt>Waktu mulai</dt><dd th:text="|${#temporals.format(tugas.waktuMulai, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
-          <div th:if="${tugas.waktuSelesai != null}"><dt>Waktu selesai</dt><dd th:text="|${#temporals.format(tugas.waktuSelesai, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
-          <div th:if="${tugas.catatanPenugasan != null}"><dt>Catatan penugasan</dt><dd class="user-text" th:text="${tugas.catatanPenugasan}"></dd></div>
-          <div th:if="${tugas.catatan != null}"><dt>Catatan penanganan</dt><dd class="user-text" th:text="${tugas.catatan}"></dd></div>
+          <div><dt>Ditugaskan</dt><dd class="angka" th:text="|${#temporals.format(tugas.waktuPenugasan, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
+          <div th:if="${tugas.waktuMulai != null}"><dt>Mulai</dt><dd class="angka" th:text="|${#temporals.format(tugas.waktuMulai, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
+          <div th:if="${tugas.waktuSelesai != null}"><dt>Selesai</dt><dd class="angka" th:text="|${#temporals.format(tugas.waktuSelesai, 'dd MMM yyyy, HH:mm')} WIB|"></dd></div>
+          <div th:if="${tugas.catatanPenugasan != null}"><dt>Pesan penugasan</dt><dd class="teks-pengguna" th:text="${tugas.catatanPenugasan}"></dd></div>
+          <div th:if="${tugas.catatan != null}"><dt>Catatan petugas</dt><dd class="teks-pengguna" th:text="${tugas.catatan}"></dd></div>
         </dl>
       </section>
     </aside>

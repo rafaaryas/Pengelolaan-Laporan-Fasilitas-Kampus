@@ -1,20 +1,21 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Daftar Kasus')}"></head>
-<body th:replace="~{fragments/common :: shell('Admin', 'kasus', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<header class="page-heading"><div><h1>Kasus kerusakan</h1><p>Tinjau kasus dan atur tindak lanjut berdasarkan urgensi.</p></div></header>
-  <section class="panel inset list-panel">
-    <form class="filters" th:action="@{/admin/kasus}" method="get">
-      <div class="field search-field"><label for="q">Cari kasus</label><div class="search-input"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="q" type="search" name="q" th:value="${q}" placeholder="ID, fasilitas, atau lokasi"></div></div>
-      <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Semua status</option><option th:each="item : ${semuaStatus}" th:value="${item}" th:selected="${item == statusFilter}" th:text="${item.label}"></option></select></div>
-      <div class="field"><label for="prioritas">Prioritas</label><select id="prioritas" name="prioritas"><option value="">Semua prioritas</option><option th:each="item : ${semuaPrioritas}" th:value="${item}" th:selected="${item == prioritasFilter}" th:text="${item.label}"></option></select></div>
-      <button class="button secondary" type="submit">Terapkan</button>
-    </form>
-    <div th:if="${kasus.isEmpty()}"><p th:replace="~{fragments/common :: empty('Tidak ada kasus untuk ditampilkan', 'Coba ubah pencarian atau filter yang dipilih.')}"></p></div>
-    <div th:unless="${kasus.isEmpty()}" th:insert="~{fragments/kasus :: tabel(${kasus})}"></div>
-    <div class="results" th:unless="${kasus.isEmpty()}"><span th:text="|${kasus.size()} kasus|"></span><span>Diurutkan berdasarkan urgensi</span></div>
-  </section>
+<head th:replace="~{fragments/common :: head('Kasus')}"></head>
+<body th:replace="~{fragments/common :: admin('kasus', ~{::main})}">
+<main id="main" tabindex="-1" class="a-isi">
+  <header class="a-kepala">
+    <div><h1>Kasus kerusakan</h1><p>Kasus aktif diurutkan menurut prioritas, unit rusak, jumlah pelapor, lalu laporan terbaru. Kasus selesai di bagian akhir.</p></div>
+  </header>
+  <form class="saring saring-admin" th:action="@{/admin/kasus}" method="get" role="search" aria-label="Saring kasus">
+    <div class="field field-cari"><label for="q">Cari</label><input id="q" type="search" name="q" th:value="${q}" placeholder="K-4, AC B13, Gedung D10"></div>
+    <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Semua status</option><option th:each="item : ${semuaStatus}" th:value="${item}" th:selected="${item == statusFilter}" th:text="${item.label}"></option></select></div>
+    <div class="field"><label for="prioritas">Prioritas</label><select id="prioritas" name="prioritas"><option value="">Semua prioritas</option><option th:each="item : ${semuaPrioritas}" th:value="${item}" th:selected="${item == prioritasFilter}" th:text="${item.label}"></option></select></div>
+    <button class="tombol tombol-garis" type="submit">Terapkan</button>
+    <a class="tombol tombol-teks" th:if="${!q.isEmpty() or statusFilter != null or prioritasFilter != null}" th:href="@{/admin/kasus}">Hapus saringan</a>
+  </form>
+  <p class="hasil-hitung" aria-live="polite" th:text="${kasus.isEmpty() ? 'Tidak ada kasus yang cocok.' : kasus.size() + ' kasus'}"></p>
+  <th:block th:if="${kasus.isEmpty()}"><div th:replace="~{fragments/common :: empty('Tidak ada kasus untuk ditampilkan', 'Ubah kata kunci atau saringan status dan prioritas.')}"></div></th:block>
+  <th:block th:unless="${kasus.isEmpty()}"><div th:replace="~{fragments/kasus :: tabel(${kasus})}"></div></th:block>
 </main>
 </body>
 </html>

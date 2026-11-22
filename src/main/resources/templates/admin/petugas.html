@@ -1,23 +1,30 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Daftar Petugas')}"></head>
-<body th:replace="~{fragments/common :: shell('Admin', 'petugas', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<header class="page-heading"><div><h1>Petugas</h1><p>Lihat keahlian, jadwal kerja, dan ketersediaan petugas demo.</p></div><a class="button secondary" th:href="@{/admin/kasus(status='MENUNGGU_PENUGASAN')}">Kasus menunggu penugasan <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></header>
-  <section class="metrics metrics-three" aria-label="Ringkasan petugas">
-    <article th:replace="~{fragments/common :: metric('Petugas terdaftar', ${jadwal.size()}, 'blue', 'users')}"></article>
-    <article th:replace="~{fragments/common :: metric('Tersedia', ${tersedia}, 'green', 'check')}"></article>
-    <article th:replace="~{fragments/common :: metric('Sedang bertugas', ${sibuk}, 'indigo', 'tool')}"></article>
-  </section>
-  <section class="panel inset">
-    <div class="section-heading"><h2>Daftar petugas</h2><span class="count-label">Jadwal dalam WIB</span></div>
-    <div class="table-wrap" role="region" aria-label="Jadwal petugas" tabindex="0">
-      <table role="table" class="staff-table">
-        <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Nama</th><th role="columnheader" scope="col">Keahlian</th><th role="columnheader" scope="col">Jam kerja</th><th role="columnheader" scope="col">Ketersediaan</th></tr></thead>
-        <tbody role="rowgroup"><tr role="row" th:each="item : ${jadwal}"><th role="rowheader" scope="row" th:text="${item.petugas.nama}"></th><td role="cell"><span class="cell-label" aria-hidden="true">Keahlian</span><span th:text="${item.petugas.keahlian.label}"></span></td><td role="cell"><span class="cell-label" aria-hidden="true">Jam kerja</span><span th:text="${item.jam()}"></span></td><td role="cell"><span class="cell-label" aria-hidden="true">Ketersediaan</span><span th:class="${item.tersedia ? 'badge status-SELESAI' : 'badge neutral'}" th:text="${item.status()}"></span></td></tr></tbody>
-      </table>
-    </div>
-  </section>
+<head th:replace="~{fragments/common :: head('Petugas')}"></head>
+<body th:replace="~{fragments/common :: admin('petugas', ~{::main})}">
+<main id="main" tabindex="-1" class="a-isi">
+  <header class="a-kepala">
+    <div><h1>Petugas</h1><p>Keahlian menentukan kasus yang bisa ditangani. Jadwal dalam WIB.</p></div>
+    <a class="tombol tombol-garis" th:href="@{/admin/kasus(status='MENUNGGU_PENUGASAN')}">Kasus menunggu penugasan<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </header>
+  <dl class="a-angka a-angka-tiga">
+    <div><dt>Terdaftar</dt><dd th:text="${jadwal.size()}">0</dd></div>
+    <div><dt>Tersedia sekarang</dt><dd th:text="${tersedia}">0</dd></div>
+    <div><dt>Sedang bertugas</dt><dd th:text="${sibuk}">0</dd></div>
+  </dl>
+  <div class="tabel-wadah" role="region" aria-label="Jadwal petugas" tabindex="0">
+    <table class="tabel">
+      <thead><tr><th scope="col">Nama</th><th scope="col">Keahlian</th><th scope="col">Jam kerja</th><th scope="col">Ketersediaan</th></tr></thead>
+      <tbody>
+        <tr th:each="item : ${jadwal}">
+          <th scope="row" th:text="${item.petugas.nama}"></th>
+          <td data-label="Keahlian" th:text="${item.petugas.keahlian.label}"></td>
+          <td data-label="Jam kerja" class="angka" th:text="${item.jam()}"></td>
+          <td data-label="Ketersediaan"><span th:class="${item.tersedia ? 'status st-SELESAI' : 'status st-NETRAL'}"><span class="status-tanda" aria-hidden="true"></span><span th:text="${item.status()}"></span></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </main>
 </body>
 </html>

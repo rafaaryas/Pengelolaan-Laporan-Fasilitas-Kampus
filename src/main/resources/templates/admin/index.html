@@ -1,21 +1,27 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Dashboard Admin')}"></head>
-<body th:replace="~{fragments/common :: shell('Admin', 'dashboard', ~{::main})}">
-<main id="main" tabindex="-1" class="workspace">
-<header class="page-heading"><div><h1>Dashboard Admin</h1><p>Pantau laporan, kasus aktif, dan perbaikan fasilitas kampus.</p></div><a class="button secondary" th:href="@{/admin/kasus}">Buka daftar kasus <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></header>
-  <section class="metrics metrics-admin" aria-label="Ringkasan penanganan">
-    <article th:replace="~{fragments/common :: metric('Total laporan', ${ringkasan.totalLaporan}, 'blue', 'file')}"></article>
-    <article th:replace="~{fragments/common :: metric('Kasus aktif', ${ringkasan.kasusAktif}, 'blue', 'grid')}"></article>
-    <article th:replace="~{fragments/common :: metric('Menunggu verifikasi', ${ringkasan.menungguVerifikasi}, 'amber', 'clock')}"></article>
-    <article th:replace="~{fragments/common :: metric('Kasus kritis aktif', ${ringkasan.kritis}, 'red', 'alert')}"></article>
-    <article th:replace="~{fragments/common :: metric('Sedang diperbaiki', ${ringkasan.dikerjakan}, 'indigo', 'tool')}"></article>
-    <article th:replace="~{fragments/common :: metric('Kasus selesai', ${ringkasan.selesai}, 'green', 'check')}"></article>
+<head th:replace="~{fragments/common :: head('Ringkasan admin')}"></head>
+<body th:replace="~{fragments/common :: admin('beranda', ~{::main})}">
+<main id="main" tabindex="-1" class="a-isi">
+  <header class="a-kepala">
+    <div><h1>Ringkasan penanganan</h1><p>Angka di bawah dihitung langsung dari basis data saat halaman dibuka.</p></div>
+    <a class="tombol tombol-utama" th:href="@{/admin/kasus}">Buka daftar kasus<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </header>
+  <section aria-labelledby="judul-angka">
+    <h2 id="judul-angka" class="sr-only">Angka utama</h2>
+    <dl class="a-angka">
+      <div><dt>Total laporan</dt><dd><a th:href="@{/admin/kasus}" th:text="${ringkasan.totalLaporan}">0</a></dd></div>
+      <div><dt>Kasus aktif</dt><dd><a th:href="@{/admin/kasus}" th:text="${ringkasan.kasusAktif}">0</a></dd></div>
+      <div><dt>Menunggu verifikasi</dt><dd><a th:href="@{/admin/kasus(status='MENUNGGU_VERIFIKASI')}" th:text="${ringkasan.menungguVerifikasi}">0</a></dd></div>
+      <div th:classappend="${ringkasan.kritis > 0} ? 'angka-waspada'"><dt>Kritis aktif</dt><dd><a th:href="@{/admin/kasus(prioritas='KRITIS')}" th:text="${ringkasan.kritis}">0</a></dd></div>
+      <div><dt>Sedang diperbaiki</dt><dd><a th:href="@{/admin/kasus(status='DIKERJAKAN')}" th:text="${ringkasan.dikerjakan}">0</a></dd></div>
+      <div><dt>Selesai</dt><dd><a th:href="@{/admin/kasus(status='SELESAI')}" th:text="${ringkasan.selesai}">0</a></dd></div>
+    </dl>
   </section>
-  <section class="panel inset list-panel">
-    <div class="section-heading"><h2>Kasus dengan laporan terbaru</h2><a class="text-link" th:href="@{/admin/kasus}">Lihat semua <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-    <div th:if="${ringkasan.terbaru.isEmpty()}"><p th:replace="~{fragments/common :: empty('Belum ada kasus', 'Kasus akan muncul setelah mahasiswa mengirim laporan.')}"></p></div>
-    <div th:unless="${ringkasan.terbaru.isEmpty()}" th:insert="~{fragments/kasus :: tabel(${ringkasan.terbaru})}"></div>
+  <section class="a-bagian" aria-labelledby="judul-terbaru">
+    <div class="bagian-kepala"><h2 id="judul-terbaru">Kasus dengan laporan terbaru</h2><a class="tautan" th:href="@{/admin/kasus}">Semua kasus menurut urgensi<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+    <th:block th:if="${ringkasan.terbaru.isEmpty()}"><div th:replace="~{fragments/common :: empty('Belum ada kasus', 'Kasus terbentuk otomatis begitu mahasiswa mengirim laporan.')}"></div></th:block>
+    <th:block th:unless="${ringkasan.terbaru.isEmpty()}"><div th:replace="~{fragments/kasus :: tabel(${ringkasan.terbaru})}"></div></th:block>
   </section>
 </main>
 </body>

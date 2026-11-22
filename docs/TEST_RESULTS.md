@@ -1,5 +1,24 @@
+# Hasil pengujian
 
-# Hasil pengujian · 20 November 2026
+## Redesain dan login email/NIM · 22 November 2026
+
+Dijalankan di Windows (JDK 21, Maven Wrapper, MySQL Laragon 8) pada branch `redesain-um-peduli`.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| `.\scripts\dev.ps1 -Task Package` | 50 tes lulus (`AlurPelaporanTest` 2, `LoginTest` 22, `PageSecurityTest` 21, `PrioritasBerbasisRisikoTest` 5). JAR berhasil dibuat. |
+| Migrasi | Skema QA baru `pelaporan_fasilitas_qa` dimigrasi V1–V3 tanpa galat; Hibernate `validate` lulus. |
+| Alur browser (port 8081, skema QA) | Landing → CTA → login galat → Andi (email) membuat laporan AC B13 → 403 saat membuka `/admin` → keluar → Dimas memverifikasi → admin dibuka dari `/admin/kasus/1`, diarahkan ke login, lalu kembali ke kasus tersebut dan menugaskan Dimas → Dimas memulai, mencatat, dan menyelesaikan → Andi (via NIM 240535600101) melihat tahap 5/5. |
+| Responsif | 1440, 390, dan 360 px untuk ruang mahasiswa, petugas, dan admin: `scrollWidth` sama dengan lebar layar (tanpa scroll horizontal). |
+| Keyboard | Tab pertama menuju "Lewati ke konten", CTA landing menerima fokus dengan garis fokus terlihat dan dapat diaktifkan dengan Enter. |
+| Kontras | Semua pasangan teks utama, status, dan prioritas ≥ 4,5:1 (dihitung dari token). |
+
+Tes otomatis yang ditambahkan mencakup deteksi peran (admin, petugas, mahasiswa via email, via NIM, tidak terdaftar, `yy@admin.com` tetap mahasiswa), akun mahasiswa baru yang bisa melapor dan hanya melihat miliknya, proteksi route (redirect ke login, 403), pengalihan pengguna yang sudah masuk, kembali ke tujuan semula, logout dengan CSRF, validasi masukan, CSRF pada form login, rotasi ID sesi, dan pembatasan percobaan.
+
+`scripts/test-browser-demo.js` sudah diperbarui untuk alur login dan dapat dijalankan dengan Playwright CLI seperti di bawah. Pada sesi ini alur yang sama dijalankan manual melalui browser.
+
+## Versi awal · 20 November 2026
+
 
 Pengujian dilakukan di Windows dengan Temurin JDK 21, Spring Boot 4.1.2, Maven Wrapper, MySQL Laragon 8.4.3, dan Chrome melalui Playwright CLI. Build otomatis memakai H2 mode MySQL untuk isolasi. Pengujian browser memakai skema MySQL terpisah `pelaporan_fasilitas_qa` pada port aplikasi 8081.
 

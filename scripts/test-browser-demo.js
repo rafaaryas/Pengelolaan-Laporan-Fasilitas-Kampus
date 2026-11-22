@@ -137,8 +137,8 @@ async page => {
   await click("Terapkan");
   const barisPertama = page.locator("tbody tr").first();
   assert((await barisPertama.innerText()).includes("K-" + kabel.kasus), "Kasus kritis tidak berada di urutan pertama.");
-  await visible("Prioritas Kritis", "tbody");
-  await visible("Prioritas Tinggi", "tbody");
+  await visible("Kritis", "tbody");
+  await visible("Tinggi", "tbody");
   await page.screenshot({ path: ".cache/browser/admin-kasus-desktop.png" });
 
   await open("/admin/kasus/" + pertama.kasus);

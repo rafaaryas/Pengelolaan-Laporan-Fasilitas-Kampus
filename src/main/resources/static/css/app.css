@@ -154,6 +154,7 @@ main:focus { outline: none; }
 .prio-TINGGI { color: var(--pr-tinggi); } .prio-TINGGI i:nth-child(-n+3) { background: currentColor; }
 .prio-KRITIS { color: var(--pr-kritis); } .prio-KRITIS i { background: currentColor; }
 .prio-NONE { font-weight: var(--weight-medium); }
+.tabel .prio-awalan { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Tahap kasus: lima segmen + teks "Tahap n/5" */
 .tahap { display: grid; gap: 6px; min-width: 180px; }
@@ -206,7 +207,6 @@ main:focus { outline: none; }
 body.publik { display: flex; flex-direction: column; background: var(--canvas); }
 body.publik main { flex: 1; }
 .pub-bar { padding: var(--s-3) var(--s-6); border-bottom: 1px solid var(--line); background: var(--paper); }
-.pub-bar small { max-width: 32ch; }
 .publik-kaki { text-align: center; }
 
 .landing { width: 100%; max-width: 1040px; margin: 0 auto; padding: var(--s-20) var(--s-6) var(--s-12); }
@@ -336,14 +336,14 @@ body.publik main { flex: 1; }
 .ruang-petugas h1, .ruang-petugas h2 { font-family: var(--font-ui); letter-spacing: -.01em; }
 .ruang-petugas h1 { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
 .ruang-petugas h2 { font-size: var(--text-lg); font-weight: var(--weight-bold); }
-.p-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-2) var(--s-5); background: var(--ink); color: #fff; }
+.p-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-2) max(var(--s-5), calc((100% - 1080px) / 2 + var(--s-5))); background: var(--ink); color: #fff; }
 .p-akun .akun-nama strong { color: #fff; }
 .p-akun .akun-nama small { color: #c3c9e0; }
 .p-akun .tombol-keluar { border-color: rgba(255, 255, 255, .55); color: #fff; }
 .p-akun .tombol-keluar:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
 .ruang-petugas :focus-visible { outline-color: var(--focus); }
 .p-bar :focus-visible { outline-color: #ffd36b; }
-.p-tabs { display: flex; gap: var(--s-1); padding: 0 var(--s-5); border-bottom: 1px solid var(--line-strong); background: var(--paper); }
+.p-tabs { display: flex; gap: var(--s-1); padding: 0 max(var(--s-2), calc((100% - 1080px) / 2 + var(--s-2))); border-bottom: 1px solid var(--line-strong); background: var(--paper); }
 .p-tabs a { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 56px; padding: 0 var(--s-4); color: var(--ink-2); font-weight: var(--weight-semibold); text-decoration: none; box-shadow: inset 0 -3px 0 transparent; }
 .p-tabs a:hover { color: var(--ink); box-shadow: inset 0 -3px 0 var(--line-strong); }
 .p-tabs a[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -4px 0 var(--gold-500); }
@@ -398,7 +398,7 @@ body.publik main { flex: 1; }
 .p-langkah .lewat strong { color: var(--ink); }
 .p-langkah .kini { border-top-color: var(--gold-500); color: var(--ink-2); }
 .p-langkah .kini strong { color: var(--ink); }
-.p-foot { margin-top: auto; }
+.p-foot { margin-top: auto; padding-left: max(var(--s-5), calc((100% - 1080px) / 2 + var(--s-5))); padding-right: max(var(--s-5), calc((100% - 1080px) / 2 + var(--s-5))); }
 
 /* ---------- 6. Ruang admin: padat, sidebar tetap ---------- */
 .ruang-admin { font-size: var(--text-dense); background: var(--canvas); }
@@ -501,7 +501,7 @@ body.publik main { flex: 1; }
   .a-nav a[aria-current="page"]::before { left: 10px; right: 10px; top: auto; bottom: 4px; width: auto; height: 3px; }
   .a-akun { margin: 0 0 0 auto; flex-direction: row; align-items: center; padding: 0; border: 0; }
   .a-akun .tombol-keluar { width: auto; }
-  .a-akun .akun-nama small { display: none; }
+  .a-akun .akun-nama { display: none; }
   .a-isi { padding: var(--s-5) var(--s-4) var(--s-10); }
   .a-foot { padding: var(--s-4); }
   .saring-admin { grid-template-columns: 1fr 1fr; }

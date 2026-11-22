@@ -18,6 +18,12 @@ public interface PenggunaRepository extends JpaRepository<Pengguna, Long> {
     @Query("select a from Admin a order by a.id")
     List<Admin> adminDemo();
 
+    @Query("select p from Pengguna p where lower(p.kontak) = lower(:email)")
+    Optional<Pengguna> cariEmail(String email);
+
+    @Query("select m from Mahasiswa m where m.nim = :nim")
+    Optional<Mahasiswa> cariNim(String nim);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Petugas p where p.id = :id")
     Optional<Petugas> kunciPetugas(long id);

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:with="alamat=@{${tujuan}}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" th:content="|1;url=${alamat}|">
+  <title>Masuk berhasil · UM Peduli</title>
+  <link rel="icon" th:href="@{/images/um-emblem.png}">
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="publik">
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <header th:replace="~{fragments/common :: bar-publik}"></header>
+  <main id="main" class="transisi" th:classappend="|tr-${#strings.toLowerCase(akun.peran.name())}|">
+    <p class="transisi-peran" role="status">Masuk sebagai <strong th:text="${akun.peran.label}">Admin</strong></p>
+    <p class="transisi-nama" th:text="${akun.nama}">Nama</p>
+    <a class="tautan" th:href="@{${tujuan}}" data-lanjut>Lanjutkan ke ruang kerja<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </main>
+</body>
+</html>

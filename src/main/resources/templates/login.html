@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Masuk')}"></head>
+<body class="publik">
+  <a class="skip-link" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/common :: symbols}"></svg>
+  <header th:replace="~{fragments/common :: bar-publik}"></header>
+  <main id="main" class="masuk">
+    <section class="masuk-form" aria-labelledby="judul-masuk">
+      <a class="tautan-kembali" th:href="@{/}"><svg aria-hidden="true"><use href="#i-back"/></svg>Beranda</a>
+      <h1 id="judul-masuk">Masuk ke UM Peduli</h1>
+      <p class="masuk-sub">Satu kolom untuk semua. Sistem membaca email atau NIM Anda dan membuka ruang kerja yang sesuai.</p>
+      <form th:action="@{/login}" method="post" novalidate>
+        <div class="field" th:classappend="${kesalahan != null} ? 'field-galat'">
+          <label for="identitas">Email kampus atau NIM</label>
+          <input id="identitas" name="identitas" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false"
+                 maxlength="150" required autofocus th:value="${identitas}" placeholder="nama@students.um.ac.id"
+                 aria-describedby="identitas-bantuan identitas-galat" th:attr="aria-invalid=${kesalahan != null}">
+          <p id="identitas-bantuan" class="field-bantuan">NIM terdiri dari 12 digit angka, misalnya 240535600101.</p>
+          <p id="identitas-galat" class="field-pesan" aria-live="polite"><span th:if="${kesalahan != null}" th:text="${kesalahan}"></span></p>
+        </div>
+        <button class="tombol tombol-utama tombol-lebar" type="submit">Masuk<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      </form>
+      <aside class="catatan-demo" aria-label="Catatan keamanan">
+        <svg aria-hidden="true"><use href="#i-shield"/></svg>
+        <p><strong>Mode demo akademik.</strong> Masuk tidak memakai kata sandi atau kode OTP, jadi jangan gunakan aplikasi ini untuk data sungguhan.</p>
+      </aside>
+    </section>
+    <section class="masuk-ruang" aria-labelledby="judul-ruang">
+      <h2 id="judul-ruang">Ke mana Anda akan dibawa</h2>
+      <dl class="daftar-ruang">
+        <div class="ruang-item ri-mahasiswa">
+          <dt><span class="ruang-tanda" aria-hidden="true"></span>Mahasiswa</dt>
+          <dd>Melapor kerusakan dan memantau statusnya. Email atau NIM mahasiswa yang belum terdaftar otomatis dibuatkan akun di sini.</dd>
+        </div>
+        <div class="ruang-item ri-petugas">
+          <dt><span class="ruang-tanda" aria-hidden="true"></span>Petugas</dt>
+          <dd>Memeriksa kasus di lokasi dan mencatat progres perbaikan. Hanya untuk email yang terdaftar sebagai petugas.</dd>
+        </div>
+        <div class="ruang-item ri-admin">
+          <dt><span class="ruang-tanda" aria-hidden="true"></span>Admin</dt>
+          <dd>Meninjau kasus berdasarkan prioritas dan menugaskan petugas. Hanya untuk email yang terdaftar sebagai admin.</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
+  <footer class="kaki publik-kaki"><p>Advance Programming · Kelompok 5 · Offering C · Teknik Informatika, Universitas Negeri Malang</p></footer>
+</body>
+</html>

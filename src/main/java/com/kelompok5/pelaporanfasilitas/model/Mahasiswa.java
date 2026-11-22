@@ -1,13 +1,31 @@
 package com.kelompok5.pelaporanfasilitas.model;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("MAHASISWA")
 public class Mahasiswa extends Pengguna {
+    @Column(length = 12, unique = true)
+    private String nim;
+
     protected Mahasiswa() {}
+
+    private Mahasiswa(String nama, String email, String nim) {
+        super(nama, email);
+        this.nim = nim;
+    }
+
+    /** Akun mahasiswa yang dibuat otomatis saat email atau NIM belum terdaftar. */
+    public static Mahasiswa daftarBaru(String nama, String email, String nim) {
+        if (nama == null || nama.isBlank()) throw new IllegalArgumentException("Nama mahasiswa wajib diisi.");
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("Email mahasiswa wajib diisi.");
+        return new Mahasiswa(nama.strip(), email, nim);
+    }
+
+    public String getNim() { return nim; }
 
     @Override
     public boolean bolehMelakukan(Aksi aksi) { return aksi == Aksi.MELAPOR; }

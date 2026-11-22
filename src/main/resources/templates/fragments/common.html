@@ -91,7 +91,7 @@
 
 <span th:fragment="status(status)" th:class="|status st-${status.name()}|"><span class="status-tanda" aria-hidden="true"></span><span th:text="${status.label}"></span></span>
 
-<span th:fragment="priority(prioritas)" th:class="${prioritas == null ? 'prio prio-NONE' : 'prio prio-' + prioritas.name()}"><span class="prio-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span th:text="${prioritas == null ? 'Belum dinilai' : 'Prioritas ' + prioritas.label}"></span></span>
+<span th:fragment="priority(prioritas)" th:class="${prioritas == null ? 'prio prio-NONE' : 'prio prio-' + prioritas.name()}"><span class="prio-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span th:if="${prioritas == null}">Belum dinilai</span><span th:unless="${prioritas == null}"><span class="prio-awalan">Prioritas </span><span th:text="${prioritas.label}"></span></span></span>
 
 <div th:fragment="tahap(status)" class="tahap" th:with="i=${status.ordinal()}">
   <ol class="tahap-garis" aria-hidden="true">

@@ -2,7 +2,7 @@
 
 Aplikasi demo untuk mencatat kerusakan fasilitas, mengelompokkan laporan, menentukan prioritas, dan mengikuti perbaikan. Proyek Advance Programming (OOP), Kelompok 5 · Offering C · Teknik Informatika Universitas Negeri Malang.
 
-Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan Flyway berjalan dalam satu aplikasi. Ketiga ruang kerja memakai database yang sama dan dapat dibuka langsung dalam mode demo localhost.
+Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan Flyway berjalan dalam satu aplikasi. Ketiga ruang kerja memakai database yang sama. Pengguna masuk dengan email atau NIM, lalu diarahkan ke ruang kerja sesuai perannya.
 
 ## Jalankan di Windows
 
@@ -35,24 +35,42 @@ Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan
 
    Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/). Pakai port dari `SERVER_PORT` jika konfigurasi berbeda. Hentikan proses yang dijalankan dari terminal dengan Ctrl+C.
 
-Flyway membuat lima tabel bisnis dan mengisi demo satu kali melalui `V1` dan `V2`. Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
+Flyway membuat lima tabel bisnis dan mengisi demo melalui `V1` dan `V2`. `V3` menormalkan email, menambah kolom `nim` yang unik, dan mengisi NIM demo. Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
 
-## Urutan demo
+## Masuk dan urutan demo
 
-| Ruang kerja | Aksi |
-| --- | --- |
-| [Mahasiswa](http://127.0.0.1:8080/mahasiswa) | Pilih Andi. Laporkan AC B13 dengan jenis **Tidak berfungsi**. Ganti ke Budi dan laporkan fasilitas serta jenis yang sama. |
-| [Petugas](http://127.0.0.1:8080/petugas) | Pilih Dimas Pratama, buka Verifikasi, dan isi bahaya, tingkat gangguan, serta jumlah unit rusak. |
-| [Admin](http://127.0.0.1:8080/admin) | Buka kasus AC B13. Periksa laporan gabungan dan hasil prioritas, lalu tugaskan Dimas Pratama. |
-| [Petugas](http://127.0.0.1:8080/petugas/tugas) | Mulai perbaikan, simpan catatan progres, lalu tandai selesai. |
-| [Riwayat mahasiswa](http://127.0.0.1:8080/mahasiswa/laporan) | Pilih Andi atau Budi dan buka laporan untuk melihat perubahan status dan catatan perbaikan. |
+Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/), klik **Masuk dan laporkan kerusakan**, lalu isi **email atau NIM**. Ruang kerja ditentukan dari data di tabel `pengguna`, bukan dari teks atau domain email.
 
-Pilih akun dari bagian atas halaman lalu klik **Ganti**. Pilihan akun tersimpan di sesi browser. Dimas tersedia sepanjang hari dalam jadwal demo sehingga alur AC dapat dicoba kapan saja.
+| Peran | Email demo | NIM demo |
+| --- | --- | --- |
+| Admin | `admin@example.invalid` | |
+| Petugas | `dimas@example.invalid` (pendingin, 24 jam), `raka@example.invalid` (listrik), `rudi@example.invalid` (perabot), `siti@example.invalid` (sanitasi), `agus@example.invalid` (pendingin, 08.00–16.00) | |
+| Mahasiswa | `andi@example.invalid`, `budi@example.invalid`, `sinta@example.invalid` | `240535600101` (Andi), `240535600102` (Budi), `240535600103` (Sinta) |
+
+Email atau NIM 12 digit yang belum terdaftar membuat akun mahasiswa baru secara otomatis. Email seperti `yy@admin.com` yang tidak ada di database tetap masuk sebagai mahasiswa.
+
+| Langkah | Masuk sebagai | Aksi |
+| --- | --- | --- |
+| 1 | `andi@example.invalid` | Lapor kerusakan AC B13, jenis **Tidak berfungsi**. Klik **Keluar**. |
+| 2 | `240535600102` (Budi) | Laporkan fasilitas dan jenis yang sama. Laporan tergabung ke kasus yang sama. |
+| 3 | `dimas@example.invalid` | Buka **Verifikasi**, isi bahaya, tingkat gangguan, dan jumlah unit rusak. |
+| 4 | `admin@example.invalid` | Buka kasus AC B13, periksa laporan gabungan dan prioritas, lalu tugaskan Dimas Pratama. |
+| 5 | `dimas@example.invalid` | Di **Tugas saya**, mulai perbaikan, simpan catatan progres, lalu tandai selesai. |
+| 6 | `andi@example.invalid` | Buka **Laporan saya** untuk melihat tahap 5/5 dan catatan perbaikan. |
+
+Membuka ruang kerja peran lain menampilkan halaman 403. Membuka ruang kerja tanpa masuk mengarah ke `/login`, lalu kembali ke halaman semula setelah masuk.
+
+### Keterbatasan: mode demo akademik
+
+Login hanya memakai email atau NIM, **tanpa kata sandi dan tanpa OTP**. Siapa pun yang mengetahui email admin atau petugas dapat masuk sebagai peran tersebut. Mode ini diterima untuk demo mata kuliah dan **tidak aman untuk data sungguhan**. Pengamanan yang tersedia hanya bersifat pelengkap: proteksi route per peran, CSRF, rotasi ID sesi setelah masuk, batas 20 percobaan masuk per IP per 5 menit, dan waktu respons minimum yang seragam pada `POST /login`.
+
+Rekomendasi peningkatan (belum diimplementasikan): kode OTP sekali pakai ke email kampus, atau SSO kampus (misalnya SIAKAD/OIDC) sehingga peran diambil dari sistem identitas universitas.
 
 ## Dokumentasi
 
 - [Alur fitur dan route](docs/FEATURES.md)
 - [Arsitektur, transaksi, dan basis data](docs/ARCHITECTURE.md)
 - [Penerapan 10 kelas OOP dan satu interface](docs/OOP_IMPLEMENTATION.md)
-- [Pemetaan desain dari ZIP](docs/FIGMA_IMPLEMENTATION.md)
+- [Sistem desain: token, tipografi, komponen](docs/DESIGN_SYSTEM.md)
+- [Pemetaan desain dari ZIP (versi awal)](docs/FIGMA_IMPLEMENTATION.md)
 - [Hasil pengujian](docs/TEST_RESULTS.md)

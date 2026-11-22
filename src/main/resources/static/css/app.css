@@ -39,7 +39,7 @@ svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-wi
 main:focus { outline: none; }
 
 .angka, .kode, time { font-variant-numeric: tabular-nums; }
-.kode { display: inline-block; padding: 0 var(--s-1); border-radius: var(--radius-sm); background: var(--canvas-strong); color: var(--ink-2); font-size: .86em; font-weight: var(--weight-semibold); letter-spacing: .02em; line-height: 1.6; }
+.kode { display: inline-block; padding: 0 var(--s-1); border-radius: var(--radius-sm); background: var(--canvas-strong); color: var(--ink-2); font-size: .86em; font-weight: var(--weight-semibold); letter-spacing: .02em; line-height: 1.6; white-space: nowrap; }
 .redup { color: var(--ink-3); }
 .label-kecil { color: var(--ink-3); font-size: var(--text-sm); font-weight: var(--weight-medium); letter-spacing: .01em; }
 .teks-pengguna { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -450,6 +450,7 @@ body.publik main { flex: 1; }
 .tabel tbody tr { transition: background-color var(--dur-fast) var(--ease); }
 .tabel tbody tr:hover { background: var(--um-050); }
 .tabel .kanan { text-align: right; }
+.tabel time { white-space: nowrap; }
 .tabel .baris-kritis > th:first-child { box-shadow: inset 3px 0 0 var(--pr-kritis); }
 .tautan-kasus { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 32px; color: var(--ink); font-weight: var(--weight-semibold); text-decoration: none; }
 .tautan-kasus:hover { color: var(--um-700); text-decoration: underline; }

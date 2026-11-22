@@ -108,7 +108,9 @@ class LoginTest {
     void sesiDigantiSetelahMasuk() throws Exception {
         var sesi = new MockHttpSession();
         String sebelum = sesi.getId();
-        var hasil = mvc.perform(post("/login").session(sesi).with(csrf()).param("identitas", "admin@example.invalid"))
+        // Tiru browser yang mengirim cookie JSESSIONID milik sesi tersebut.
+        var hasil = mvc.perform(post("/login").session(sesi).with(csrf()).param("identitas", "admin@example.invalid")
+                        .with(r -> { r.setRequestedSessionId(sebelum); r.setRequestedSessionIdValid(true); r.setRequestedSessionIdFromCookie(true); return r; }))
                 .andExpect(status().isOk()).andReturn();
         assertNotEquals(sebelum, hasil.getRequest().getSession(false).getId());
     }

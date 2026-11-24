@@ -16,3 +16,6 @@ target/
 Thumbs.db
 scripts/*-local.sql
 .playwright-cli/
+
+# Foto unggahan pengguna (lokal)
+/data/

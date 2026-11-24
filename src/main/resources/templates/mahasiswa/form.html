@@ -1,57 +1,112 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Lapor kerusakan')}"></head>
-<body th:replace="~{fragments/common :: mahasiswa('baru', ~{::main})}">
-<main id="main" tabindex="-1" class="m-main m-sempit">
-  <header class="m-judul-hal m-judul-tumpuk">
-    <h1>Lapor kerusakan</h1>
-    <p>Tiga isian singkat. Jika mahasiswa lain sudah melaporkan kerusakan yang sama, laporanmu digabung ke kasus yang sama sehingga tetap terhitung.</p>
-  </header>
-  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <form class="m-form" th:action="@{/mahasiswa/laporan}" th:object="${form}" method="post">
-    <input type="hidden" name="mahasiswaId" th:value="${akun.id}">
-    <p th:if="${#fields.hasErrors('mahasiswaId')}" class="field-pesan" th:errors="*{mahasiswaId}"></p>
-
-    <fieldset class="langkah">
-      <legend><span class="langkah-no">1</span>Di mana kerusakannya?</legend>
-      <div class="field" th:classappend="${#fields.hasErrors('fasilitasId')} ? 'field-galat'">
-        <label for="fasilitasId">Fasilitas</label>
-        <select id="fasilitasId" th:field="*{fasilitasId}" required aria-describedby="fasilitas-galat" th:attr="aria-invalid=${#fields.hasErrors('fasilitasId')}">
-          <option value="">Pilih fasilitas</option>
-          <option th:each="item : ${fasilitas}" th:value="${item.id}" th:data-lokasi="${item.lokasi}" th:text="|${item.nama} · ${item.lokasi}|"></option>
-        </select>
-        <p id="fasilitas-galat" class="field-pesan" aria-live="polite" th:errors="*{fasilitasId}"></p>
-      </div>
-      <p class="lokasi-terpilih" aria-live="polite"><svg aria-hidden="true"><use href="#i-pin"/></svg><output id="lokasi" for="fasilitasId">Gedung dan ruang tampil setelah fasilitas dipilih.</output></p>
-    </fieldset>
-
-    <fieldset class="langkah" th:classappend="${#fields.hasErrors('jenisKerusakan')} ? 'field-galat'" aria-describedby="jenis-galat">
-      <legend><span class="langkah-no">2</span>Apa yang terjadi?</legend>
-      <div class="pilihan-grup">
-        <label class="pilihan" th:each="item : ${jenis}"><input type="radio" th:field="*{jenisKerusakan}" th:value="${item}" required><span th:text="${item.label}"></span></label>
-      </div>
-      <p id="jenis-galat" class="field-pesan" aria-live="polite" th:errors="*{jenisKerusakan}"></p>
-    </fieldset>
-
-    <fieldset class="langkah">
-      <legend><span class="langkah-no">3</span>Ceritakan dampaknya</legend>
-      <div class="field" th:classappend="${#fields.hasErrors('deskripsi')} ? 'field-galat'">
-        <label for="deskripsi">Deskripsi kerusakan</label>
-        <textarea id="deskripsi" th:field="*{deskripsi}" rows="5" required maxlength="1600" aria-describedby="deskripsi-bantuan deskripsi-galat" th:attr="aria-invalid=${#fields.hasErrors('deskripsi')}"></textarea>
-        <p id="deskripsi-bantuan" class="field-bantuan">Contoh: AC di depan kelas tidak menyala sejak Senin pagi, ruangan panas saat kuliah siang.</p>
-        <p id="deskripsi-galat" class="field-pesan" aria-live="polite" th:errors="*{deskripsi}"></p>
-      </div>
-    </fieldset>
-
-    <div class="aksi-baris">
-      <button class="tombol tombol-utama tombol-besar" type="submit">Kirim laporan<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
-      <a class="tombol tombol-teks" th:href="@{/mahasiswa}">Batal</a>
+<head th:replace="~{fragments/shell :: head('Buat laporan')}"></head>
+<body th:replace="~{fragments/shell :: ruang('baru', ~{::main})}">
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal">
+    <div>
+      <h1><span class="hanya-lebar">Buat laporan kerusakan</span><span class="hanya-sempit">Buat laporan</span></h1>
+      <p class="hanya-lebar">Ceritakan kendala fasilitas yang kamu temukan. Kami siap membantu.</p>
+      <p class="hanya-sempit">Bantu kami memahami kerusakannya.</p>
     </div>
-  </form>
-  <aside class="catatan-bahaya" aria-label="Keselamatan">
-    <svg aria-hidden="true"><use href="#i-alert"/></svg>
-    <p><strong>Ada kabel terbuka, percikan api, atau air menggenang dekat listrik?</strong> Jauhi lokasinya dan hubungi keamanan kampus lebih dulu, baru kirim laporan.</p>
-  </aside>
+  </header>
+
+  <div class="grid-dua">
+    <form class="kartu kartu-utama form" th:action="@{/mahasiswa/laporan}" th:object="${form}" method="post"
+          enctype="multipart/form-data" novalidate data-validasi>
+      <h2 class="judul-kartu">Informasi kerusakan</h2>
+      <p class="form-catatan"><span class="hanya-lebar">Kolom bertanda * wajib diisi.</span><span class="hanya-sempit">* Wajib diisi</span></p>
+      <input type="hidden" name="mahasiswaId" th:value="${akun.id}">
+      <p class="galat-field" th:if="${#fields.hasErrors('mahasiswaId')}" th:text="${#strings.listJoin(#fields.errors('mahasiswaId'), ' ')}"></p>
+
+      <div class="form-grid">
+        <div class="field" th:classappend="${#fields.hasErrors('fakultas')} ? 'field-galat'">
+          <label for="fakultas">Fakultas <span aria-hidden="true">*</span></label>
+          <div class="select">
+            <select id="fakultas" th:field="*{fakultas}" required data-pesan="Pilih fakultas." aria-describedby="fakultas-galat"
+                    th:attr="aria-invalid=${#fields.hasErrors('fakultas')}">
+              <option value="">Pilih fakultas</option>
+              <option th:each="f : ${katalog}" th:value="${f.nama}" th:text="${f.label}"></option>
+            </select>
+          </div>
+          <p id="fakultas-galat" class="galat-field" th:text="${#strings.listJoin(#fields.errors('fakultas'), ' ')}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('gedung')} ? 'field-galat'">
+          <label for="gedung">Gedung <span aria-hidden="true">*</span></label>
+          <div class="select">
+            <select id="gedung" th:field="*{gedung}" required data-pesan="Pilih gedung." data-gedung-untuk="fakultas" aria-describedby="gedung-galat"
+                    th:attr="aria-invalid=${#fields.hasErrors('gedung')}">
+              <option value="">Pilih gedung</option>
+              <th:block th:each="f : ${katalog}">
+                <option th:each="g : ${f.gedung}" th:value="${g}" th:text="${g}" th:attr="data-fakultas=${f.nama}"></option>
+              </th:block>
+            </select>
+          </div>
+          <p id="gedung-galat" class="galat-field" th:text="${#strings.listJoin(#fields.errors('gedung'), ' ')}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('lantai')} ? 'field-galat'">
+          <label for="lantai">Lantai <span aria-hidden="true">*</span></label>
+          <div class="select">
+            <select id="lantai" th:field="*{lantai}" required data-pesan="Pilih lantai." aria-describedby="lantai-galat"
+                    th:attr="aria-invalid=${#fields.hasErrors('lantai')}">
+              <option value="">Pilih lantai</option>
+              <option th:each="n : ${#numbers.sequence(1, lantaiTertinggi)}" th:value="${n}" th:text="${n}"></option>
+            </select>
+          </div>
+          <p id="lantai-galat" class="galat-field" th:text="${#strings.listJoin(#fields.errors('lantai'), ' ')}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('ruang')} ? 'field-galat'">
+          <label for="ruang">Ruang (opsional)</label>
+          <input id="ruang" class="input" type="text" th:field="*{ruang}" maxlength="40" autocomplete="off" placeholder="Contoh: 204"
+                 aria-describedby="ruang-galat">
+          <p id="ruang-galat" class="galat-field" th:text="${#strings.listJoin(#fields.errors('ruang'), ' ')}"></p>
+        </div>
+      </div>
+
+      <div class="field" th:classappend="${#fields.hasErrors('deskripsi')} ? 'field-galat'">
+        <label for="deskripsi">Deskripsi kerusakan <span aria-hidden="true">*</span></label>
+        <textarea id="deskripsi" class="input" th:field="*{deskripsi}" rows="4" maxlength="1600" required
+                  data-pesan="Isi deskripsi kerusakan. Sebutkan fasilitas yang rusak dan kondisinya."
+                  aria-describedby="deskripsi-bantuan deskripsi-galat" th:attr="aria-invalid=${#fields.hasErrors('deskripsi')}"></textarea>
+        <p id="deskripsi-bantuan" class="bantuan-field">Jelaskan kerusakan dan dampaknya secara singkat.</p>
+        <p id="deskripsi-galat" class="galat-field" th:text="${#strings.listJoin(#fields.errors('deskripsi'), ' ')}"></p>
+      </div>
+
+      <div class="field" th:classappend="${galatFoto != null} ? 'field-galat'">
+        <label for="foto">Foto bukti kerusakan <span aria-hidden="true">*</span></label>
+        <div th:replace="~{fragments/unggah :: dropzone('foto', 'Unggah foto bukti kerusakan', true)}"></div>
+        <p id="foto-bantuan" class="bantuan-field">JPG atau PNG, maksimal 5 MB. Pastikan foto terlihat jelas.</p>
+        <p id="foto-galat" class="galat-field" th:text="${galatFoto}"></p>
+      </div>
+
+      <div class="form-aksi">
+        <a class="tombol tombol-kedua hanya-lebar" th:href="@{/mahasiswa}">Batal</a>
+        <button class="tombol tombol-utama" type="submit" data-memproses="Mengirim…">Kirim Laporan</button>
+      </div>
+    </form>
+
+    <aside class="kolom-samping hanya-lebar" aria-label="Panduan laporan">
+      <section class="kartu kartu-dukung" aria-labelledby="judul-tips">
+        <h2 id="judul-tips" class="judul-tips">Laporan yang baik, <span class="nada-2">penanganan lebih cepat.</span></h2>
+        <ul class="tips">
+          <li><strong>Pastikan lokasi tepat</strong><span>Pilih fakultas, gedung, dan lantai sesuai lokasi kerusakan.</span></li>
+          <li><strong>Ceritakan dengan jelas</strong><span>Sebutkan fasilitas yang rusak dan kondisi yang kamu temukan.</span></li>
+          <li><strong>Sertakan foto</strong><span>Ambil foto dari jarak aman dengan pencahayaan cukup.</span></li>
+        </ul>
+      </section>
+      <section class="kartu kartu-dukung atas-nama" aria-labelledby="judul-atas-nama">
+        <h2 id="judul-atas-nama" class="label-kecil">Laporan atas nama</h2>
+        <p class="atas-nama-nama" th:text="${akun.nama}">Nadia Putri</p>
+        <p class="atas-nama-ket" th:text="${akun.keterangan}">Mahasiswa · Fakultas Teknik</p>
+        <p class="atas-nama-catatan">Identitas terisi otomatis dari akun UM.</p>
+      </section>
+      <section class="panel-waspada" aria-labelledby="judul-selamat">
+        <h2 id="judul-selamat">Utamakan keselamatan</h2>
+        <p>Jika ada risiko listrik, kebakaran, atau bahaya langsung, hindari area dan segera hubungi keamanan kampus.</p>
+        <p class="panel-waspada-tegas">Jangan mencoba memperbaiki sendiri.</p>
+      </section>
+    </aside>
+  </div>
 </main>
 </body>
 </html>

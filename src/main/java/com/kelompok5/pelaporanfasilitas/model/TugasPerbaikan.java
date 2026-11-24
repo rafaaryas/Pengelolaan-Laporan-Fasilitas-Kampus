@@ -25,6 +25,12 @@ public class TugasPerbaikan {
     private String catatanPenugasan;
     @Column(length = 1000)
     private String catatan;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "simpan", column = @Column(name = "foto_hasil", length = 120)),
+            @AttributeOverride(name = "nama", column = @Column(name = "foto_hasil_nama", length = 160)),
+            @AttributeOverride(name = "ukuran", column = @Column(name = "foto_hasil_ukuran"))})
+    private Berkas fotoHasil;
 
     protected TugasPerbaikan() {}
 
@@ -59,6 +65,15 @@ public class TugasPerbaikan {
         petugas.tandaiSibuk(false);
     }
 
+    /** Penyelesaian dari layar petugas: catatan dan foto hasil perbaikan wajib. */
+    public void selesaikan(LocalDateTime waktu, String catatan, Berkas foto) {
+        if (foto == null || !foto.ada()) throw new IllegalArgumentException("Unggah foto hasil perbaikan sebelum menandai selesai.");
+        selesaikan(waktu, catatan);
+        this.fotoHasil = foto;
+    }
+
+    public boolean isAdaFotoHasil() { return fotoHasil != null && fotoHasil.ada(); }
+    public Berkas getFotoHasil() { return fotoHasil; }
     public Long getId() { return id; }
     public KasusKerusakan getKasus() { return kasus; }
     public Petugas getPetugas() { return petugas; }

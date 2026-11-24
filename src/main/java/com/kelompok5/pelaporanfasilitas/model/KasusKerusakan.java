@@ -11,10 +11,10 @@ import jakarta.persistence.*;
 public class KasusKerusakan {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Fasilitas fasilitas;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 24)
+    @Column(length = 24)
     private JenisKerusakan jenisKerusakan;
     @OneToMany(mappedBy = "kasus", cascade = CascadeType.PERSIST)
     @OrderBy("waktuLaporan ASC, id ASC")
@@ -36,6 +36,8 @@ public class KasusKerusakan {
     private String alasanPrioritas;
     @ManyToOne(fetch = FetchType.LAZY)
     private Petugas pemeriksa;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Admin verifikator;
     private LocalDateTime waktuVerifikasi;
     @Column(length = 1000)
     private String catatanPemeriksaan;
@@ -48,8 +50,12 @@ public class KasusKerusakan {
         this.pengelompokanOtomatis = pengelompokanOtomatis;
     }
 
+    /** Kasus untuk satu laporan berbasis lokasi; tidak digabung otomatis dengan laporan lain. */
+    public static KasusKerusakan untukLaporan() { return new KasusKerusakan(null, null, false); }
+
     public void tambahLaporan(LaporanKerusakan laporan) {
-        if (status == StatusKasus.SELESAI || !laporan.mengacuPada(fasilitas, jenisKerusakan)) {
+        boolean cocok = fasilitas == null ? daftarLaporan.isEmpty() : laporan.mengacuPada(fasilitas, jenisKerusakan);
+        if (status == StatusKasus.SELESAI || !cocok) {
             throw new IllegalStateException("Laporan tidak cocok dengan kasus aktif ini.");
         }
         laporan.hubungkanDengan(this);
@@ -72,14 +78,26 @@ public class KasusKerusakan {
         if (status != StatusKasus.MENUNGGU_VERIFIKASI) {
             throw new IllegalStateException("Kasus ini sudah diverifikasi.");
         }
-        if (gangguan == null || unit < 1 || unit > fasilitas.getJumlahUnit()) {
-            throw new IllegalArgumentException("Pilih tingkat gangguan dan masukkan jumlah unit rusak antara 1 dan " + fasilitas.getJumlahUnit() + ".");
+        int batas = fasilitas == null ? Integer.MAX_VALUE : fasilitas.getJumlahUnit();
+        if (gangguan == null || unit < 1 || unit > batas) {
+            throw new IllegalArgumentException("Pilih tingkat gangguan dan masukkan jumlah unit rusak antara 1 dan " + batas + ".");
         }
         this.pemeriksa = petugas;
         this.bahayaKritis = bahaya;
         this.gangguan = gangguan;
         this.unitRusak = unit;
         this.catatanPemeriksaan = catatan;
+        this.waktuVerifikasi = waktu;
+        this.terverifikasi = true;
+        ubahStatus(StatusKasus.MENUNGGU_PENUGASAN);
+    }
+
+    /** Admin memeriksa kelengkapan laporan; kasus siap ditugaskan. */
+    void verifikasiOleh(Admin admin, LocalDateTime waktu) {
+        if (status != StatusKasus.MENUNGGU_VERIFIKASI) {
+            throw new IllegalStateException("Laporan ini sudah diverifikasi.");
+        }
+        this.verifikator = admin;
         this.waktuVerifikasi = waktu;
         this.terverifikasi = true;
         ubahStatus(StatusKasus.MENUNGGU_PENUGASAN);
@@ -104,6 +122,10 @@ public class KasusKerusakan {
     }
 
     public long getPelaporUnik() { return hitungPelaporUnik(); }
+    public Tahap getTahap() { return Tahap.dari(status); }
+    /** Laporan pertama pada kasus; kasus berbasis lokasi hanya berisi satu laporan. */
+    public LaporanKerusakan getLaporanUtama() { return daftarLaporan.getFirst(); }
+    public Admin getVerifikator() { return verifikator; }
     public Long getId() { return id; }
     public Fasilitas getFasilitas() { return fasilitas; }
     public JenisKerusakan getJenisKerusakan() { return jenisKerusakan; }

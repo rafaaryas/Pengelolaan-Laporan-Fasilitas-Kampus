@@ -9,4 +9,9 @@ public class PageController {
     public String home() {
         return "index";
     }
+
+    @GetMapping("/bantuan")
+    public String bantuan() {
+        return "bantuan";
+    }
 }

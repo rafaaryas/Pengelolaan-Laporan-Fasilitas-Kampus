@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head(${status == 404 ? 'Tidak ditemukan' : 'Terjadi kesalahan'})}"></head>
+<head th:replace="~{fragments/shell :: head(${status == 404 ? 'Tidak ditemukan' : 'Terjadi kesalahan'})}"></head>
 <body class="publik">
-  <svg th:replace="~{fragments/common :: symbols}"></svg>
-  <header th:replace="~{fragments/common :: bar-publik}"></header>
-  <main id="main" class="halaman-status" th:with="hilang=${status == 404 or pesan != null}">
-    <p class="kode-status" th:text="${status != null ? status : 'Galat'}">404</p>
+  <a class="lompat" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/shell :: ikon}"></svg>
+  <header th:replace="~{fragments/publik :: bar}"></header>
+  <main id="main" class="pub-isi status-halaman" th:with="hilang=${status == 404 or pesan != null}">
+    <p class="label-kecil" th:text="${status != null ? 'Kode ' + status : 'Galat'}">Kode 404</p>
     <h1 th:text="${hilang ? 'Data tidak ditemukan' : (status == 403 ? 'Akses ditolak' : 'Permintaan tidak dapat diproses')}"></h1>
     <p th:text="${pesan != null ? pesan : (hilang ? 'Alamat yang dibuka tidak ada atau sudah dipindahkan.' : 'Periksa data yang dimasukkan, lalu coba lagi dari ruang kerja Anda.')}"></p>
     <div class="aksi-baris">

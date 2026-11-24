@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <script>document.documentElement.classList.add("js")</script>
+  <title th:text="|${title} · UM Peduli|">UM Peduli</title>
+  <link rel="icon" th:href="@{/images/um-emblem.png}">
+  <link rel="preload" th:href="@{/fonts/inter-latin.woff2}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <script defer th:src="@{/js/app.js}"></script>
+</head>
+
+<!--
+  Shell ruang kerja untuk tiga peran. Menu, label ruang, dan beranda diturunkan dari peran akun.
+  aktif: dashboard | baru | laporan | tugas | petugas
+-->
+<body th:fragment="ruang(aktif, isi)" class="shell"
+      th:with="peran=${akunMasuk.peran.name()},
+               beranda=${akunMasuk.beranda()},
+               labelRuang=${peran == 'MAHASISWA' ? 'Ruang civitas' : (peran == 'PETUGAS' ? 'Ruang petugas' : 'Ruang admin')}">
+  <a class="lompat" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/shell :: ikon}"></svg>
+
+  <aside class="sisi">
+    <a class="merek" th:href="@{${beranda}}">
+      <img th:src="@{/images/um-emblem.png}" alt="" width="40" height="40">
+      <span><strong>UM Peduli</strong><small>Fasilitas kampus</small></span>
+    </a>
+    <p class="sisi-ruang" id="label-ruang" th:text="${labelRuang}">Ruang civitas</p>
+    <nav aria-labelledby="label-ruang">
+      <ul class="nav" th:insert="~{fragments/shell :: menu(${peran}, ${aktif})}"></ul>
+    </nav>
+    <div class="bantuan">
+      <svg class="ikon" aria-hidden="true"><use href="#i-bantuan"/></svg>
+      <p><strong>Butuh bantuan?</strong><span>Hubungi pengelola fasilitas</span></p>
+      <a class="tautan" th:href="@{/bantuan}">Pusat bantuan<svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
+    </div>
+    <div class="profil">
+      <p><strong th:text="${profil.nama}">Nama</strong><small th:text="${profil.keterangan}">Keterangan</small></p>
+      <form th:action="@{/logout}" method="post">
+        <button class="tombol-ikon" type="submit" aria-label="Keluar" title="Keluar"><svg class="ikon" aria-hidden="true"><use href="#i-keluar"/></svg></button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="kolom">
+    <header class="atas">
+      <a class="atas-merek" th:href="@{${beranda}}">
+        <img th:src="@{/images/um-emblem.png}" alt="" width="36" height="36">
+        <span><strong>UM Peduli</strong><small>Universitas Negeri Malang</small></span>
+      </a>
+      <p class="atas-judul"><strong>Sistem Pelaporan Fasilitas</strong><small>Universitas Negeri Malang</small></p>
+      <div class="atas-aksi">
+        <div class="pop" data-pop>
+          <button class="tombol-ikon lonceng" type="button" aria-expanded="false" aria-controls="pop-notifikasi"
+                  th:attr="aria-label=${notifikasi.isEmpty() ? 'Notifikasi, tidak ada yang baru' : 'Notifikasi, ' + notifikasi.size() + ' terbaru'}">
+            <svg class="ikon" aria-hidden="true"><use href="#i-lonceng"/></svg>
+            <span class="lonceng-titik" th:unless="${notifikasi.isEmpty()}" aria-hidden="true"></span>
+          </button>
+          <div class="pop-panel pop-notifikasi" id="pop-notifikasi" hidden>
+            <p class="pop-judul">Notifikasi</p>
+            <ul th:unless="${notifikasi.isEmpty()}">
+              <li th:each="n : ${notifikasi}"><a th:href="@{${n.tautan}}">
+                <strong th:text="${n.judul}"></strong><span th:text="${n.isi}"></span>
+                <time th:datetime="${@waktu.iso(n.waktu)}" th:text="${@waktu.relatif(n.waktu)}"></time></a></li>
+            </ul>
+            <p class="pop-kosong" th:if="${notifikasi.isEmpty()}">Belum ada pembaruan. Perubahan status laporan akan muncul di sini.</p>
+          </div>
+        </div>
+        <div class="pop pengguna" data-pop>
+          <button class="pengguna-tombol" type="button" aria-expanded="false" aria-controls="pop-pengguna">
+            <span class="pengguna-teks"><strong th:text="${profil.nama}">Nama</strong><small th:text="${profil.peran}">Peran</small></span>
+            <svg class="ikon pengguna-ikon" aria-hidden="true"><use href="#i-orang"/></svg>
+            <svg class="ikon pengguna-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+            <span class="sr-only">Menu akun</span>
+          </button>
+          <div class="pop-panel pop-menu" id="pop-pengguna" hidden>
+            <p class="pop-akun"><strong th:text="${profil.nama}"></strong><small th:text="${akunMasuk.identitas}"></small></p>
+            <form th:action="@{/logout}" method="post">
+              <input type="hidden" name="lanjut" value="login">
+              <button type="submit" class="pop-item"><svg class="ikon" aria-hidden="true"><use href="#i-tukar"/></svg>Masuk dengan akun lain</button>
+            </form>
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="pop-item"><svg class="ikon" aria-hidden="true"><use href="#i-keluar"/></svg>Keluar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="galat-global" th:if="${kesalahan != null}" role="alert">
+      <svg class="ikon" aria-hidden="true"><use href="#i-peringatan"/></svg><p th:text="${kesalahan}"></p>
+    </div>
+
+    <th:block th:replace="${isi}"></th:block>
+  </div>
+
+  <nav class="nav-bawah" th:aria-label="${labelRuang}">
+    <ul th:insert="~{fragments/shell :: menu(${peran}, ${aktif})}"></ul>
+  </nav>
+
+  <div class="toast-wadah" aria-live="polite" aria-atomic="true">
+    <div class="toast" th:if="${sukses != null}" data-toast>
+      <svg class="ikon" aria-hidden="true"><use href="#i-centang"/></svg><p th:text="${sukses}"></p>
+      <button class="tombol-ikon" type="button" data-tutup-toast aria-label="Tutup pemberitahuan"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
+    </div>
+  </div>
+  <div class="modal-akar" id="modal-akar"></div>
+</body>
+
+<!-- Item menu per peran, dipakai sidebar dan bottom nav -->
+<th:block th:fragment="menu(peran, aktif)">
+  <th:block th:if="${peran == 'MAHASISWA'}">
+    <li><a th:href="@{/mahasiswa}" th:attr="aria-current=${aktif == 'dashboard' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dasbor"/></svg><span>Dashboard</span></a></li>
+    <li><a th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${aktif == 'baru' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-tambah"/></svg><span>Buat Laporan</span></a></li>
+    <li><a th:href="@{/mahasiswa/laporan}" th:attr="aria-current=${aktif == 'laporan' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dokumen"/></svg><span>Laporan Saya</span></a></li>
+  </th:block>
+  <th:block th:if="${peran == 'PETUGAS'}">
+    <li><a th:href="@{/petugas}" th:attr="aria-current=${aktif == 'dashboard' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dasbor"/></svg><span>Dashboard</span></a></li>
+    <li><a th:href="@{/petugas/tugas}" th:attr="aria-current=${aktif == 'tugas' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-kunci"/></svg><span>Tugas Saya</span></a></li>
+  </th:block>
+  <th:block th:if="${peran == 'ADMIN'}">
+    <li><a th:href="@{/admin}" th:attr="aria-current=${aktif == 'dashboard' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dasbor"/></svg><span>Dashboard</span></a></li>
+    <li><a th:href="@{/admin/kasus}" th:attr="aria-current=${aktif == 'laporan' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dokumen"/></svg><span>Laporan</span>
+      <span class="nav-badge" th:if="${badgeLaporan != null and badgeLaporan > 0}" th:text="${badgeLaporan}"
+            th:attr="aria-label=|${badgeLaporan} menunggu verifikasi|">24</span></a></li>
+    <li><a th:href="@{/admin/petugas}" th:attr="aria-current=${aktif == 'petugas' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-orang"/></svg><span>Petugas</span></a></li>
+  </th:block>
+</th:block>
+
+<!-- Pill status 4 tahap: tint + teks pekat, tidak bergantung pada warna saja -->
+<span th:fragment="pill(tahap)" th:class="|pill pill-${tahap.kelas}|" th:text="${tahap.label}">Status</span>
+
+<!-- Kepala halaman detail dengan tautan kembali -->
+<a th:fragment="kembali(href, teks)" class="kembali" th:href="@{${href}}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-kembali"/></svg><span th:text="${teks}"></span></a>
+
+<div th:fragment="kosong(judul, arahan)" class="kosong">
+  <svg class="ikon" aria-hidden="true"><use href="#i-cari"/></svg>
+  <p class="kosong-judul" th:text="${judul}"></p>
+  <p th:text="${arahan}"></p>
+</div>
+
+<!-- Ikon garis 24 px, stroke 1,75, satu set -->
+<svg th:fragment="ikon" class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <symbol id="i-dasbor" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-tambah" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-dokumen" viewBox="0 0 24 24"><path d="M6.5 3h7.5l4 4v14h-11.5zM14 3v4.5h4M9.5 12h5m-5 4h5"/></symbol>
+  <symbol id="i-kunci" viewBox="0 0 24 24"><path d="M20.5 7.5a5 5 0 0 1-6.6 4.7l-6.4 6.4a1.9 1.9 0 0 1-2.7-2.7l6.4-6.4a5 5 0 0 1 6.1-6.4l-2.3 2.3.6 2.5 2.5.6z"/></symbol>
+  <symbol id="i-orang" viewBox="0 0 24 24"><circle cx="9.5" cy="8" r="3.5"/><path d="M3.5 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4a5 5 0 0 1 2.5 4.3v1.3"/></symbol>
+  <symbol id="i-lonceng" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15zM10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+  <symbol id="i-chevron-bawah" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+  <symbol id="i-panah" viewBox="0 0 24 24"><path d="M4.5 12h14m-5.5-5.5 5.5 5.5-5.5 5.5"/></symbol>
+  <symbol id="i-kembali" viewBox="0 0 24 24"><path d="M19.5 12h-14m5.5-5.5L5.5 12l5.5 5.5"/></symbol>
+  <symbol id="i-keluar-tautan" viewBox="0 0 24 24"><path d="M8 16 16.5 7.5M9.5 7.5h7v7"/></symbol>
+  <symbol id="i-bantuan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.6a2.3 2.3 0 0 1 4.4.9c0 1.6-2.2 2-2.2 3.4M12 16.8v.1"/></symbol>
+  <symbol id="i-keluar" viewBox="0 0 24 24"><path d="M14 4.5h4.5v15H14M10 8.5 6.5 12l3.5 3.5M6.5 12H15"/></symbol>
+  <symbol id="i-tukar" viewBox="0 0 24 24"><path d="M5 8.5h13l-3.5-3.5M19 15.5H6l3.5 3.5"/></symbol>
+  <symbol id="i-centang" viewBox="0 0 24 24"><path d="m5.5 12.5 4 4 9-9"/></symbol>
+  <symbol id="i-silang" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11m0-11-11 11"/></symbol>
+  <symbol id="i-peringatan" viewBox="0 0 24 24"><path d="M12 4 21 19.5H3zM12 10v4m0 2.6v.2"/></symbol>
+  <symbol id="i-cari" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></symbol>
+  <symbol id="i-unggah" viewBox="0 0 24 24"><path d="M12 15.5V4.5m-4.5 4.5L12 4.5 16.5 9M5 15v4.5h14V15"/></symbol>
+  <symbol id="i-unduh" viewBox="0 0 24 24"><path d="M12 4.5v11m-4.5-4.5 4.5 4.5 4.5-4.5M5 19.5h14"/></symbol>
+  <symbol id="i-gambar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4.5 18 5-5 3.5 3.5 2.5-2.5 4 4"/></symbol>
+  <symbol id="i-hapus" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></symbol>
+  <symbol id="i-saring" viewBox="0 0 24 24"><path d="M4.5 6h15M7.5 12h9M10.5 18h3"/></symbol>
+</svg>
+</html>

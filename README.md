@@ -35,30 +35,29 @@ Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan
 
    Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/). Pakai port dari `SERVER_PORT` jika konfigurasi berbeda. Hentikan proses yang dijalankan dari terminal dengan Ctrl+C.
 
-Flyway membuat lima tabel bisnis dan mengisi demo melalui `V1` dan `V2`. `V3` menormalkan email, menambah kolom `nim` yang unik, dan mengisi NIM demo. Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
+Flyway membuat lima tabel bisnis (`V1`–`V3`) dan menambah kolom alur layar acuan (`V4`: fakultas, gedung, lantai, ruang, foto bukti, foto hasil, verifikator admin). Aplikasi juga memuat `db/demo/V100__data_demo_layar.sql`, yaitu data persis seperti 13 layar acuan (248 laporan, 12 petugas). Data itu dibuat ulang dengan `python scripts/buat-data-demo.py src/main/resources/db/demo/V100__data_demo_layar.sql`. Tes hanya memakai `db/migration`. Foto unggahan disimpan di `data/unggahan/` (diabaikan Git, ubah dengan `UNGGAHAN_FOLDER`). Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
 
 ## Masuk dan urutan demo
 
 Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/), klik **Masuk dan laporkan kerusakan**, lalu isi **email atau NIM**. Ruang kerja ditentukan dari data di tabel `pengguna`, bukan dari teks atau domain email.
 
-| Peran | Email demo | NIM demo |
+| Peran | Email demo | Catatan |
 | --- | --- | --- |
-| Admin | `admin@example.invalid` | |
-| Petugas | `dimas@example.invalid` (pendingin, 24 jam), `raka@example.invalid` (listrik), `rudi@example.invalid` (perabot), `siti@example.invalid` (sanitasi), `agus@example.invalid` (pendingin, 08.00–16.00) | |
-| Mahasiswa | `andi@example.invalid`, `budi@example.invalid`, `sinta@example.invalid` | `240535600101` (Andi), `240535600102` (Budi), `240535600103` (Sinta) |
+| Civitas | `nadia@example.invalid` (NIM `240535600201`) | 8 laporan seperti layar: 2 menunggu, 1 terverifikasi, 2 diperbaiki, 3 selesai |
+| Petugas | `budi.santoso@example.invalid` | PTG-001, Kelistrikan & AC, 2 tugas aktif |
+| Admin | `admin@example.invalid` | Administrator UM |
 
-Email atau NIM 12 digit yang belum terdaftar membuat akun mahasiswa baru secara otomatis. Email seperti `yy@admin.com` yang tidak ada di database tetap masuk sebagai mahasiswa.
+Petugas lain: `agus@`, `siti@`, `rudi@`, `dimas@`, `raka@example.invalid`, dan lainnya (lihat halaman Petugas). Email atau NIM 12 digit yang belum terdaftar membuat akun mahasiswa baru secara otomatis.
 
 | Langkah | Masuk sebagai | Aksi |
 | --- | --- | --- |
-| 1 | `andi@example.invalid` | Lapor kerusakan AC B13, jenis **Tidak berfungsi**. Klik **Keluar**. |
-| 2 | `240535600102` (Budi) | Laporkan fasilitas dan jenis yang sama. Laporan tergabung ke kasus yang sama. |
-| 3 | `dimas@example.invalid` | Buka **Verifikasi**, isi bahaya, tingkat gangguan, dan jumlah unit rusak. |
-| 4 | `admin@example.invalid` | Buka kasus AC B13, periksa laporan gabungan dan prioritas, lalu tugaskan Dimas Pratama. |
-| 5 | `dimas@example.invalid` | Di **Tugas saya**, mulai perbaikan, simpan catatan progres, lalu tandai selesai. |
-| 6 | `andi@example.invalid` | Buka **Laporan saya** untuk melihat tahap 5/5 dan catatan perbaikan. |
+| 1 | `nadia@example.invalid` | **Buat Laporan**: pilih fakultas, gedung, lantai, isi deskripsi, unggah foto JPG/PNG (maks. 5 MB), lalu **Kirim Laporan**. Status: Menunggu Verifikasi. |
+| 2 | `admin@example.invalid` | **Laporan**: klik baris laporan untuk membuka modal, pilih petugas (opsional), lalu **Verifikasi laporan**. Status: Terverifikasi. Penugasan juga bisa dari halaman **Petugas**. |
+| 3 | `budi.santoso@example.invalid` | **Lihat tugas**, isi catatan penanganan, lalu **Simpan pembaruan**. Status: Sedang Diperbaiki. |
+| 4 | `budi.santoso@example.invalid` | Unggah foto hasil, lalu **Tandai selesai** (foto wajib). Status: Selesai. |
+| 5 | `nadia@example.invalid` | Buka laporan di **Laporan Saya**: timeline 4 tahap terisi, foto hasil bisa dibuka. |
 
-Membuka ruang kerja peran lain menampilkan halaman 403. Membuka ruang kerja tanpa masuk mengarah ke `/login`, lalu kembali ke halaman semula setelah masuk.
+Menu akun di kanan atas berisi **Masuk dengan akun lain** dan **Keluar**. Membuka ruang kerja peran lain menampilkan halaman 403. Membuka ruang kerja tanpa masuk mengarah ke `/login`, lalu kembali ke halaman semula setelah masuk.
 
 ### Keterbatasan: mode demo akademik
 
@@ -72,5 +71,6 @@ Rekomendasi peningkatan (belum diimplementasikan): kode OTP sekali pakai ke emai
 - [Arsitektur, transaksi, dan basis data](docs/ARCHITECTURE.md)
 - [Penerapan 10 kelas OOP dan satu interface](docs/OOP_IMPLEMENTATION.md)
 - [Sistem desain: token, tipografi, komponen](docs/DESIGN_SYSTEM.md)
-- [Pemetaan desain dari ZIP (versi awal)](docs/FIGMA_IMPLEMENTATION.md)
+- [Pemetaan desain dari ZIP](docs/FIGMA_IMPLEMENTATION.md)
+- [Analisis redesain relate.so](ANALISIS.md) dan [laporan akhir redesain](docs/redesain/LAPORAN.md)
 - [Hasil pengujian](docs/TEST_RESULTS.md)

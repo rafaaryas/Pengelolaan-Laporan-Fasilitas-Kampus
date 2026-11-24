@@ -1,5 +1,20 @@
 # Hasil pengujian
 
+## Tema relate.so dan alur layar acuan · 24 November 2026
+
+Dijalankan di Windows (JDK 21, Maven Wrapper, MySQL Laragon 8.4.3, Chrome) pada branch `redesain-um-peduli`, aplikasi di port 8080 dengan data demo `db/demo/V100`. Rincian dan audit: `docs/redesain/LAPORAN.md`.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| `mvn test` | 51 tes lulus (`AlurPelaporanTest` 3, `LoginTest` 22, `PageSecurityTest` 21, `PrioritasBerbasisRisikoTest` 5). Tes baru: alur civitas → verifikasi admin → progres → selesai dengan foto, penolakan foto palsu, dan hak akses `/berkas/bukti/{id}`. |
+| Migrasi | V4 (kolom alur layar) dan V100 (data layar) diterapkan ke MySQL tanpa galat; Hibernate `validate` lulus. Tes hanya memakai `db/migration`. |
+| `scripts/test-browser-demo.js` | Lulus (10,5 s): Nadia melapor dengan foto (validasi dan fokus galat diperiksa) → admin membuka modal, Esc menutup, lalu verifikasi + tugaskan Budi (badge berkurang) → Budi menyimpan pembaruan, ditolak saat selesai tanpa foto, lalu selesai dengan foto → Nadia melihat 4 tahap selesai → tanpa scroll horizontal pada 390/768/1024 → 404. |
+| Responsif | 14 halaman × 390/768/1024/1440 px untuk empat peran: 0 luapan horizontal, satu `h1` per halaman, tidak ada error/warning konsol baru (`docs/redesain/hasil/cek-responsif.txt`). |
+| Keyboard dan gerak | Menu akun (Enter, panah, Esc + fokus kembali), tab (panah), modal `<dialog>` (fokus terkunci, Esc, kembali ke pemicu). `prefers-reduced-motion` mematikan semua animasi dan transisi. |
+| Kontras | 30 pasangan warna lulus; placeholder dan batas input disesuaikan. |
+
+Untuk menjalankan skrip browser terhadap port lain, set `globalThis.UMPEDULI_BASE` sebelum `run-code` (bawaan `http://127.0.0.1:8081`). Skrip membuat satu laporan dan satu tugas selesai di skema yang dipakai.
+
 ## Redesain dan login email/NIM · 22 November 2026
 
 Dijalankan di Windows (JDK 21, Maven Wrapper, MySQL Laragon 8) pada branch `redesain-um-peduli`.

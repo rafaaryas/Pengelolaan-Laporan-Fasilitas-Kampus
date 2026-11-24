@@ -1,10 +1,12 @@
 package com.kelompok5.pelaporanfasilitas.model;
 
+/** Bidang petugas sarana dan prasarana. */
 public enum Keahlian {
-    PENDINGIN("Pendingin & ventilasi"),
-    LISTRIK("Kelistrikan"),
+    KELISTRIKAN_AC("Kelistrikan & AC"),
+    BANGUNAN("Bangunan & sipil"),
+    SANITASI("Air & sanitasi"),
     PERABOT("Perabot & furnitur"),
-    SANITASI("Air & sanitasi");
+    JARINGAN("Jaringan & perangkat");
 
     private final String label;
 

@@ -1,31 +1,71 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Beranda mahasiswa')}"></head>
-<body th:replace="~{fragments/common :: mahasiswa('beranda', ~{::main})}">
-<main id="main" tabindex="-1" class="m-main">
-  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <section class="m-pembuka" aria-labelledby="judul">
-    <p class="label-kecil" th:text="${akun.nim != null ? akun.nama + ' · NIM ' + akun.nim : akun.nama}">Andi</p>
-    <h1 id="judul">Ada fasilitas yang rusak di sekitarmu?</h1>
-    <p>Sebutkan lokasinya. Petugas akan memeriksa, dan kamu bisa melihat setiap perubahan status di sini.</p>
-    <a class="tombol tombol-utama tombol-besar" th:href="@{/mahasiswa/laporan/baru}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Laporkan kerusakan</a>
-  </section>
+<head th:replace="~{fragments/shell :: head('Dashboard')}"></head>
+<body th:replace="~{fragments/shell :: ruang('dashboard', ~{::main})}">
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal">
+    <div>
+      <h1 th:text="|${@waktu.sapaan()}, ${namaDepan}|">Selamat pagi, Nadia</h1>
+      <p class="hanya-lebar">Terima kasih sudah ikut merawat fasilitas kampus kita.</p>
+      <p class="hanya-sempit">Mari rawat kampus kita bersama.</p>
+    </div>
+    <p class="kepala-tanggal hanya-lebar"><time th:datetime="${@waktu.isoHariIni()}" th:text="${@waktu.hariIni()}">Jumat, 20 November 2026</time></p>
+  </header>
 
-  <section class="m-angka" aria-labelledby="judul-angka">
-    <h2 id="judul-angka" class="sr-only">Ringkasan laporanmu</h2>
-    <dl>
-      <div><dt>Terkirim</dt><dd th:text="${total}">0</dd></div>
-      <div><dt>Menunggu verifikasi</dt><dd th:text="${menunggu}">0</dd></div>
-      <div><dt>Diverifikasi</dt><dd th:text="${terverifikasi}">0</dd></div>
-      <div><dt>Diperbaiki</dt><dd th:text="${diperbaiki}">0</dd></div>
-      <div><dt>Selesai</dt><dd th:text="${selesai}">0</dd></div>
+  <div class="grid-hero">
+    <section class="hero" aria-labelledby="judul-hero">
+      <h2 id="judul-hero" class="hero-judul"><span>Kampus nyaman,</span> <span class="nada-2">belajar lebih tenang.</span></h2>
+      <p class="hero-teks hanya-lebar">Temukan fasilitas rusak? Sampaikan laporanmu di sini.</p>
+      <p class="hero-teks hanya-sempit">Temukan kerusakan? Laporkan di sini.</p>
+      <a class="tombol tombol-hero" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon" aria-hidden="true"><use href="#i-tambah"/></svg>Laporkan Kerusakan</a>
+    </section>
+
+    <section class="kartu kartu-dukung langkah-kartu hanya-lebar" aria-labelledby="judul-berarti">
+      <h2 id="judul-berarti" class="judul-kartu">Laporanmu berarti.</h2>
+      <ol class="urutan">
+        <li><span class="urutan-no" aria-hidden="true">1</span><p><strong>Laporkan</strong><span>Isi lokasi dan bukti kerusakan.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">2</span><p><strong>Kami tindak lanjuti</strong><span>Admin verifikasi, petugas perbaiki.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">3</span><p><strong>Pantau progresnya</strong><span>Lihat pembaruan di Laporan Saya.</span></p></li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="bagian" aria-labelledby="judul-ringkasan">
+    <div class="bagian-kepala">
+      <h2 id="judul-ringkasan"><span class="hanya-lebar">Ringkasan laporan saya</span><span class="hanya-sempit">Laporan saya</span></h2>
+      <p class="bagian-meta"><span th:text="${hitung.semua}">8</span> <span class="hanya-lebar">laporan terkirim</span><span class="hanya-sempit">laporan</span></p>
+    </div>
+    <dl class="strip-angka">
+      <div class="angka-sel" th:each="t : ${semuaTahap}">
+        <dt><span th:class="|titik titik-${t.kelas}|" aria-hidden="true"></span><span th:text="${t.label}">Menunggu Verifikasi</span></dt>
+        <dd><a th:href="@{/mahasiswa/laporan(tahap=${t.name()})}" th:text="${hitung.jumlah(t)}">2</a></dd>
+      </div>
     </dl>
   </section>
 
-  <section class="m-bagian" aria-labelledby="judul-terakhir">
-    <div class="bagian-kepala"><h2 id="judul-terakhir">Laporan terakhir</h2><a class="tautan" th:if="${total > 0}" th:href="@{/mahasiswa/laporan}">Semua laporan<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-    <th:block th:if="${riwayat.isEmpty()}"><div th:replace="~{fragments/common :: empty('Belum ada laporan', 'Laporan pertamamu akan muncul di sini lengkap dengan tahap penanganannya.')}"></div></th:block>
-    <th:block th:unless="${riwayat.isEmpty()}"><ul th:replace="~{fragments/laporan :: daftar(${riwayat})}"></ul></th:block>
+  <section class="kartu kartu-utama lepas-sempit" aria-labelledby="judul-terakhir">
+    <div class="kartu-kepala">
+      <h2 id="judul-terakhir" class="judul-kartu">Laporan terakhir</h2>
+      <a class="tautan" th:if="${hitung.semua > 0}" th:href="@{/mahasiswa/laporan}"><span class="hanya-lebar">Lihat semua</span><span class="hanya-sempit">Semua</span><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
+    </div>
+    <th:block th:if="${riwayat.isEmpty()}">
+      <div class="kosong">
+        <p class="kosong-judul">Belum ada laporan</p>
+        <p>Laporan pertamamu akan tampil di sini beserta tahap penanganannya.</p>
+        <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}">Buat laporan</a>
+      </div>
+    </th:block>
+    <ul class="baris-daftar" th:unless="${riwayat.isEmpty()}">
+      <li th:each="l, s : ${riwayat}" th:classappend="${s.index >= 2} ? 'hanya-lebar'">
+        <a class="baris" th:href="@{/mahasiswa/laporan/{id}(id=${l.id})}">
+          <span class="baris-kode" th:text="${l.kode}">UM-0248</span>
+          <span class="baris-utama"><strong th:text="${l.judul}">AC ruang kuliah tidak dingin</strong><small th:text="${l.lokasiRingkas}">Teknik · B11 · Lantai 2</small></span>
+          <time class="baris-tanggal" th:datetime="${@waktu.iso(l.waktuLaporan)}" th:text="${@waktu.tanggal(l.waktuLaporan)}">20 Nov 2026</time>
+          <span class="baris-status"><span th:replace="~{fragments/shell :: pill(${l.tahap})}"></span></span>
+          <svg class="ikon baris-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+        </a>
+      </li>
+    </ul>
   </section>
 </main>
 </body>

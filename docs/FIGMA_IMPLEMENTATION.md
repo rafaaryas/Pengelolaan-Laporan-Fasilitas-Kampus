@@ -1,20 +1,21 @@
-
 # Implementasi desain UM Peduli
 
-Konektor Figma menolak akses ke file `Untitled`. Implementasi memakai 13 ekspor PDF dari `Untitled.zip` yang dikirim pengguna. Seluruh PDF dirender dan ditinjau, termasuk layar desktop tiga peran dan tiga layar mobile mahasiswa.
+Acuan konten dan flow: 13 ekspor PDF di `Prompt/Untitled.zip` (render di `docs/redesain/acuan/layar-*.png`). Acuan tema: `Prompt/relate.so.pdf`. Hasil akhir: `docs/redesain/hasil/`.
 
-## Pemetaan layar
+| Layar acuan | Route | Template |
+| --- | --- | --- |
+| Civitas · Dashboard | `/mahasiswa` | `mahasiswa/index.html` |
+| Civitas · Buat laporan | `/mahasiswa/laporan/baru` (POST `/mahasiswa/laporan`, multipart) | `mahasiswa/form.html` |
+| Civitas · Laporan saya | `/mahasiswa/laporan?tahap=&q=&halaman=` | `mahasiswa/riwayat.html` |
+| Civitas · Detail laporan | `/mahasiswa/laporan/{id}` | `mahasiswa/detail.html` |
+| Petugas · Dashboard tugas | `/petugas` | `petugas/index.html` |
+| Petugas · Detail dan progres | `/petugas/tugas/{id}` (POST `…/progres`, `…/selesai`) | `petugas/detail.html` |
+| Admin · Dashboard | `/admin?rentang=6\|12` | `admin/index.html` |
+| Admin · Laporan | `/admin/kasus?tahap=&q=&tanggal=&petugas=&halaman=`, ekspor `/admin/kasus/ekspor` | `admin/kasus.html` |
+| Admin · Detail dan verifikasi (modal) | `/admin/kasus/{id}?modal=1` (halaman penuh tanpa `modal`), POST `…/verifikasi` | `admin/detail.html` |
+| Admin · Petugas | `/admin/petugas`, POST `/admin/petugas`, POST `/admin/penugasan` | `admin/petugas.html` |
+| Mobile · 3 layar civitas | route yang sama, < 900 px | CSS responsif + bottom nav |
 
-| Ekspor PDF | Tampilan implementasi |
-| --- | --- |
-| Admin · Dashboard | `/admin` dengan metrik database dan kasus yang baru dilaporkan |
-| Admin · Laporan | `/admin/kasus`, dengan pencarian, filter, dan pengurutan urgensi |
-| Admin · Detail dan verifikasi | `/admin/kasus/{id}` untuk rincian dan penugasan, `/petugas/kasus/{id}/verifikasi` untuk pemeriksaan |
-| Admin · Petugas | `/admin/petugas` untuk daftar keahlian, jadwal, ketersediaan, dan akses ke kasus siap ditugaskan |
-| Civitas · Dashboard, Buat laporan, Laporan saya, Detail laporan | Dashboard, form, riwayat, dan detail mahasiswa |
-| Petugas · Dashboard tugas, Detail dan progres | Dashboard dan detail tugas dengan aksi mulai, simpan progres, dan selesai |
-| Mobile · Dashboard civitas, Buat laporan, Laporan saya | Tampilan responsif dengan navigasi bawah, ringkasan dua kolom, dan riwayat berbentuk kartu |
+Route lama tetap ada. Pemeriksaan di lokasi oleh petugas (`/petugas/verifikasi`, `/petugas/kasus/{id}/verifikasi`) dan penggabungan kasus tetap berjalan di model, tetapi tidak tampil di menu karena layar acuan menyerahkan verifikasi kepada admin. Foto bukti dan foto hasil dibuka lewat `/berkas/bukti/{laporanId}` dan `/berkas/hasil/{tugasId}`, dengan pemeriksaan hak akses (pelapor, petugas yang ditugaskan, admin).
 
-Warna latar biru muda `#f5f7fb`, teks `#192842`, dan panel utama `#273984` mengikuti PDF dashboard. Lambang UM diambil dari area logo pada PDF yang dikirim. Layout, panel, tombol, status, ikon, dan navigasi dibangun sebagai HTML serta CSS yang dapat menyesuaikan ukuran layar.
-
-Detail admin menggunakan halaman tersendiri agar daftar laporan, hasil verifikasi, dan penugasan mudah dibaca. Form mengambil gedung dan ruang dari fasilitas yang dipilih. Pemilih identitas demo masuk ke header. Lingkup MVP memakai deskripsi dan catatan teks untuk laporan serta progres. Foto, grafik, dan ekspor menjadi opsi pengembangan setelah alur demo.
+Lambang UM dan foto contoh AC diambil dari gambar di dalam PDF acuan (bukan dibuat ulang). Kredit foto mengikuti teks layar: Antonio Mette, CC BY-SA 4.0, dipotong.

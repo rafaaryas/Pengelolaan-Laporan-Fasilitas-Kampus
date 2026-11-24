@@ -6,6 +6,7 @@ import com.kelompok5.pelaporanfasilitas.repository.PenggunaRepository;
 import com.kelompok5.pelaporanfasilitas.security.AkunMasuk.Peran;
 import com.kelompok5.pelaporanfasilitas.security.PembatasPercobaanMasuk;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -67,16 +68,30 @@ class LoginTest {
     void akunMahasiswaBaruBisaMelaporDanHanyaMelihatMiliknya() throws Exception {
         var baru = Masuk.sebagai(mvc, "rafa.arya@students.um.ac.id");
         assertEquals("Rafa Arya", Masuk.akun(baru).nama());
-        var hasil = mvc.perform(post("/mahasiswa/laporan").session(baru).with(csrf())
-                        .param("mahasiswaId", Masuk.akun(baru).id() + "").param("fasilitasId", "2")
-                        .param("jenisKerusakan", "FISIK").param("deskripsi", "Sandaran kursi baris depan patah."))
+        byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0x10, 'J', 'F', 'I', 'F'};
+        var foto = new MockMultipartFile("foto", "kursi.jpg", "image/jpeg", jpeg);
+        var palsu = new MockMultipartFile("foto", "kursi.jpg", "image/jpeg", "bukan gambar".getBytes());
+        mvc.perform(multipart("/mahasiswa/laporan").file(palsu).session(baru).with(csrf())
+                        .param("mahasiswaId", Masuk.akun(baru).id() + "").param("fakultas", "Teknik").param("gedung", "B13")
+                        .param("lantai", "2").param("deskripsi", "Sandaran kursi baris depan patah."))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Foto maksimal 5 MB, format JPG atau PNG.")));
+        var hasil = mvc.perform(multipart("/mahasiswa/laporan").file(foto).session(baru).with(csrf())
+                        .param("mahasiswaId", Masuk.akun(baru).id() + "").param("fakultas", "Teknik").param("gedung", "B13")
+                        .param("lantai", "2").param("ruang", "204").param("deskripsi", "Sandaran kursi baris depan patah."))
                 .andExpect(status().is3xxRedirection()).andReturn();
         String detail = hasil.getResponse().getRedirectedUrl();
         mvc.perform(get(detail).session(baru)).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Sandaran kursi baris depan patah.")));
         mvc.perform(get("/mahasiswa/laporan").session(baru)).andExpect(status().isOk())
-                .andExpect(content().string(containsString("Kursi kuliah")));
+                .andExpect(content().string(containsString("Sandaran kursi baris depan patah")))
+                .andExpect(content().string(containsString("Teknik · B13 · Lantai 2")));
         mvc.perform(get(detail).session(Masuk.sebagai(mvc, "budi@example.invalid"))).andExpect(status().isNotFound());
+        String idLaporan = detail.substring(detail.lastIndexOf('/') + 1);
+        mvc.perform(get("/berkas/bukti/" + idLaporan).session(baru)).andExpect(status().isOk())
+                .andExpect(content().contentType("image/jpeg"));
+        mvc.perform(get("/berkas/bukti/" + idLaporan).session(Masuk.sebagai(mvc, "budi@example.invalid"))).andExpect(status().isNotFound());
+        mvc.perform(get("/berkas/bukti/" + idLaporan)).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/berkas/bukti/" + idLaporan).session(Masuk.sebagai(mvc, "admin@example.invalid"))).andExpect(status().isOk());
     }
 
     @Test

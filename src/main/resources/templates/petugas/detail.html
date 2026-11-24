@@ -1,54 +1,67 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Tugas perbaikan')}"></head>
-<body th:replace="~{fragments/common :: petugas('tugas', ~{::main})}">
-<main id="main" tabindex="-1" class="p-main" th:with="st=${tugas.status.name()}">
-  <a class="tautan-kembali" th:href="@{/petugas/tugas}"><svg aria-hidden="true"><use href="#i-back"/></svg>Tugas saya</a>
-  <header class="p-kasus-kepala">
-    <p class="p-lokasi p-lokasi-besar"><svg aria-hidden="true"><use href="#i-pin"/></svg><strong th:text="${kasus.fasilitas.gedung}"></strong><span th:text="${kasus.fasilitas.ruang}"></span></p>
-    <h1 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h1>
-    <p class="p-meta"><span class="kode" th:text="|T-${tugas.id}|"></span><span th:replace="~{fragments/common :: priority(${kasus.prioritas})}"></span><span th:text="|Ditugaskan oleh ${tugas.penugas.nama}|"></span></p>
-  </header>
-  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-
-  <ol class="p-langkah" aria-label="Tahap tugas">
-    <li class="lewat"><strong>Ditugaskan</strong><span th:text="|${#temporals.format(tugas.waktuPenugasan, 'd MMM, HH:mm')} WIB|"></span></li>
-    <li th:class="${st == 'DIKERJAKAN' ? 'kini' : (st == 'SELESAI' ? 'lewat' : '')}"><strong>Dikerjakan</strong><span th:text="${tugas.waktuMulai != null ? #temporals.format(tugas.waktuMulai, 'd MMM, HH:mm') + ' WIB' : 'Belum dimulai'}"></span></li>
-    <li th:class="${st == 'SELESAI' ? 'lewat' : ''}"><strong>Selesai</strong><span th:text="${tugas.waktuSelesai != null ? #temporals.format(tugas.waktuSelesai, 'd MMM, HH:mm') + ' WIB' : 'Belum selesai'}"></span></li>
-  </ol>
-
-  <div class="p-dua">
-    <section class="p-panel-aksi" aria-labelledby="judul-aksi">
-      <h2 id="judul-aksi" th:text="${st == 'DITUGASKAN' ? 'Siap berangkat?' : (st == 'DIKERJAKAN' ? 'Catat progres' : 'Hasil perbaikan')}"></h2>
-      <form th:if="${st == 'DITUGASKAN'}" th:action="@{/petugas/tugas/{id}/mulai(id=${tugas.id})}" method="post">
-        <p>Tekan mulai saat kamu sudah di lokasi. Waktu mulai dicatat otomatis.</p>
-        <button class="tombol tombol-utama tombol-besar tombol-penuh" type="submit"><svg aria-hidden="true"><use href="#i-play"/></svg>Mulai perbaikan</button>
-      </form>
-      <form class="p-form" th:if="${st == 'DIKERJAKAN'}" th:action="@{/petugas/tugas/{id}/progres(id=${tugas.id})}" method="post">
-        <div class="field">
-          <label for="catatan">Catatan penanganan</label>
-          <textarea id="catatan" name="catatan" rows="5" maxlength="1000" required th:text="${tugas.catatan}" aria-describedby="catatan-bantuan"></textarea>
-          <p id="catatan-bantuan" class="field-bantuan">Catatan ini terlihat oleh mahasiswa pelapor. Wajib diisi sebelum menandai selesai.</p>
-        </div>
-        <button class="tombol tombol-garis tombol-besar tombol-penuh" type="submit">Simpan progres</button>
-        <button class="tombol tombol-utama tombol-besar tombol-penuh" type="submit" th:formaction="@{/petugas/tugas/{id}/selesai(id=${tugas.id})}" data-confirm="Tandai perbaikan selesai dan tutup kasus ini?"><svg aria-hidden="true"><use href="#i-check"/></svg>Tandai selesai</button>
-      </form>
-      <p class="teks-pengguna" th:if="${st == 'SELESAI'}" th:text="${tugas.catatan}"></p>
-    </section>
-    <div class="p-info">
-      <section class="blok" aria-labelledby="judul-periksa">
-        <div class="blok-kepala"><h2 id="judul-periksa">Hasil pemeriksaan</h2></div>
-        <p th:text="${kasus.alasanPrioritas}"></p>
-        <dl class="fakta">
-          <div><dt>Bahaya kritis</dt><dd th:text="${kasus.bahayaKritis ? 'Ada' : 'Tidak ada'}"></dd></div>
-          <div><dt>Gangguan</dt><dd th:text="${kasus.gangguan.label}"></dd></div>
-          <div><dt>Unit rusak</dt><dd class="angka" th:text="|${kasus.unitRusak} dari ${kasus.fasilitas.jumlahUnit}|"></dd></div>
-        </dl>
-        <p class="teks-pengguna kutipan" th:if="${kasus.catatanPemeriksaan != null}" th:text="${kasus.catatanPemeriksaan}"></p>
-        <div class="sorot" th:if="${tugas.catatanPenugasan != null}"><h3>Pesan dari admin</h3><p class="teks-pengguna" th:text="${tugas.catatanPenugasan}"></p></div>
-      </section>
-      <section th:replace="~{fragments/laporan :: aduan(${kasus}, false)}"></section>
+<head th:replace="~{fragments/shell :: head('Detail tugas perbaikan')}"></head>
+<body th:replace="~{fragments/shell :: ruang('tugas', ~{::main})}">
+<main id="main" class="isi" tabindex="-1" th:with="st=${tugas.status.name()}">
+  <a th:replace="~{fragments/shell :: kembali('/petugas', 'Kembali ke tugas saya')}"></a>
+  <header class="kepala-hal">
+    <div>
+      <h1>Detail tugas perbaikan</h1>
+      <p th:text="|${laporan.kode} · Ditugaskan oleh ${tugas.penugas.nama} pada ${@waktu.tanggalJam(tugas.waktuPenugasan)} WIB|">UM-0246 · Ditugaskan oleh Administrator UM pada 19 Nov 2026, 10.30 WIB</p>
     </div>
+  </header>
+
+  <div class="grid-dua grid-detail">
+    <article th:replace="~{fragments/laporan :: rincian(${laporan}, true)}"></article>
+
+    <aside class="kolom-samping" aria-label="Progres">
+      <section class="kartu kartu-dukung" aria-labelledby="judul-progres" th:if="${st != 'SELESAI'}">
+        <h2 id="judul-progres" class="judul-kartu">Perbarui progres</h2>
+        <p class="kartu-sub" th:text="|Petugas: ${tugas.petugas.nama}|">Petugas: Budi Santoso</p>
+        <div class="sorot" th:if="${tugas.catatanPenugasan != null}">
+          <p class="label-kecil">Catatan dari admin</p>
+          <p class="teks-pengguna" th:text="${tugas.catatanPenugasan}"></p>
+        </div>
+        <form class="form" th:action="@{/petugas/tugas/{id}/progres(id=${tugas.id})}" method="post" enctype="multipart/form-data" novalidate data-validasi data-progres>
+          <div class="field">
+            <label for="status">Status laporan</label>
+            <div class="select">
+              <select id="status" name="status">
+                <option value="DIKERJAKAN" selected>Sedang Diperbaiki</option>
+                <option value="SELESAI">Selesai</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="catatan">Catatan penanganan <span aria-hidden="true">*</span></label>
+            <textarea id="catatan" name="catatan" class="input" rows="4" maxlength="1000" required
+                      data-pesan="Isi catatan penanganan, misalnya hasil pemeriksaan dan tindakan yang dilakukan."
+                      aria-describedby="catatan-bantuan catatan-galat" th:text="${tugas.catatan}"></textarea>
+            <p id="catatan-bantuan" class="bantuan-field">Catatan ini terlihat oleh pelapor.</p>
+            <p id="catatan-galat" class="galat-field"></p>
+          </div>
+          <div class="field">
+            <label for="foto">Foto hasil perbaikan</label>
+            <div th:replace="~{fragments/unggah :: dropzone('foto', 'Unggah foto hasil perbaikan', false)}"></div>
+            <p id="foto-bantuan" class="bantuan-field">Wajib dilampirkan saat status Selesai.</p>
+            <p id="foto-galat" class="galat-field"></p>
+          </div>
+          <div class="form-aksi form-aksi-tumpuk">
+            <button class="tombol tombol-utama" type="submit" data-memproses="Menyimpan…">Simpan pembaruan</button>
+            <button class="tombol tombol-kedua" type="submit" th:formaction="@{/petugas/tugas/{id}/selesai(id=${tugas.id})}"
+                    data-selesai data-memproses="Menandai selesai…"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-centang"/></svg>Tandai selesai</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="kartu kartu-dukung" aria-labelledby="judul-hasil" th:if="${st == 'SELESAI'}">
+        <h2 id="judul-hasil" class="judul-kartu">Hasil perbaikan</h2>
+        <p class="kartu-sub" th:text="|Selesai ${@waktu.tanggalJam(tugas.waktuSelesai)} WIB|"></p>
+        <p class="teks-pengguna" th:text="${tugas.catatan}"></p>
+        <a class="foto-hasil" th:if="${tugas.adaFotoHasil}" th:href="@{/berkas/hasil/{id}(id=${tugas.id})}" target="_blank" rel="noopener">
+          <img th:src="@{/berkas/hasil/{id}(id=${tugas.id})}" alt="Foto hasil perbaikan" width="320" height="200" decoding="async"></a>
+      </section>
+    </aside>
   </div>
 </main>
 </body>

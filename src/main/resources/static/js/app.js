@@ -20,7 +20,8 @@ function tutupPop(pop, kembalikanFokus = false) {
   if (!panel || panel.hidden) return;
   tombol.setAttribute("aria-expanded", "false");
   panel.classList.remove("tampil");
-  setTimeout(() => { panel.hidden = true; }, kurangiGerak() ? 0 : 130);
+  panel.inert = true;
+  setTimeout(() => { if (tombol.getAttribute("aria-expanded") === "false") panel.hidden = true; }, kurangiGerak() ? 0 : 160);
   if (kembalikanFokus) tombol.focus();
 }
 function bukaPop(pop) {
@@ -28,8 +29,9 @@ function bukaPop(pop) {
   const tombol = $("button[aria-expanded]", pop);
   const panel = $(".pop-panel", pop);
   panel.hidden = false;
+  panel.inert = false;
   tombol.setAttribute("aria-expanded", "true");
-  setelahFrame(() => panel.classList.add("tampil"));
+  setelahFrame(() => { if (tombol.getAttribute("aria-expanded") === "true") panel.classList.add("tampil"); });
 }
 $$("[data-pop]").forEach((pop) => {
   const tombol = $("button[aria-expanded]", pop);
@@ -91,13 +93,18 @@ window.addEventListener("resize", () => $$(".tab").forEach((t) => posisikanIndik
 
 /* ---------- Daftar bersaring: debounce, filter, tab, paginasi tanpa muat ulang ---------- */
 const wilayahAwal = $$("[data-wilayah]");
+let permintaanDaftar;
 async function muatDaftar(url, { dorong = true } = {}) {
+  permintaanDaftar?.abort();
+  const permintaan = new AbortController();
+  permintaanDaftar = permintaan;
   const wilayah = $$("[data-wilayah]");
   wilayah.forEach((w) => w.setAttribute("aria-busy", "true"));
   try {
-    const respons = await fetch(url, { headers: { "X-Requested-With": "fetch" }, credentials: "same-origin" });
+    const respons = await fetch(url, { headers: { "X-Requested-With": "fetch" }, credentials: "same-origin", signal: permintaan.signal });
     if (!respons.ok || respons.redirected) throw new Error(String(respons.status));
     const dok = new DOMParser().parseFromString(await respons.text(), "text/html");
+    if (permintaan.signal.aborted) return;
     wilayah.forEach((lama) => {
       const baru = dok.getElementById(lama.id);
       if (!baru) return;
@@ -113,15 +120,26 @@ async function muatDaftar(url, { dorong = true } = {}) {
         });
         posisikanIndikator(lama);
       } else {
+        if (baru.classList.contains("tabel-wadah") || baru.id === "hasil-laporan") baru.classList.add("hasil-diperbarui");
         lama.replaceWith(baru);
       }
     });
+    const saringan = $("form[data-saring]");
+    const saringanBaru = $("form[data-saring]", dok);
+    if (saringan && saringanBaru) {
+      $$("select, input[type='search']", saringan).forEach((k) => {
+        const terbaru = saringanBaru.elements.namedItem(k.name);
+        if (terbaru && (k.type !== "search" || document.activeElement !== k)) k.value = terbaru.value;
+      });
+    }
     if (dorong) history.pushState({ daftar: true }, "", url);
     else history.replaceState({ daftar: true }, "", url);
   } catch {
-    window.location.href = url;
+    if (!permintaan.signal.aborted) window.location.href = url;
   } finally {
-    $$("[data-wilayah]").forEach((w) => w.removeAttribute("aria-busy"));
+    if (permintaanDaftar === permintaan) {
+      $$("[data-wilayah]").forEach((w) => w.removeAttribute("aria-busy"));
+    }
   }
 }
 function urlForm(form) {
@@ -259,17 +277,14 @@ function aturFormDi(root) {
     form.addEventListener("input", (e) => { if (e.target.matches("input, textarea, select")) tandai(e.target, ""); });
     form.addEventListener("change", (e) => { if (e.target.matches("select")) tandai(e.target, ""); });
     form.addEventListener("submit", (e) => {
-      const pemicu = e.submitter;
-      const selesai = pemicu?.hasAttribute("data-selesai") || ($("#status", form)?.value === "SELESAI" && form.hasAttribute("data-progres"));
       const salah = [];
       $$("input, select, textarea", form).forEach((k) => {
         if (k.type === "hidden" || k.disabled) return;
         let pesan = "";
         if (k.type === "file") {
-          const wajib = k.required || (selesai && form.hasAttribute("data-progres"));
-          pesan = periksaBerkas(k.files[0]) || (wajib && !k.files.length ? (selesai ? "Unggah foto hasil perbaikan sebelum menandai selesai." : k.dataset.pesan) : "");
+          pesan = periksaBerkas(k.files[0]) || (k.required && !k.files.length ? k.dataset.pesan : "");
         } else if (!k.checkValidity()) {
-          pesan = k.validity.typeMismatch ? (k.dataset.pesan || k.validationMessage) : (k.dataset.pesan || k.validationMessage);
+          pesan = k.dataset.pesan || k.validationMessage;
         }
         tandai(k, pesan);
         if (pesan) salah.push(k);
@@ -282,14 +297,6 @@ function aturFormDi(root) {
         return;
       }
       if (form.dataset.konfirmasi && !window.confirm(form.dataset.konfirmasi)) { e.preventDefault(); return; }
-      const tombol = pemicu || $("button[type='submit']", form) || document.querySelector(`button[form='${form.id}']`);
-      if (tombol) {
-        tombol.setAttribute("aria-busy", "true");
-        if (tombol.dataset.memproses) tombol.lastChild.textContent = tombol.dataset.memproses;
-      }
-      setTimeout(() => {
-        $$("button[type='submit']", form).concat(form.id ? $$(`button[form='${form.id}']`) : []).forEach((b) => { b.disabled = true; });
-      }, 0);
     });
   });
 }
@@ -297,6 +304,29 @@ aturFormDi(document);
 $$("form[data-konfirmasi]:not([data-validasi])").forEach((form) => form.addEventListener("submit", (e) => {
   if (!window.confirm(form.dataset.konfirmasi)) e.preventDefault();
 }));
+
+/* Submit once, preserve the native navigation and restore controls on back. */
+const sedangDikirim = new Map();
+document.addEventListener("submit", (e) => {
+  const form = e.target;
+  if (e.defaultPrevented || form.method.toLowerCase() !== "post") return;
+  if (sedangDikirim.has(form)) { e.preventDefault(); return; }
+  const tombol = e.submitter || $("button[type='submit']", form);
+  if (!tombol || !tombol.dataset.memproses) return;
+  const isiAwal = tombol.innerHTML;
+  sedangDikirim.set(form, { tombol, isiAwal });
+  tombol.setAttribute("aria-busy", "true");
+  tombol.textContent = tombol.dataset.memproses;
+  form.setAttribute("aria-busy", "true");
+});
+window.addEventListener("pageshow", () => {
+  sedangDikirim.forEach(({ tombol, isiAwal }, form) => {
+    tombol.innerHTML = isiAwal;
+    tombol.removeAttribute("aria-busy");
+    form.removeAttribute("aria-busy");
+  });
+  sedangDikirim.clear();
+});
 
 /* ---------- Dropzone foto ---------- */
 $$("[data-dropzone]").forEach((zona) => {
@@ -389,13 +419,3 @@ if ((grafik || donut) && !bacaSesi("grafik-dilihat") && !kurangiGerak()) {
   });
 }
 if (grafik || donut) simpanSesi("grafik-dilihat", "ya");
-
-/* ---------- Linimasa terisi bila tahap bertambah sejak kunjungan terakhir ---------- */
-const linimasa = $(".linimasa[data-tahap]");
-if (linimasa) {
-  const kunci = `tahap:${location.pathname}`;
-  const sebelumnya = Number(bacaLokal(kunci) || 0);
-  const kini = Number(linimasa.dataset.tahap);
-  if (sebelumnya && kini > sebelumnya) linimasa.classList.add("isi-baru");
-  simpanLokal(kunci, String(kini));
-}

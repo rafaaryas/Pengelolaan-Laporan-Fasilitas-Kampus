@@ -8,15 +8,16 @@
   <main id="main" class="pub-isi bantuan-hal">
     <a th:replace="~{fragments/shell :: kembali(${akunMasuk != null ? akunMasuk.beranda() : '/'}, 'Kembali')}"></a>
     <h1>Pusat bantuan</h1>
-    <p class="kartu-sub">Cara laporan ditangani dan siapa yang mengubah statusnya.</p>
+    <p class="kartu-sub">Cara membaca status laporan dan meminta bantuan.</p>
     <section class="kartu kartu-dukung" aria-labelledby="judul-tahap">
-      <h2 id="judul-tahap" class="judul-kartu">Empat tahap laporan</h2>
+      <h2 id="judul-tahap" class="judul-kartu">Status penanganan laporan</h2>
       <ol class="urutan">
         <li><span class="urutan-no" aria-hidden="true">1</span><p><strong>Menunggu Verifikasi</strong><span>Laporan terkirim dan menunggu admin memeriksa kelengkapannya.</span></p></li>
-        <li><span class="urutan-no" aria-hidden="true">2</span><p><strong>Terverifikasi</strong><span>Admin sudah memeriksa laporan dan menugaskan petugas sesuai bidang.</span></p></li>
-        <li><span class="urutan-no" aria-hidden="true">3</span><p><strong>Sedang Diperbaiki</strong><span>Petugas menangani kerusakan dan menulis catatan penanganan.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">2</span><p><strong>Menunggu Penugasan atau Ditugaskan</strong><span>Admin sudah memeriksa laporan. Jika petugas sudah ditunjuk, ia akan memeriksa fasilitas.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">3</span><p><strong>Sedang Diperbaiki</strong><span>Petugas sedang menangani kerusakan.</span></p></li>
         <li><span class="urutan-no" aria-hidden="true">4</span><p><strong>Selesai</strong><span>Petugas melampirkan foto hasil. Fasilitas siap digunakan kembali.</span></p></li>
       </ol>
+      <p class="bagian"><strong>Perlu Tindak Lanjut</strong> berarti admin sedang memutuskan langkah berikutnya sebelum perbaikan dilanjutkan.</p>
     </section>
     <section class="panel-waspada" aria-labelledby="judul-darurat">
       <h2 id="judul-darurat">Keadaan darurat</h2>

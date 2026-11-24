@@ -100,6 +100,34 @@ public class SistemPelaporan {
         return kasus.save(baru).getId();
     }
 
+    public void periksaTugas(long tugasId, long petugasId, boolean bahaya, Gangguan gangguan, int unit, String catatan) {
+        TugasPerbaikan pekerjaan = kunciTugas(tugasId, petugasId);
+        KasusKerusakan temuan = pekerjaan.getKasus();
+        temuan.catatPemeriksaanTugas(pekerjaan.getPetugas(), bahaya, gangguan, unit, catatanOpsional(catatan), LocalDateTime.now(jam));
+        prioritaskan(temuan);
+        if (temuan.getFasilitas() != null) temuan.getFasilitas().perbaruiKondisi(Kondisi.RUSAK);
+    }
+
+    public void ajukanTindakLanjut(long tugasId, long petugasId, String alasan, String kebutuhan) {
+        kunciTugas(tugasId, petugasId).ajukanTindakLanjut(alasan, kebutuhan, LocalDateTime.now(jam));
+    }
+
+    public void putuskanTindakLanjut(long kasusId, Long petugasId, String keputusan) {
+        kunciKasus(kasusId);
+        TugasPerbaikan pekerjaan = tugas.findByKasusId(kasusId)
+                .orElseThrow(() -> new DataTidakDitemukan("Penugasan tidak ditemukan."));
+        long lama = pekerjaan.getPetugas().getId();
+        long baru = petugasId == null ? lama : petugasId;
+        Petugas pertama = kunciPetugas(Math.min(lama, baru));
+        Petugas kedua = lama == baru ? pertama : kunciPetugas(Math.max(lama, baru));
+        Petugas pelaksana = baru <= lama ? pertama : kedua;
+        adminDemo().putuskanTindakLanjut(pekerjaan, pelaksana, LocalDateTime.now(jam), catatanOpsional(keputusan));
+        if (lama != baru) {
+            Petugas sebelumnya = lama < baru ? pertama : kedua;
+            sebelumnya.perbaruiKetersediaan(tugas.existsByPetugasIdAndStatusNot(lama, StatusTugas.SELESAI));
+        }
+    }
+
     public void mulaiTugas(long tugasId, long petugasId) {
         kunciTugas(tugasId, petugasId).mulai(LocalDateTime.now(jam));
     }
@@ -108,21 +136,16 @@ public class SistemPelaporan {
         kunciTugas(tugasId, petugasId).catatProgres(catatan);
     }
 
-    /** "Simpan pembaruan" di layar petugas: memulai perbaikan bila belum dimulai, lalu mencatat progres. */
+    /** Simpan catatan setelah perbaikan dimulai. */
     public void perbaruiProgres(long tugasId, long petugasId, String catatan) {
-        TugasPerbaikan pekerjaan = kunciTugas(tugasId, petugasId);
-        if (catatan == null || catatan.isBlank()) throw new IllegalArgumentException("Isi catatan penanganan.");
-        if (pekerjaan.getStatus() == StatusTugas.DITUGASKAN) pekerjaan.mulai(LocalDateTime.now(jam));
-        pekerjaan.catatProgres(catatan);
+        catatProgres(tugasId, petugasId, catatan);
     }
 
-    /** "Tandai selesai": catatan dan foto hasil perbaikan wajib. */
     public void selesaikanTugas(long tugasId, long petugasId, String catatan, Berkas fotoHasil) {
         TugasPerbaikan pekerjaan = kunciTugas(tugasId, petugasId);
-        if (pekerjaan.getStatus() == StatusTugas.DITUGASKAN) pekerjaan.mulai(LocalDateTime.now(jam));
-        Petugas pelaksana = pengguna.kunciPetugas(petugasId).orElseThrow(() -> new DataTidakDitemukan("Petugas tidak ditemukan."));
+        Petugas pelaksana = kunciPetugas(petugasId);
         pekerjaan.selesaikan(LocalDateTime.now(jam), catatan, fotoHasil);
-        pelaksana.perbaruiKetersediaan(tugas.existsByPetugasIdAndStatusNot(petugasId, StatusTugas.SELESAI));
+        perbaruiSetelahSelesai(pekerjaan, pelaksana);
     }
 
     public long tambahPetugas(String nama, String email, Keahlian bidang) {
@@ -135,11 +158,8 @@ public class SistemPelaporan {
         return pengguna.save(Petugas.baru(nama, kontak, bidang, kode)).getId();
     }
 
-    public void selesaikanTugas(long tugasId, long petugasId, String catatan) {
-        TugasPerbaikan pekerjaan = kunciTugas(tugasId, petugasId);
-        pengguna.kunciPetugas(petugasId).orElseThrow(() -> new DataTidakDitemukan("Petugas tidak ditemukan."));
-        pekerjaan.selesaikan(LocalDateTime.now(jam), catatan);
-        pengguna.kunciPetugas(petugasId).ifPresent(p -> p.perbaruiKetersediaan(tugas.existsByPetugasIdAndStatusNot(petugasId, StatusTugas.SELESAI)));
+    private void perbaruiSetelahSelesai(TugasPerbaikan pekerjaan, Petugas pelaksana) {
+        pelaksana.perbaruiKetersediaan(tugas.existsByPetugasIdAndStatusNot(pelaksana.getId(), StatusTugas.SELESAI));
         Fasilitas lokasi = pekerjaan.getKasus().getFasilitas();
         if (lokasi == null) return;
         var kasusAktif = kasus.findByFasilitasIdAndStatusNot(lokasi.getId(), StatusKasus.SELESAI);
@@ -175,11 +195,16 @@ public class SistemPelaporan {
         return kasus.kunci(id).orElseThrow(() -> new DataTidakDitemukan("Kasus tidak ditemukan."));
     }
 
+    private Petugas kunciPetugas(long id) {
+        return pengguna.kunciPetugas(id).orElseThrow(() -> new DataTidakDitemukan("Petugas tidak ditemukan."));
+    }
+
     private TugasPerbaikan kunciTugas(long id, long petugasId) {
-        TugasPerbaikan milik = tugas.findByIdAndPetugasId(id, petugasId)
-                .orElseThrow(() -> new DataTidakDitemukan("Tugas ini tidak ditemukan pada akun petugas yang dipilih."));
-        kunciKasus(milik.getKasus().getId());
-        return milik;
+        long kasusId = tugas.cariIdKasus(id)
+                .orElseThrow(() -> new DataTidakDitemukan("Tugas tidak ditemukan."));
+        kunciKasus(kasusId);
+        return tugas.findByIdAndPetugasId(id, petugasId)
+                .orElseThrow(() -> new DataTidakDitemukan("Tugas ini tidak ditemukan pada akun petugas ini."));
     }
 
     private String catatanOpsional(String catatan) {

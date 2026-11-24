@@ -5,35 +5,28 @@
 <main id="main" class="isi" tabindex="-1" th:with="r=${ringkasan}, h=${ringkasan.hitung}">
   <header class="kepala-hal">
     <div>
-      <h1 th:text="|${@waktu.sapaan()}, Admin|">Selamat pagi, Admin</h1>
-      <p>Pantau laporan dan wujudkan fasilitas kampus yang lebih baik.</p>
+      <h1>Dashboard Admin</h1>
+      <p>Pantau antrean laporan dan pekerjaan fasilitas.</p>
     </div>
-    <p class="kepala-tanggal kotak-tanggal"><time th:datetime="${@waktu.isoHariIni()}" th:text="${@waktu.tanggalHariIni()}">20 November 2026</time></p>
+    <p class="kepala-tanggal kotak-tanggal hanya-lebar"><time th:datetime="${@waktu.isoHariIni()}" th:text="${@waktu.tanggalHariIni()}">20 November 2026</time></p>
   </header>
 
-  <section class="bagian" aria-labelledby="judul-statistik">
-    <h2 id="judul-statistik" class="sr-only">Statistik utama</h2>
-    <dl class="strip-angka strip-keterangan">
-      <div class="angka-sel">
-        <dt><span class="titik titik-aktif" aria-hidden="true"></span>Total laporan</dt>
-        <dd><a th:href="@{/admin/kasus}" th:text="${r.total}">248</a></dd>
-        <dd class="angka-ket" th:text="${r.selisihTeks()}">+13 dibanding bulan lalu</dd>
-      </div>
-      <div class="angka-sel angka-sel-sorot">
-        <dt><span class="titik titik-menunggu" aria-hidden="true"></span>Laporan masuk</dt>
-        <dd><a th:href="@{/admin/kasus(tahap='MENUNGGU')}" th:text="${h.menunggu}">24</a></dd>
-        <dd class="angka-ket">Menunggu verifikasi</dd>
-      </div>
-      <div class="angka-sel">
-        <dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Sedang diproses</dt>
-        <dd><a th:href="@{/admin/kasus(tahap='DIPERBAIKI')}" th:text="${h.diproses()}">38</a></dd>
-        <dd class="angka-ket" th:text="|${h.terverifikasi} terverifikasi · ${h.diperbaiki} diperbaiki|">12 terverifikasi · 26 diperbaiki</dd>
-      </div>
-      <div class="angka-sel">
-        <dt><span class="titik titik-selesai" aria-hidden="true"></span>Laporan selesai</dt>
-        <dd><a th:href="@{/admin/kasus(tahap='SELESAI')}" th:text="${h.selesai}">186</a></dd>
-        <dd class="angka-ket" th:text="|${r.persenSelesai}% dari seluruh laporan|">75% dari seluruh laporan</dd>
-      </div>
+  <section class="bagian" aria-labelledby="judul-perhatian">
+    <h2 id="judul-perhatian">Perlu perhatian</h2>
+    <dl class="strip-angka">
+      <div class="angka-sel"><dt>Menunggu verifikasi</dt><dd><a th:href="@{/admin/kasus(tahap='MENUNGGU')}" th:text="${h.menunggu}" th:attr="aria-label=|${h.menunggu} laporan menunggu verifikasi|"></a></dd></div>
+      <div class="angka-sel"><dt>Menunggu penugasan</dt><dd><a th:href="@{/admin/kasus(tahap='TERVERIFIKASI')}" th:text="${h.terverifikasi}" th:attr="aria-label=|${h.terverifikasi} laporan menunggu penugasan|"></a></dd></div>
+      <div class="angka-sel"><dt>Perlu tindak lanjut</dt><dd><a th:href="@{/admin/kasus(tahap='TINDAK_LANJUT')}" th:text="${h.tindakLanjut}" th:attr="aria-label=|${h.tindakLanjut} laporan perlu tindak lanjut|"></a></dd></div>
+      <div class="angka-sel" th:classappend="${r.kritisAktif > 0} ? 'angka-kritis'"><dt>Kritis aktif</dt><dd><a th:href="@{/admin/kasus(kritis=true)}" th:text="${r.kritisAktif}" th:attr="aria-label=|${r.kritisAktif} kasus kritis aktif|"></a></dd></div>
+    </dl>
+  </section>
+  <section class="bagian" aria-labelledby="judul-pantau">
+    <h2 id="judul-pantau">Ringkasan laporan</h2>
+    <dl class="strip-angka">
+      <div class="angka-sel"><dt>Semua laporan</dt><dd><a th:href="@{/admin/kasus}" th:text="${r.total}" th:attr="aria-label=|${r.total} laporan, lihat semua|"></a></dd></div>
+      <div class="angka-sel"><dt>Ditugaskan</dt><dd><a th:href="@{/admin/kasus(tahap='DITUGASKAN')}" th:text="${h.ditugaskan}" th:attr="aria-label=|${h.ditugaskan} laporan ditugaskan|"></a></dd></div>
+      <div class="angka-sel"><dt>Sedang diperbaiki</dt><dd><a th:href="@{/admin/kasus(tahap='DIPERBAIKI')}" th:text="${h.diperbaiki}" th:attr="aria-label=|${h.diperbaiki} laporan sedang diperbaiki|"></a></dd></div>
+      <div class="angka-sel"><dt>Selesai</dt><dd><a th:href="@{/admin/kasus(tahap='SELESAI')}" th:text="${h.selesai}" th:attr="aria-label=|${h.selesai} laporan selesai|"></a></dd></div>
     </dl>
   </section>
 

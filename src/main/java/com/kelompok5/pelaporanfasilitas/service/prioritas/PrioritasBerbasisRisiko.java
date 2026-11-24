@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class PrioritasBerbasisRisiko implements StrategiPrioritas {
     @Override
     public Prioritas tentukan(KasusKerusakan kasus) {
-        if (!kasus.isTerverifikasi()) throw new IllegalStateException("Verifikasi kasus sebelum menentukan prioritas.");
+        if (!kasus.isSudahDiperiksa()) throw new IllegalStateException("Catat pemeriksaan sebelum menentukan prioritas.");
         if (kasus.isBahayaKritis()) return Prioritas.KRITIS;
         return switch (kasus.getGangguan()) {
             case BERAT -> Prioritas.TINGGI;

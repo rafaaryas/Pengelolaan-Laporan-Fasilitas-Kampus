@@ -5,23 +5,24 @@
 <main id="main" class="isi" tabindex="-1">
   <header class="kepala-hal">
     <div>
-      <h1>Laporan</h1>
+      <h1 th:text="${kritis ? 'Kasus Kritis Aktif' : 'Laporan'}">Laporan</h1>
       <p>Kelola, verifikasi, dan pantau seluruh laporan kerusakan fasilitas.</p>
     </div>
-    <a class="tombol tombol-kedua" th:href="@{/admin/kasus/ekspor(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter})}" download>
+    <a id="ekspor-laporan" data-wilayah class="tombol tombol-kedua" th:href="@{/admin/kasus/ekspor(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis})}" download>
       <svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-unduh"/></svg>Ekspor laporan</a>
   </header>
 
   <section class="kartu kartu-utama kartu-daftar" aria-labelledby="judul-tabel">
     <h2 id="judul-tabel" class="sr-only">Daftar laporan</h2>
     <nav class="tab" id="tab-laporan" data-wilayah aria-label="Saring menurut status">
-      <a class="tab-item" th:href="@{/admin/kasus(q=${q},tanggal=${tanggal},petugas=${petugasFilter})}" th:attr="aria-current=${tahapAktif == null ? 'page' : null}">Semua laporan <span class="tab-hitung" th:text="${hitung.semua}">248</span></a>
-      <a class="tab-item" th:each="t : ${semuaTahap}" th:href="@{/admin/kasus(tahap=${t.name()},q=${q},tanggal=${tanggal},petugas=${petugasFilter})}"
+      <a class="tab-item" th:href="@{/admin/kasus(q=${q},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis})}" th:attr="aria-current=${tahapAktif == null ? 'page' : null}">Semua laporan <span class="tab-hitung" th:text="${hitung.semua}">248</span></a>
+      <a class="tab-item" th:each="t : ${semuaTahap}" th:href="@{/admin/kasus(tahap=${t.name()},q=${q},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis})}"
          th:attr="aria-current=${tahapAktif == t ? 'page' : null}"><span th:text="${#strings.capitalize(#strings.toLowerCase(t.label))}">Menunggu verifikasi</span> <span class="tab-hitung" th:text="${hitung.jumlah(t)}">24</span></a>
       <span class="tab-indikator" aria-hidden="true"></span>
     </nav>
 
     <form class="saring" th:action="@{/admin/kasus}" method="get" role="search" aria-label="Cari laporan" data-saring>
+      <input type="hidden" name="kritis" value="true" th:if="${kritis}">
       <input type="hidden" name="petugas" th:value="${petugasFilter}" th:if="${petugasFilter != null}">
       <div class="cari">
         <svg class="ikon" aria-hidden="true"><use href="#i-cari"/></svg>
@@ -51,9 +52,11 @@
     </form>
 
     <div id="hasil-laporan" data-wilayah aria-live="polite">
+      <p class="saring-aktif" th:if="${kritis}"><span>Menampilkan kasus aktif berprioritas Kritis</span><a class="tautan" th:href="@{/admin/kasus}">Lihat semua laporan</a></p>
+      <p class="saring-aktif" th:if="${tahapAktif != null and tahapAktif.name() == 'TINDAK_LANJUT'}">Diurutkan menurut prioritas, lalu pengajuan terlama.</p>
       <p class="saring-aktif" th:if="${petugasNama != null}">
         <span th:text="|Laporan yang ditangani ${petugasNama}|"></span>
-        <a class="tautan" th:href="@{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal})}">Tampilkan semua petugas</a>
+        <a class="tautan" th:href="@{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},kritis=${kritis})}">Tampilkan semua petugas</a>
       </p>
       <th:block th:if="${halaman.isi.isEmpty()}">
         <div class="kosong">
@@ -68,16 +71,16 @@
           <p th:text="|Menampilkan ${halaman.awal()}–${halaman.akhir()} dari ${halaman.total} laporan|">Menampilkan 1–7 dari 248 laporan</p>
           <nav class="paginasi-angka" aria-label="Halaman">
             <a class="tombol-ikon tombol-kotak" th:classappend="${!halaman.adaSebelumnya()} ? 'nonaktif'"
-               th:href="${halaman.adaSebelumnya()} ? @{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},halaman=${halaman.nomor - 1})} : null"
+               th:href="${halaman.adaSebelumnya()} ? @{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis},halaman=${halaman.nomor - 1})} : null"
                th:attr="aria-disabled=${!halaman.adaSebelumnya()}" aria-label="Halaman sebelumnya"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-kembali"/></svg></a>
             <th:block th:each="n : ${halaman.daftarNomor()}">
               <span class="paginasi-jeda" th:if="${n == 0}" aria-hidden="true">…</span>
               <a class="tombol-ikon tombol-kotak" th:unless="${n == 0}" th:text="${n}"
-                 th:href="@{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},halaman=${n})}"
+                 th:href="@{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis},halaman=${n})}"
                  th:attr="aria-current=${n == halaman.nomor ? 'page' : null},aria-label=|Halaman ${n}|">1</a>
             </th:block>
             <a class="tombol-ikon tombol-kotak" th:classappend="${!halaman.adaBerikutnya()} ? 'nonaktif'"
-               th:href="${halaman.adaBerikutnya()} ? @{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},halaman=${halaman.nomor + 1})} : null"
+               th:href="${halaman.adaBerikutnya()} ? @{/admin/kasus(q=${q},tahap=${tahapAktif},tanggal=${tanggal},petugas=${petugasFilter},kritis=${kritis},halaman=${halaman.nomor + 1})} : null"
                th:attr="aria-disabled=${!halaman.adaBerikutnya()}" aria-label="Halaman berikutnya"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
           </nav>
         </div>

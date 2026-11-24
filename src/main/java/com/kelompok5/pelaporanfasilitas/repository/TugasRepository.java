@@ -11,8 +11,11 @@ public interface TugasRepository extends JpaRepository<TugasPerbaikan, Long> {
     @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan"})
     List<TugasPerbaikan> findByPetugasIdOrderByWaktuPenugasanDescIdDesc(long petugasId);
 
-    @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan", "kasus.daftarLaporan.pelapor", "petugas", "penugas"})
+    @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan", "kasus.daftarLaporan.pelapor", "kasus.pemeriksa", "petugas", "penugas"})
     Optional<TugasPerbaikan> findByIdAndPetugasId(long id, long petugasId);
+
+    @Query("select t.kasus.id from TugasPerbaikan t where t.id = :id")
+    Optional<Long> cariIdKasus(long id);
 
     @EntityGraph(attributePaths = {"petugas", "penugas"})
     Optional<TugasPerbaikan> findByKasusId(long kasusId);

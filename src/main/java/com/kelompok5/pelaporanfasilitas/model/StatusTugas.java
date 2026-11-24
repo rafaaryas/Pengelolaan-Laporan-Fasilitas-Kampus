@@ -3,6 +3,7 @@ package com.kelompok5.pelaporanfasilitas.model;
 public enum StatusTugas {
     DITUGASKAN("Ditugaskan"),
     DIKERJAKAN("Sedang diperbaiki"),
+    PERLU_TINDAK_LANJUT("Perlu Tindak Lanjut"),
     SELESAI("Selesai");
 
     private final String label;

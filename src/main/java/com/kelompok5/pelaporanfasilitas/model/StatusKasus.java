@@ -5,6 +5,7 @@ public enum StatusKasus {
     MENUNGGU_PENUGASAN("Menunggu penugasan"),
     DITUGASKAN("Ditugaskan"),
     DIKERJAKAN("Sedang diperbaiki"),
+    PERLU_TINDAK_LANJUT("Perlu Tindak Lanjut"),
     SELESAI("Selesai");
 
     private final String label;

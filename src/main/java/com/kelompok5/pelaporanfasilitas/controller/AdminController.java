@@ -43,14 +43,16 @@ public class AdminController {
     String daftar(@RequestParam(defaultValue = "") String q, @RequestParam(required = false) Tahap tahap,
                   @RequestParam(required = false) StatusKasus status, @RequestParam(defaultValue = "") String tanggal,
                   @RequestParam(required = false) Long petugas, @RequestParam(defaultValue = "1") int halaman,
+                  @RequestParam(defaultValue = "false") boolean kritis,
                   jakarta.servlet.http.HttpServletRequest request, Model model) {
         Tahap aktif = tahap != null ? tahap : (status == null ? null : Tahap.dari(status));
-        var saring = new SaringanLaporan(q, aktif, tanggal, petugas, halaman);
+        var saring = new SaringanLaporan(q, aktif, tanggal, petugas, halaman, kritis);
         model.addAttribute("halaman", pantauan.daftarLaporan(saring, PER_HALAMAN));
         model.addAttribute("hitung", pantauan.hitungLaporan(saring));
         model.addAttribute("q", q);
         model.addAttribute("tahapAktif", aktif);
         model.addAttribute("tanggal", tanggal);
+        model.addAttribute("kritis", kritis);
         model.addAttribute("petugasFilter", petugas);
         model.addAttribute("semuaTahap", Tahap.values());
         model.addAttribute("kembali", request.getRequestURI() + (request.getQueryString() == null ? "" : "?" + request.getQueryString()));
@@ -63,15 +65,17 @@ public class AdminController {
 
     @GetMapping("/kasus/ekspor")
     ResponseEntity<byte[]> ekspor(@RequestParam(defaultValue = "") String q, @RequestParam(required = false) Tahap tahap,
-                                  @RequestParam(defaultValue = "") String tanggal, @RequestParam(required = false) Long petugas) {
-        var daftar = pantauan.semuaLaporanTersaring(new SaringanLaporan(q, tahap, tanggal, petugas, 1));
-        StringBuilder csv = new StringBuilder("﻿ID;Judul;Nama pelapor;Fakultas;Gedung;Lantai;Ruang;Tanggal;Status\r\n");
+                                  @RequestParam(defaultValue = "") String tanggal, @RequestParam(required = false) Long petugas,
+                                  @RequestParam(defaultValue = "false") boolean kritis) {
+        var daftar = pantauan.semuaLaporanTersaring(new SaringanLaporan(q, tahap, tanggal, petugas, 1, kritis));
+        StringBuilder csv = new StringBuilder("﻿ID;Judul;Nama pelapor;Fakultas;Gedung;Lantai;Ruang;Tanggal;Status;Prioritas\r\n");
         for (LaporanKerusakan l : daftar) {
             var lokasi = l.getLokasi();
             csv.append(String.join(";", List.of(l.getKode(), sel(l.getJudul()), sel(l.getPelapor().getNama()), sel(l.getFakultas()),
                     sel(lokasi == null ? l.getGedungLantai() : lokasi.getGedung()), l.getLantai(),
                     sel(lokasi == null || lokasi.getRuang() == null ? "" : lokasi.getRuang()),
-                    waktu.tanggalJam(l.getWaktuLaporan()), l.getTahap().getLabel()))).append("\r\n");
+                    waktu.tanggalJam(l.getWaktuLaporan()), l.getTahap().getLabel(),
+                    l.getKasus().getPrioritas() == null ? "" : l.getKasus().getPrioritas().getLabel()))).append("\r\n");
         }
         String nama = "laporan-um-peduli-" + LocalDate.parse(waktu.isoHariIni()) + ".csv";
         return ResponseEntity.ok()
@@ -172,6 +176,20 @@ public class AdminController {
             return "redirect:/admin/petugas";
         }
         return tugaskan(kasusId, petugasId, catatan, "/admin/petugas", flash);
+    }
+
+    @PostMapping("/kasus/{id}/tindak-lanjut")
+    String putuskanTindakLanjut(@PathVariable long id, @RequestParam(required = false) Long petugasId,
+                               @RequestParam(defaultValue = "") String keputusan,
+                               @RequestParam(required = false) String kembali, RedirectAttributes flash) {
+        try {
+            sistem.putuskanTindakLanjut(id, petugasId, keputusan);
+            flash.addFlashAttribute("sukses", "Keputusan tersimpan. Petugas dapat melanjutkan perbaikan.");
+            flash.addFlashAttribute("berubahKasus", id);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            flash.addFlashAttribute("kesalahan", e.getMessage());
+        }
+        return "redirect:" + kembaliAman(kembali, "/admin/kasus/" + id);
     }
 
     @PostMapping("/kasus/{id}/laporan/{laporanId}/pisahkan")

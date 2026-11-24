@@ -55,7 +55,7 @@ public class LaporanKerusakan {
     /** Laporan berbasis lokasi dengan foto bukti, seperti form "Buat laporan kerusakan". */
     LaporanKerusakan(Mahasiswa pelapor, Lokasi lokasi, String deskripsi, Berkas foto, LocalDateTime waktu) {
         if (pelapor == null || lokasi == null) throw new IllegalArgumentException("Lengkapi lokasi kerusakan.");
-        if (foto == null || !foto.ada()) throw new IllegalArgumentException("Lampirkan foto bukti kerusakan.");
+        if (foto != null && !foto.ada()) throw new IllegalArgumentException("Foto bukti kerusakan tidak valid.");
         this.pelapor = pelapor;
         this.lokasi = lokasi;
         this.deskripsi = deskripsi == null ? "" : deskripsi.strip();

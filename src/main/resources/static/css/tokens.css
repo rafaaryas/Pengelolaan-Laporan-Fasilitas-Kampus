@@ -36,9 +36,9 @@
   --ink-display-2: #87878c; /* hanya teks ≥ 24 px tebal (3,45:1) */
 
   /* Aksen tunggal */
-  --accent: #1569ff;
-  --accent-hover: #1756e0;
-  --accent-ink: #1055e6;
+  --accent: #1454cb;
+  --accent-hover: #103fa1;
+  --accent-ink: #144cae;
   --accent-tint: #f4f9ff;
   --focus: #1569ff;
 
@@ -60,6 +60,22 @@
   --selesai-bg: #f2fbf4;   --selesai-ink: #127a2c;   --selesai-dot: #16ca2d;
   --bahaya-bg: #fef6f5;    --bahaya-ink: #b3261e;    --bahaya-dot: #f26052;
   --netral-bg: #ebebee;    --netral-ink: #55555e;
+
+  /* Permukaan publik dan prioritas */
+  --beranda-biru: #b5cff7;
+  --beranda-terang: #f8faff;
+  --beranda-tengah: #e5eeff;
+  --beranda-batas: #dce6f6;
+  --beranda-judul: #152a49;
+  --beranda-isi: #2a4264;
+  --beranda-garis: #a8bfdf;
+  --beranda-penekanan: #162e50;
+  --beranda-pendukung: #304966;
+  --foto-naungan: rgb(10 24 49 / .86);
+  --tindak-lanjut-dot: #9b620b;
+  --prioritas-tinggi-bg: #fff0e6;
+  --prioritas-tinggi-ink: #914212;
+  --prioritas-kritis-border: #e8bcb7;
 
   /* Tipe */
   --font: "Inter", "Segoe UI", system-ui, sans-serif;
@@ -94,7 +110,9 @@
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --d-cepat: 120ms;
   --d-sedang: 160ms;
-  --d-masuk: 200ms;
+  --d-masuk: 220ms;
+  --d-halaman: 250ms;
+  --d-hero: 380ms;
 
   /* Tata letak */
   --sisi-lebar: 248px;
@@ -105,5 +123,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --d-cepat: 0ms; --d-sedang: 0ms; --d-masuk: 0ms; }
+  :root { --d-cepat: 0ms; --d-sedang: 0ms; --d-masuk: 0ms; --d-halaman: 0ms; --d-hero: 0ms; }
 }

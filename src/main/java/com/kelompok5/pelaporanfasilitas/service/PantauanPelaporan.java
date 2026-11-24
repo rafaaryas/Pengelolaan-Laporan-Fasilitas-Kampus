@@ -81,12 +81,23 @@ public class PantauanPelaporan {
         Set<Long> kasusPetugas = saring.petugasId() == null ? null : new HashSet<>(tugas.semua().stream()
                 .filter(t -> t.getPetugas().getId().equals(saring.petugasId())).map(t -> t.getKasus().getId()).toList());
         Predicate<LocalDateTime> tanggal = rentangTanggal(saring.tanggal());
-        return laporan.semua().stream()
+        var hasil = laporan.semua().stream()
                 .filter(l -> !pakaiTahap || saring.tahap() == null || l.getTahap() == saring.tahap())
                 .filter(l -> kasusPetugas == null || kasusPetugas.contains(l.getKasus().getId()))
                 .filter(l -> tanggal.test(l.getWaktuLaporan()))
-                .filter(l -> cocok(kata, l, true))
-                .toList();
+                .filter(l -> cocok(kata, l, true));
+        if (saring.kritis()) {
+            hasil = hasil.filter(l -> l.getKasus().getPrioritas() == Prioritas.KRITIS && l.getTahap() != Tahap.SELESAI);
+        }
+        if (pakaiTahap && saring.tahap() == Tahap.TINDAK_LANJUT) {
+            Map<Long, LocalDateTime> waktuPengajuan = new HashMap<>();
+            tugas.semua().stream().filter(t -> t.getStatus() == StatusTugas.PERLU_TINDAK_LANJUT)
+                    .forEach(t -> waktuPengajuan.put(t.getKasus().getId(), t.getWaktuTindakLanjut()));
+            hasil = hasil.sorted(Comparator.comparing((LaporanKerusakan l) -> l.getKasus().getPrioritas(),
+                            Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(l -> waktuPengajuan.get(l.getKasus().getId()), Comparator.nullsLast(Comparator.naturalOrder())));
+        }
+        return hasil.toList();
     }
 
     private Predicate<LocalDateTime> rentangTanggal(String kode) {
@@ -120,6 +131,8 @@ public class PantauanPelaporan {
         int skala = (int) Math.max(15, Math.ceil(puncak / 15.0) * 15); // habis dibagi 3 garis bantu
         int persen = hitung.semua() == 0 ? 0 : (int) Math.round(hitung.selesai() * 100.0 / hitung.semua());
         return new RingkasanAdmin(hitung.semua(), bulanIni - bulanLalu, hitung, persen, grafik, skala,
+                semua.stream().filter(l -> l.getKasus().getPrioritas() == Prioritas.KRITIS && l.getTahap() != Tahap.SELESAI)
+                        .map(l -> l.getKasus().getId()).distinct().count(),
                 semua.stream().limit(3).toList());
     }
 
@@ -174,8 +187,10 @@ public class PantauanPelaporan {
         YearMonth kini = YearMonth.now(jam);
         List<TugasPerbaikan> aktif = semua.stream().filter(t -> t.getStatus() != StatusTugas.SELESAI).toList();
         return new RingkasanPetugas(aktif.size(),
-                aktif.stream().filter(t -> t.getStatus() == StatusTugas.DITUGASKAN).count(),
+                aktif.stream().filter(t -> !t.getKasus().isSudahDiperiksa()).count(),
                 aktif.stream().filter(t -> t.getStatus() == StatusTugas.DIKERJAKAN).count(),
+                aktif.stream().filter(t -> t.getStatus() == StatusTugas.PERLU_TINDAK_LANJUT).count(),
+                semua.size() - aktif.size(),
                 semua.stream().filter(t -> t.getWaktuSelesai() != null && YearMonth.from(t.getWaktuSelesai()).equals(kini)).count(),
                 aktif);
     }
@@ -207,6 +222,7 @@ public class PantauanPelaporan {
             if (k.getWaktuVerifikasi() != null) hasil.add(new Notifikasi(l.getKode() + " terverifikasi", l.getJudul(), k.getWaktuVerifikasi(), tautan));
             tugas.findByKasusId(k.getId()).ifPresent(t -> {
                 if (t.getWaktuMulai() != null) hasil.add(new Notifikasi(l.getKode() + " sedang diperbaiki", l.getJudul(), t.getWaktuMulai(), tautan));
+                if (t.getStatus() == StatusTugas.PERLU_TINDAK_LANJUT) hasil.add(new Notifikasi(l.getKode() + " perlu tindak lanjut", l.getJudul(), t.getWaktuTindakLanjut(), tautan));
                 if (t.getWaktuSelesai() != null) hasil.add(new Notifikasi(l.getKode() + " selesai diperbaiki", l.getJudul(), t.getWaktuSelesai(), tautan));
             });
         }
@@ -214,17 +230,30 @@ public class PantauanPelaporan {
     }
 
     public List<Notifikasi> notifikasiPetugas(long petugasId) {
-        return terbaru(tugasPetugas(petugasId).stream()
-                .map(t -> new Notifikasi("Tugas baru " + t.getKasus().getLaporanUtama().getKode(), t.getKasus().getLaporanUtama().getJudul(),
-                        t.getWaktuPenugasan(), "/petugas/tugas/" + t.getId()))
-                .toList());
+        List<Notifikasi> hasil = new ArrayList<>();
+        for (TugasPerbaikan t : tugasPetugas(petugasId)) {
+            LaporanKerusakan l = t.getKasus().getLaporanUtama();
+            String tautan = "/petugas/tugas/" + t.getId();
+            hasil.add(new Notifikasi("Tugas baru " + l.getKode(), l.getJudul(), t.getWaktuPenugasan(), tautan));
+            if (t.getWaktuKeputusan() != null && !t.getWaktuKeputusan().equals(t.getWaktuPenugasan())) {
+                hasil.add(new Notifikasi("Keputusan tindak lanjut " + l.getKode(), l.getJudul(), t.getWaktuKeputusan(), tautan));
+            }
+        }
+        return terbaru(hasil);
     }
 
     public List<Notifikasi> notifikasiAdmin() {
-        return terbaru(laporan.semua().stream().filter(l -> l.getTahap() == Tahap.MENUNGGU)
+        List<Notifikasi> hasil = new ArrayList<>(laporan.semua().stream().filter(l -> l.getTahap() == Tahap.MENUNGGU)
                 .map(l -> new Notifikasi("Laporan masuk " + l.getKode(), l.getJudul(), l.getWaktuLaporan(),
                         "/admin/kasus/" + l.getKasus().getId()))
                 .toList());
+        for (TugasPerbaikan t : tugas.semua()) {
+            if (t.getStatus() != StatusTugas.PERLU_TINDAK_LANJUT) continue;
+            LaporanKerusakan l = t.getKasus().getLaporanUtama();
+            hasil.add(new Notifikasi("Tindak lanjut " + l.getKode(), l.getJudul(), t.getWaktuTindakLanjut(),
+                    "/admin/kasus/" + t.getKasus().getId()));
+        }
+        return terbaru(hasil);
     }
 
     private List<Notifikasi> terbaru(List<Notifikasi> daftar) {
@@ -247,13 +276,14 @@ public class PantauanPelaporan {
     public record DetailLaporan(LaporanKerusakan laporan, TugasPerbaikan tugas) {}
     public record DetailKasus(KasusKerusakan kasus, TugasPerbaikan tugas) {}
 
-    public record SaringanLaporan(String q, Tahap tahap, String tanggal, Long petugasId, int halaman) {}
+    public record SaringanLaporan(String q, Tahap tahap, String tanggal, Long petugasId, int halaman, boolean kritis) {}
 
-    public record HitungTahap(long semua, long menunggu, long terverifikasi, long diperbaiki, long selesai) {
+    public record HitungTahap(long semua, long menunggu, long terverifikasi, long ditugaskan,
+                              long diperbaiki, long tindakLanjut, long selesai) {
         static HitungTahap dari(Collection<LaporanKerusakan> daftar) {
-            long[] n = new long[4];
+            long[] n = new long[Tahap.values().length];
             daftar.forEach(l -> n[l.getTahap().ordinal()]++);
-            return new HitungTahap(daftar.size(), n[0], n[1], n[2], n[3]);
+            return new HitungTahap(daftar.size(), n[0], n[1], n[2], n[3], n[4], n[5]);
         }
 
         public long jumlah(Tahap tahap) {
@@ -261,18 +291,20 @@ public class PantauanPelaporan {
             return switch (tahap) {
                 case MENUNGGU -> menunggu;
                 case TERVERIFIKASI -> terverifikasi;
+                case DITUGASKAN -> ditugaskan;
                 case DIPERBAIKI -> diperbaiki;
+                case TINDAK_LANJUT -> tindakLanjut;
                 case SELESAI -> selesai;
             };
         }
 
-        public long diproses() { return terverifikasi + diperbaiki; }
+        public long diproses() { return terverifikasi + ditugaskan + diperbaiki + tindakLanjut; }
     }
 
     public record TitikBulan(String label, String labelPanjang, long masuk, long selesai) {}
 
     public record RingkasanAdmin(long total, long selisihBulanLalu, HitungTahap hitung, int persenSelesai,
-                                 List<TitikBulan> grafik, int skalaGrafik, List<LaporanKerusakan> terbaru) {
+                                 List<TitikBulan> grafik, int skalaGrafik, long kritisAktif, List<LaporanKerusakan> terbaru) {
         /** Panjang busur donut (keliling 2πr dengan r = 52). */
         public double busurSelesai() { return 2 * Math.PI * 52 * persenSelesai / 100.0; }
         public double kelilingDonut() { return 2 * Math.PI * 52; }
@@ -282,7 +314,7 @@ public class PantauanPelaporan {
         }
     }
 
-    public record RingkasanPetugas(long aktif, long perluDiperiksa, long diperbaiki, long selesaiBulanIni,
+    public record RingkasanPetugas(long aktif, long perluDiperiksa, long diperbaiki, long tindakLanjut, long selesaiTotal, long selesaiBulanIni,
                                    List<TugasPerbaikan> tugasAktif) {}
 
     public record BarisPetugas(Petugas petugas, long tugasAktif, boolean dalamJamKerja) {

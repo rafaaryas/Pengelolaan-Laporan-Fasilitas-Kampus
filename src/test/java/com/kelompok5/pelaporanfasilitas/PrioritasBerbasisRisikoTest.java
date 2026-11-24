@@ -16,7 +16,7 @@ class PrioritasBerbasisRisikoTest {
     @CsvSource({"true,RINGAN,KRITIS", "false,BERAT,TINGGI", "false,SEBAGIAN,SEDANG", "false,RINGAN,RENDAH"})
     void prioritasDitentukanDariPemeriksaan(boolean bahaya, Gangguan tingkat, Prioritas prioritas) {
         var kasus = mock(KasusKerusakan.class);
-        when(kasus.isTerverifikasi()).thenReturn(true);
+        when(kasus.isSudahDiperiksa()).thenReturn(true);
         when(kasus.isBahayaKritis()).thenReturn(bahaya);
         when(kasus.getGangguan()).thenReturn(tingkat);
         assertEquals(prioritas, strategi.tentukan(kasus));

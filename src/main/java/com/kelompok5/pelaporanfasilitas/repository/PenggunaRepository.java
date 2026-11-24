@@ -24,6 +24,9 @@ public interface PenggunaRepository extends JpaRepository<Pengguna, Long> {
     @Query("select m from Mahasiswa m where m.nim = :nim")
     Optional<Mahasiswa> cariNim(String nim);
 
+    @Query("select count(p) from Petugas p")
+    long jumlahPetugas();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Petugas p where p.id = :id")
     Optional<Petugas> kunciPetugas(long id);

@@ -12,17 +12,18 @@ public class Admin extends Pengguna {
     @Override
     public boolean bolehMelakukan(Aksi aksi) { return aksi == Aksi.KELOLA_KASUS; }
 
+    public void verifikasi(KasusKerusakan kasus, LocalDateTime waktu) { kasus.verifikasiOleh(this, waktu); }
+
     public TugasPerbaikan tetapkanPenugasan(KasusKerusakan kasus, Petugas petugas,
                                           LocalDateTime waktu, String catatan) {
-        if (!kasus.isTerverifikasi() || kasus.getPrioritas() == null
-                || kasus.getStatus() != StatusKasus.MENUNGGU_PENUGASAN) {
+        if (!kasus.isTerverifikasi() || kasus.getStatus() != StatusKasus.MENUNGGU_PENUGASAN) {
             throw new IllegalStateException("Kasus harus terverifikasi dan sedang menunggu penugasan.");
         }
         if (!petugas.mampuMenangani(kasus.getFasilitas())) {
             throw new IllegalStateException("Keahlian petugas tidak sesuai dengan fasilitas.");
         }
-        if (!petugas.tersediaPada(waktu.toLocalTime())) {
-            throw new IllegalStateException("Petugas sedang bertugas atau di luar jam kerja.");
+        if (!petugas.dalamJamKerja(waktu.toLocalTime())) {
+            throw new IllegalStateException("Petugas sedang di luar jam kerja.");
         }
         kasus.ubahStatus(StatusKasus.DITUGASKAN);
         petugas.tandaiSibuk(true);

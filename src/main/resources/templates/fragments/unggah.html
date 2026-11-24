@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Dropzone foto: klik atau seret, pratinjau, nama + ukuran, ganti, hapus.
+  Tanpa JavaScript tetap berupa input file biasa yang bisa dipilih lewat label.
+-->
+<div th:fragment="dropzone(nama, teks, wajib)" class="dropzone" data-dropzone>
+  <input class="dropzone-input" type="file" th:id="${nama}" th:name="${nama}" accept="image/jpeg,image/png"
+         th:required="${wajib}" th:attr="aria-describedby=|${nama}-bantuan ${nama}-galat|,data-pesan='Lampirkan foto JPG atau PNG, maksimal 5 MB.'">
+  <label class="dropzone-kosong" th:for="${nama}">
+    <svg class="ikon" aria-hidden="true"><use href="#i-unggah"/></svg>
+    <strong th:text="${teks}">Unggah foto</strong>
+    <span>JPG / PNG · Maksimal 5 MB</span>
+  </label>
+  <div class="dropzone-isi" hidden>
+    <span class="dropzone-pratinjau" data-pratinjau></span>
+    <p class="dropzone-info"><strong data-nama-berkas></strong><span data-ukuran-berkas></span></p>
+    <div class="dropzone-aksi">
+      <label class="tombol tombol-kedua tombol-kecil" th:for="${nama}">Ganti foto</label>
+      <button class="tombol-ikon" type="button" data-hapus-berkas aria-label="Hapus foto"><svg class="ikon" aria-hidden="true"><use href="#i-hapus"/></svg></button>
+    </div>
+  </div>
+</div>
+</html>

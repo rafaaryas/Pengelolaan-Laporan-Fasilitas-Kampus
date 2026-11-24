@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -18,27 +19,75 @@ public class PetugasController {
     private final IdentitasMasuk identitas;
     private final SistemPelaporan sistem;
     private final PantauanPelaporan pantauan;
+    private final PenyimpananBerkas penyimpanan;
 
-    public PetugasController(IdentitasMasuk identitas, SistemPelaporan sistem, PantauanPelaporan pantauan) {
+    public PetugasController(IdentitasMasuk identitas, SistemPelaporan sistem, PantauanPelaporan pantauan,
+                             PenyimpananBerkas penyimpanan) {
         this.identitas = identitas;
         this.sistem = sistem;
         this.pantauan = pantauan;
+        this.penyimpanan = penyimpanan;
     }
 
     @GetMapping
     String dashboard(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
         Petugas akun = identitas.petugas(masuk, model);
-        var verifikasi = pantauan.daftarKasus("", StatusKasus.MENUNGGU_VERIFIKASI, null);
-        var tugas = pantauan.tugasPetugas(akun.getId());
-        model.addAttribute("jumlahVerifikasi", verifikasi.size());
-        model.addAttribute("aktif", tugas.stream().filter(t -> t.getStatus() != StatusTugas.SELESAI).count());
-        model.addAttribute("proses", tugas.stream().filter(t -> t.getStatus() == StatusTugas.DIKERJAKAN).count());
-        model.addAttribute("selesai", tugas.stream().filter(t -> t.getStatus() == StatusTugas.SELESAI).count());
-        model.addAttribute("daftarVerifikasi", verifikasi.stream().limit(4).toList());
-        model.addAttribute("daftarTugas", tugas.stream().limit(4).toList());
+        model.addAttribute("ringkasan", pantauan.ringkasanPetugas(akun.getId()));
+        // Layar menulis "Pak Budi"; sapaan bergender tidak ditebak dari nama, jadi dipakai nama depan.
+        model.addAttribute("sapaanNama", akun.getNama().split(" ")[0]);
         return "petugas/index";
     }
 
+    @GetMapping("/tugas")
+    String daftarTugas(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
+        model.addAttribute("daftarTugas", pantauan.tugasPetugas(akun.getId()));
+        return "petugas/tugas";
+    }
+
+    @GetMapping("/tugas/{id}")
+    String detailTugas(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
+        var tugas = pantauan.detailTugas(id, akun.getId());
+        model.addAttribute("tugas", tugas);
+        model.addAttribute("kasus", tugas.getKasus());
+        model.addAttribute("laporan", tugas.getKasus().getLaporanUtama());
+        return "petugas/detail";
+    }
+
+    /** "Simpan pembaruan": memulai perbaikan bila belum dimulai dan menyimpan catatan penanganan. */
+    @PostMapping("/tugas/{id}/progres")
+    String progres(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
+                   @RequestParam(defaultValue = "DIKERJAKAN") String status,
+                   @RequestParam(value = "foto", required = false) MultipartFile foto,
+                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        if ("SELESAI".equals(status)) return selesai(id, catatan, foto, masuk, model, flash);
+        Petugas akun = identitas.petugas(masuk, model);
+        return ubahTugas(id, flash, "Pembaruan tersimpan. Status laporan: Sedang Diperbaiki.",
+                () -> sistem.perbaruiProgres(id, akun.getId(), catatan));
+    }
+
+    /** "Tandai selesai": catatan penanganan dan foto hasil perbaikan wajib. */
+    @PostMapping("/tugas/{id}/selesai")
+    String selesai(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
+                   @RequestParam(value = "foto", required = false) MultipartFile foto,
+                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
+        return ubahTugas(id, flash, "Tugas ditandai selesai. Pelapor bisa melihat hasilnya.", () -> {
+            if (catatan.isBlank()) throw new IllegalArgumentException("Isi catatan penanganan sebelum menandai selesai.");
+            Berkas berkas = penyimpanan.simpan(foto)
+                    .orElseThrow(() -> new IllegalArgumentException("Unggah foto hasil perbaikan sebelum menandai selesai."));
+            sistem.selesaikanTugas(id, akun.getId(), catatan, berkas);
+        });
+    }
+
+    @PostMapping("/tugas/{id}/mulai")
+    String mulai(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
+        return ubahTugas(id, flash, "Perbaikan dimulai.", () -> sistem.mulaiTugas(id, akun.getId()));
+    }
+
+    // ----- Pemeriksaan di lokasi (alur lama, tidak tampil di menu) -----
 
     @GetMapping("/verifikasi")
     String daftarVerifikasi(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
@@ -62,49 +111,12 @@ public class PetugasController {
         try {
             identitas.pastikanSama(akun, form.petugasId());
             sistem.verifikasi(id, akun.getId(), form.bahayaKritis(), form.gangguan(), form.unitRusak(), form.catatan());
-            flash.addFlashAttribute("sukses", "Verifikasi disimpan. Kasus siap ditugaskan oleh admin.");
+            flash.addFlashAttribute("sukses", "Hasil pemeriksaan tersimpan. Laporan siap ditugaskan admin.");
             return "redirect:/petugas/verifikasi";
         } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("kesalahan", e.getMessage());
             return siapkanVerifikasi(id, model);
         }
-    }
-
-    @GetMapping("/tugas")
-    String daftarTugas(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
-        Petugas akun = identitas.petugas(masuk, model);
-        model.addAttribute("daftarTugas", pantauan.tugasPetugas(akun.getId()));
-        return "petugas/tugas";
-    }
-
-    @GetMapping("/tugas/{id}")
-    String detailTugas(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
-        Petugas akun = identitas.petugas(masuk, model);
-        var tugas = pantauan.detailTugas(id, akun.getId());
-        model.addAttribute("tugas", tugas);
-        model.addAttribute("kasus", tugas.getKasus());
-        return "petugas/detail";
-    }
-
-    @PostMapping("/tugas/{id}/mulai")
-    String mulai(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(masuk, model);
-        return ubahTugas(id, flash, "Perbaikan dimulai.", () -> sistem.mulaiTugas(id, akun.getId()));
-    }
-
-    @PostMapping("/tugas/{id}/progres")
-    String progres(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
-                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(masuk, model);
-        return ubahTugas(id, flash, "Catatan progres disimpan.", () -> sistem.catatProgres(id, akun.getId(), catatan));
-    }
-
-    @PostMapping("/tugas/{id}/selesai")
-    String selesai(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
-                   @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(masuk, model);
-        return ubahTugas(id, flash, "Perbaikan selesai. Status kasus dan kondisi fasilitas telah diperbarui.",
-                () -> sistem.selesaikanTugas(id, akun.getId(), catatan));
     }
 
     private String siapkanVerifikasi(long id, Model model) {
@@ -117,6 +129,7 @@ public class PetugasController {
         try {
             aksi.run();
             flash.addFlashAttribute("sukses", sukses);
+            flash.addFlashAttribute("berubah", true);
         } catch (IllegalArgumentException | IllegalStateException e) {
             flash.addFlashAttribute("kesalahan", e.getMessage());
         }

@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/petugas/**").hasRole("PETUGAS")
                         .requestMatchers("/mahasiswa/**").hasRole("MAHASISWA")
+                        .requestMatchers("/berkas/**").authenticated()
                         // Beranda, /login, /akses-ditolak, /error, dan aset statis bersifat publik.
                         .anyRequest().permitAll())
                 .csrf(c -> c.csrfTokenRepository(csrf))
@@ -41,7 +42,10 @@ public class SecurityConfig {
                         .accessDeniedPage("/akses-ditolak"))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?keluar"))
+                // "Masuk dengan akun lain" mengirim lanjut=login; tujuan tetap, bukan dari masukan pengguna.
+                .logout(l -> l.logoutUrl("/logout").logoutSuccessHandler((request, response, auth) ->
+                        response.sendRedirect(request.getContextPath()
+                                + ("login".equals(request.getParameter("lanjut")) ? "/login" : "/?keluar"))))
                 .build();
     }
 

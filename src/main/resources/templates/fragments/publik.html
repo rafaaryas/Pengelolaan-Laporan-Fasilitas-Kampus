@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<header th:fragment="bar" class="pub-bar">
+  <a class="merek" th:href="@{/}">
+    <img th:src="@{/images/um-emblem.png}" alt="" width="40" height="40">
+    <span><strong>UM Peduli</strong><small>Universitas Negeri Malang</small></span>
+  </a>
+  <a class="tombol tombol-utama tombol-kecil" th:if="${akunMasuk == null}" th:href="@{/login}">Masuk</a>
+  <a class="tombol tombol-kedua tombol-kecil" th:if="${akunMasuk != null}" th:href="@{${akunMasuk.beranda()}}">Ke ruang kerja</a>
+</header>
+
+<footer th:fragment="kaki" class="pub-kaki">
+  <p>Advance Programming, Kelompok 5, Offering C. Teknik Informatika, Universitas Negeri Malang.</p>
+  <p>Mode demo akademik: masuk tanpa kata sandi.</p>
+</footer>
+</html>

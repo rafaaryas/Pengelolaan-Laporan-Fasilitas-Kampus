@@ -1,30 +1,35 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<!-- Daftar laporan milik mahasiswa: linimasa status per laporan -->
-<ul th:fragment="daftar(riwayat)" class="lap-daftar">
-  <li th:each="laporan : ${riwayat}" class="lap-item">
-    <a th:href="@{/mahasiswa/laporan/{id}(id=${laporan.id})}">
-      <span class="lap-kepala"><span class="kode" th:text="|UM-${laporan.id}|"></span><time th:datetime="${laporan.waktuLaporan}" th:text="${#temporals.format(laporan.waktuLaporan, 'd MMM yyyy')}"></time></span>
-      <span class="lap-judul" th:text="|${laporan.fasilitas.nama} · ${laporan.jenisKerusakan.label}|"></span>
-      <span class="lap-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><span th:text="${laporan.fasilitas.lokasi}"></span></span>
-      <span class="lap-status"><span th:replace="~{fragments/common :: tahap(${laporan.kasus.status})}"></span><th:block th:if="${laporan.kasus.prioritas != null}"><span th:replace="~{fragments/common :: priority(${laporan.kasus.prioritas})}"></span></th:block></span>
-    </a>
-  </li>
-</ul>
-
-<!-- Laporan-laporan yang tergabung dalam satu kasus (admin dan petugas) -->
-<section th:fragment="aduan(kasus, dapatPisahkan)" class="blok aduan-blok" aria-labelledby="judul-aduan">
-  <div class="blok-kepala"><h2 id="judul-aduan">Laporan mahasiswa</h2><span class="hitung" th:text="|${kasus.daftarLaporan.size()} laporan · ${kasus.pelaporUnik} pelapor|"></span></div>
-  <ol class="aduan-daftar">
-    <li class="aduan" th:each="laporan : ${kasus.daftarLaporan}">
-      <div class="aduan-kepala">
-        <p><strong th:text="${laporan.pelapor.nama}"></strong> <span class="kode" th:text="|UM-${laporan.id}|"></span> <time class="redup" th:text="|${#temporals.format(laporan.waktuLaporan, 'd MMM yyyy, HH:mm')} WIB|"></time></p>
-        <form th:if="${dapatPisahkan}" th:action="@{/admin/kasus/{id}/laporan/{laporanId}/pisahkan(id=${kasus.id},laporanId=${laporan.id})}" method="post" data-confirm="Pisahkan laporan ini menjadi kasus baru untuk diverifikasi?">
-          <button class="tombol tombol-garis tombol-kecil" type="submit">Pisahkan ke kasus baru</button>
-        </form>
+<!-- Kartu rincian laporan: status, judul, fakta lokasi, deskripsi, foto bukti. -->
+<article th:fragment="rincian(laporan, berbingkai)" th:class="${berbingkai} ? 'kartu kartu-utama rincian' : 'rincian'"
+         th:attr="aria-labelledby=|judul-laporan-${laporan.id}|">
+  <p class="rincian-status" th:classappend="${berubahKasus == laporan.kasus.id or berubah != null} ? 'baru-berubah'"><span th:replace="~{fragments/shell :: pill(${laporan.tahap})}"></span></p>
+  <h2 class="rincian-judul" th:id="|judul-laporan-${laporan.id}|" th:text="${laporan.judul}">AC ruang kuliah tidak dingin</h2>
+  <dl class="fakta">
+    <div><dt>Nama pelapor</dt><dd th:text="${laporan.pelapor.nama}">Nadia Putri</dd></div>
+    <div><dt>Fakultas</dt><dd th:text="${laporan.fakultas}">Teknik</dd></div>
+    <div><dt>Gedung</dt><dd th:text="${laporan.gedungRuang}">B11 · Ruang 204</dd></div>
+    <div><dt>Lantai</dt><dd th:text="${laporan.lantai}">2</dd></div>
+    <div class="fakta-penuh"><dt>Deskripsi kerusakan</dt><dd class="teks-pengguna" th:text="${laporan.deskripsi}"></dd></div>
+  </dl>
+  <section class="foto-bukti" th:attr="aria-labelledby=|judul-foto-${laporan.id}|">
+    <h3 th:id="|judul-foto-${laporan.id}|">Foto bukti kerusakan</h3>
+    <th:block th:if="${laporan.adaFoto}">
+      <div class="foto-bukti-isi">
+        <a class="foto-bukti-gambar" th:href="@{/berkas/bukti/{id}(id=${laporan.id})}" target="_blank" rel="noopener">
+          <img th:src="@{/berkas/bukti/{id}(id=${laporan.id})}" th:alt="|Foto bukti: ${laporan.judul}|" width="340" height="210" decoding="async">
+        </a>
+        <div class="foto-bukti-info">
+          <p class="foto-bukti-nama" th:text="${laporan.fotoBukti.nama}">ac-ruang-204.jpg</p>
+          <p class="foto-bukti-meta" th:text="|1 foto terlampir · ${laporan.fotoBukti.ukuranTeks}|">1 foto terlampir</p>
+          <a class="tautan" th:href="@{/berkas/bukti/{id}(id=${laporan.id})}" target="_blank" rel="noopener">Lihat foto ukuran penuh<svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-keluar-tautan"/></svg></a>
+          <p class="foto-bukti-kredit" th:if="${laporan.fotoKredit != null}" th:text="${laporan.fotoKredit}"></p>
+        </div>
       </div>
-      <p class="teks-pengguna" th:text="${laporan.deskripsi}"></p>
-    </li>
-  </ol>
-</section>
+    </th:block>
+    <p class="foto-kosong" th:unless="${laporan.adaFoto}">
+      <svg class="ikon" aria-hidden="true"><use href="#i-gambar"/></svg>Laporan ini dikirim tanpa foto bukti.
+    </p>
+  </section>
+</article>
 </html>

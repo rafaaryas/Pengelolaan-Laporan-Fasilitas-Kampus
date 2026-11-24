@@ -1,20 +1,77 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Laporan saya')}"></head>
-<body th:replace="~{fragments/common :: mahasiswa('laporan', ~{::main})}">
-<main id="main" tabindex="-1" class="m-main">
-  <header class="m-judul-hal">
-    <h1>Laporan saya</h1>
-    <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}"><svg aria-hidden="true"><use href="#i-plus"/></svg>Laporan baru</a>
+<head th:replace="~{fragments/shell :: head('Laporan saya')}"></head>
+<body th:replace="~{fragments/shell :: ruang('laporan', ~{::main})}">
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal">
+    <div>
+      <h1>Laporan Saya</h1>
+      <p class="hanya-lebar">Pantau perkembangan dan riwayat laporan kerusakan yang kamu kirim.</p>
+      <p class="hanya-sempit">Pantau progres laporan kerusakanmu.</p>
+    </div>
+    <a class="tombol tombol-utama hanya-lebar" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-tambah"/></svg>Buat laporan</a>
   </header>
-  <form class="saring" th:action="@{/mahasiswa/laporan}" method="get" role="search" aria-label="Saring laporan">
-    <div class="field field-cari"><label for="q">Cari</label><input id="q" type="search" name="q" th:value="${q}" placeholder="UM-12, AC B13, atau Gedung B13"></div>
-    <div class="field"><label for="status">Tahap</label><select id="status" name="status"><option value="">Semua tahap</option><option th:each="item : ${semuaStatus}" th:value="${item}" th:selected="${item == statusFilter}" th:text="${item.label}"></option></select></div>
-    <button class="tombol tombol-garis" type="submit">Terapkan</button>
-  </form>
-  <p class="hasil-hitung" aria-live="polite" th:text="${riwayat.isEmpty() ? 'Tidak ada laporan yang cocok.' : riwayat.size() + ' laporan'}"></p>
-  <th:block th:if="${riwayat.isEmpty()}"><div th:replace="~{fragments/common :: empty('Tidak ada laporan untuk ditampilkan', 'Ubah kata kunci atau tahap, atau kirim laporan baru.')}"></div></th:block>
-  <th:block th:unless="${riwayat.isEmpty()}"><ul th:replace="~{fragments/laporan :: daftar(${riwayat})}"></ul></th:block>
+
+  <section class="kartu kartu-utama kartu-daftar lepas-sempit" aria-labelledby="judul-daftar">
+    <h2 id="judul-daftar" class="sr-only">Daftar laporan</h2>
+    <nav class="tab hanya-lebar" id="tab-laporan" data-wilayah aria-label="Saring menurut status">
+      <a class="tab-item" th:href="@{/mahasiswa/laporan(q=${q})}" th:attr="aria-current=${tahapAktif == null ? 'page' : null}" th:text="|Semua (${hitung.semua})|">Semua (8)</a>
+      <a class="tab-item" th:each="t : ${semuaTahap}" th:href="@{/mahasiswa/laporan(tahap=${t.name()},q=${q})}"
+         th:attr="aria-current=${tahapAktif == t ? 'page' : null}" th:text="|${t.labelPendek} (${hitung.jumlah(t)})|">Menunggu (2)</a>
+      <span class="tab-indikator" aria-hidden="true"></span>
+    </nav>
+
+    <form class="saring" th:action="@{/mahasiswa/laporan}" method="get" role="search" aria-label="Cari laporan" data-saring>
+      <div class="cari">
+        <svg class="ikon" aria-hidden="true"><use href="#i-cari"/></svg>
+        <label class="sr-only" for="q">Cari laporan</label>
+        <input id="q" class="input" type="search" name="q" th:value="${q}" autocomplete="off"
+               placeholder="Cari ID, kerusakan, atau lokasi…">
+      </div>
+      <div class="select select-ringkas">
+        <label class="sr-only" for="tahap">Status</label>
+        <select id="tahap" name="tahap" data-saring-langsung>
+          <option value="" th:text="|Semua status (${hitung.semua})|">Semua status</option>
+          <option th:each="t : ${semuaTahap}" th:value="${t.name()}" th:selected="${tahapAktif == t}"
+                  th:text="|${t.label} (${hitung.jumlah(t)})|"></option>
+        </select>
+      </div>
+      <button class="tombol tombol-kedua tanpa-js" type="submit">Terapkan</button>
+    </form>
+
+    <div id="hasil-laporan" data-wilayah aria-live="polite">
+      <th:block th:if="${halaman.isi.isEmpty()}">
+        <div class="kosong">
+          <p class="kosong-judul">Belum ada laporan yang cocok.</p>
+          <p th:if="${hitung.semua > 0 or !q.isEmpty()}">Ubah kata kunci atau filter.</p>
+          <p th:unless="${hitung.semua > 0 or !q.isEmpty()}">Laporan yang kamu kirim akan muncul di sini.</p>
+          <a class="tombol tombol-kedua" th:if="${tahapAktif != null or !q.isEmpty()}" th:href="@{/mahasiswa/laporan}">Hapus filter</a>
+        </div>
+      </th:block>
+      <ul class="laporan-daftar" th:unless="${halaman.isi.isEmpty()}">
+        <li th:each="l : ${halaman.isi}" class="laporan-item">
+          <span class="laporan-kode" th:text="${l.kode}">UM-0248</span>
+          <time class="laporan-tanggal-sempit" th:datetime="${@waktu.iso(l.waktuLaporan)}" th:text="${@waktu.tanggal(l.waktuLaporan)}"></time>
+          <h3 class="laporan-judul"><a th:href="@{/mahasiswa/laporan/{id}(id=${l.id})}" th:text="${l.judul}">AC ruang kuliah tidak dingin</a></h3>
+          <p class="laporan-lokasi" th:text="${l.lokasiRingkas}">Teknik · B11 · Lantai 2</p>
+          <p class="laporan-dikirim">Dikirim <time th:datetime="${@waktu.iso(l.waktuLaporan)}" th:text="${@waktu.tanggal(l.waktuLaporan)}">20 Nov 2026</time></p>
+          <span class="laporan-status"><span th:replace="~{fragments/shell :: pill(${l.tahap})}"></span></span>
+          <span class="laporan-aksi" aria-hidden="true"><span class="hanya-lebar">Lihat detail</span><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></span>
+        </li>
+      </ul>
+      <div class="paginasi" th:unless="${halaman.isi.isEmpty()}">
+        <p th:text="|Menampilkan ${halaman.awal()}–${halaman.akhir()} dari ${halaman.total} laporan|">Menampilkan 1–4 dari 8 laporan</p>
+        <div class="paginasi-tombol">
+          <a class="tombol tombol-kedua" th:classappend="${!halaman.adaSebelumnya()} ? 'nonaktif'"
+             th:href="${halaman.adaSebelumnya()} ? @{/mahasiswa/laporan(q=${q},tahap=${tahapAktif},halaman=${halaman.nomor - 1})} : null"
+             th:attr="aria-disabled=${!halaman.adaSebelumnya()}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-kembali"/></svg>Sebelumnya</a>
+          <a class="tombol tombol-kedua" th:classappend="${!halaman.adaBerikutnya()} ? 'nonaktif'"
+             th:href="${halaman.adaBerikutnya()} ? @{/mahasiswa/laporan(q=${q},tahap=${tahapAktif},halaman=${halaman.nomor + 1})} : null"
+             th:attr="aria-disabled=${!halaman.adaBerikutnya()}">Berikutnya<svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 </body>
 </html>

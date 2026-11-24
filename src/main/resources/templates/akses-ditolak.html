@@ -1,17 +1,21 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Akses ditolak')}"></head>
+<head th:replace="~{fragments/shell :: head('Akses ditolak')}"></head>
 <body class="publik">
-  <svg th:replace="~{fragments/common :: symbols}"></svg>
-  <header th:replace="~{fragments/common :: bar-publik}"></header>
-  <main id="main" class="halaman-status">
-    <p class="kode-status">403</p>
+  <a class="lompat" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/shell :: ikon}"></svg>
+  <header th:replace="~{fragments/publik :: bar}"></header>
+  <main id="main" class="pub-isi status-halaman">
+    <p class="label-kecil">Kode 403</p>
     <h1>Halaman ini bukan untuk ruang kerja Anda</h1>
     <p th:if="${akunMasuk != null}" th:text="|Anda masuk sebagai ${akunMasuk.peran.label} (${akunMasuk.nama}). Ruang kerja lain hanya bisa dibuka dengan email yang terdaftar untuk peran tersebut.|"></p>
     <p th:if="${akunMasuk == null}">Masuk terlebih dahulu dengan email atau NIM yang sesuai.</p>
     <div class="aksi-baris">
       <a class="tombol tombol-utama" th:if="${akunMasuk != null}" th:href="@{${akunMasuk.beranda()}}">Kembali ke ruang <span th:text="${akunMasuk.peran.label}"></span></a>
-      <form th:if="${akunMasuk != null}" th:action="@{/logout}" method="post"><button class="tombol tombol-garis" type="submit">Keluar dan masuk dengan email lain</button></form>
+      <form th:if="${akunMasuk != null}" th:action="@{/logout}" method="post">
+        <input type="hidden" name="lanjut" value="login">
+        <button class="tombol tombol-kedua" type="submit">Masuk dengan akun lain</button>
+      </form>
       <a class="tombol tombol-utama" th:if="${akunMasuk == null}" th:href="@{/login}">Masuk</a>
     </div>
   </main>

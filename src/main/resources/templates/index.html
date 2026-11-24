@@ -1,28 +1,29 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Laporkan kerusakan fasilitas kampus')}"></head>
+<head th:replace="~{fragments/shell :: head('Laporkan kerusakan fasilitas kampus')}"></head>
 <body class="publik">
-  <a class="skip-link" href="#main">Lewati ke konten</a>
-  <svg th:replace="~{fragments/common :: symbols}"></svg>
-  <header th:replace="~{fragments/common :: bar-publik}"></header>
-  <main id="main" class="landing">
-    <div class="alert alert-sukses landing-alert" role="status" th:if="${param.keluar != null}"><svg aria-hidden="true"><use href="#i-check"/></svg><p>Anda sudah keluar dari UM Peduli.</p></div>
-    <section class="landing-utama" aria-labelledby="judul">
-      <p class="label-kecil">Fasilitas kampus · Universitas Negeri Malang</p>
-      <h1 id="judul">AC kelas mati, kursi patah, keran bocor? Laporkan, lalu pantau sampai diperbaiki.</h1>
-      <p class="landing-sub">Petugas memeriksa setiap laporan di lokasi, admin menetapkan prioritas berdasarkan risiko, dan status perbaikannya bisa Anda ikuti dari satu halaman.</p>
-      <a class="cta" th:href="@{/login}">Masuk dan laporkan kerusakan<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      <p class="landing-catatan">Masuk dengan email kampus atau NIM. Tidak perlu kata sandi dalam mode demo ini.</p>
+  <a class="lompat" href="#main">Lewati ke konten</a>
+  <svg th:replace="~{fragments/shell :: ikon}"></svg>
+  <header th:replace="~{fragments/publik :: bar}"></header>
+  <main id="main" class="pub-isi">
+    <div class="galat-global galat-sukses" role="status" th:if="${param.keluar != null}">
+      <svg class="ikon" aria-hidden="true"><use href="#i-centang"/></svg><p>Anda sudah keluar dari UM Peduli.</p>
+    </div>
+    <section class="hero hero-landing" aria-labelledby="judul">
+      <h1 id="judul" class="hero-judul"><span>AC kelas mati, kursi patah, keran bocor?</span> <span class="nada-2">Laporkan, lalu pantau sampai diperbaiki.</span></h1>
+      <p class="hero-teks">Admin memverifikasi setiap laporan, petugas memperbaikinya, dan statusnya bisa Anda ikuti dari satu halaman.</p>
+      <a class="tombol tombol-hero" th:href="@{/login}">Masuk dan laporkan kerusakan</a>
+      <p class="hero-catatan">Masuk dengan email kampus atau NIM. Tidak perlu kata sandi dalam mode demo ini.</p>
     </section>
     <section class="alur" aria-labelledby="alur-judul">
       <h2 id="alur-judul" class="sr-only">Alur penanganan laporan</h2>
-      <ol class="alur-langkah">
-        <li><span class="alur-no">01</span><strong>Laporkan</strong><span>Pilih gedung, ruang, dan jenis kerusakan, lalu jelaskan dampaknya.</span></li>
-        <li><span class="alur-no">02</span><strong>Diverifikasi</strong><span>Petugas memeriksa bahaya, tingkat gangguan, dan jumlah unit yang rusak.</span></li>
-        <li><span class="alur-no">03</span><strong>Diperbaiki</strong><span>Admin menugaskan petugas yang sesuai keahliannya sampai kasus selesai.</span></li>
+      <ol class="urutan urutan-mendatar">
+        <li><span class="urutan-no" aria-hidden="true">1</span><p><strong>Laporkan</strong><span>Pilih fakultas, gedung, dan lantai, jelaskan kerusakannya, lalu lampirkan foto.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">2</span><p><strong>Diverifikasi</strong><span>Admin memeriksa kelengkapan laporan dan menugaskan petugas sesuai bidangnya.</span></p></li>
+        <li><span class="urutan-no" aria-hidden="true">3</span><p><strong>Diperbaiki</strong><span>Petugas mencatat penanganan dan melampirkan foto hasil saat selesai.</span></p></li>
       </ol>
     </section>
   </main>
-  <footer class="kaki publik-kaki"><p>Advance Programming · Kelompok 5 · Offering C · Teknik Informatika, Universitas Negeri Malang</p></footer>
+  <footer th:replace="~{fragments/publik :: kaki}"></footer>
 </body>
 </html>

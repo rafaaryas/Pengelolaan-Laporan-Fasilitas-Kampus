@@ -1,27 +1,116 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Ringkasan admin')}"></head>
-<body th:replace="~{fragments/common :: admin('beranda', ~{::main})}">
-<main id="main" tabindex="-1" class="a-isi">
-  <header class="a-kepala">
-    <div><h1>Ringkasan penanganan</h1><p>Angka di bawah dihitung langsung dari basis data saat halaman dibuka.</p></div>
-    <a class="tombol tombol-utama" th:href="@{/admin/kasus}">Buka daftar kasus<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+<head th:replace="~{fragments/shell :: head('Dashboard')}"></head>
+<body th:replace="~{fragments/shell :: ruang('dashboard', ~{::main})}">
+<main id="main" class="isi" tabindex="-1" th:with="r=${ringkasan}, h=${ringkasan.hitung}">
+  <header class="kepala-hal">
+    <div>
+      <h1 th:text="|${@waktu.sapaan()}, Admin|">Selamat pagi, Admin</h1>
+      <p>Pantau laporan dan wujudkan fasilitas kampus yang lebih baik.</p>
+    </div>
+    <p class="kepala-tanggal kotak-tanggal"><time th:datetime="${@waktu.isoHariIni()}" th:text="${@waktu.tanggalHariIni()}">20 November 2026</time></p>
   </header>
-  <section aria-labelledby="judul-angka">
-    <h2 id="judul-angka" class="sr-only">Angka utama</h2>
-    <dl class="a-angka">
-      <div><dt>Total laporan</dt><dd><a th:href="@{/admin/kasus}" th:text="${ringkasan.totalLaporan}">0</a></dd></div>
-      <div><dt>Kasus aktif</dt><dd><a th:href="@{/admin/kasus}" th:text="${ringkasan.kasusAktif}">0</a></dd></div>
-      <div><dt>Menunggu verifikasi</dt><dd><a th:href="@{/admin/kasus(status='MENUNGGU_VERIFIKASI')}" th:text="${ringkasan.menungguVerifikasi}">0</a></dd></div>
-      <div th:classappend="${ringkasan.kritis > 0} ? 'angka-waspada'"><dt>Kritis aktif</dt><dd><a th:href="@{/admin/kasus(prioritas='KRITIS')}" th:text="${ringkasan.kritis}">0</a></dd></div>
-      <div><dt>Sedang diperbaiki</dt><dd><a th:href="@{/admin/kasus(status='DIKERJAKAN')}" th:text="${ringkasan.dikerjakan}">0</a></dd></div>
-      <div><dt>Selesai</dt><dd><a th:href="@{/admin/kasus(status='SELESAI')}" th:text="${ringkasan.selesai}">0</a></dd></div>
+
+  <section class="bagian" aria-labelledby="judul-statistik">
+    <h2 id="judul-statistik" class="sr-only">Statistik utama</h2>
+    <dl class="strip-angka strip-keterangan">
+      <div class="angka-sel">
+        <dt><span class="titik titik-aktif" aria-hidden="true"></span>Total laporan</dt>
+        <dd><a th:href="@{/admin/kasus}" th:text="${r.total}">248</a></dd>
+        <dd class="angka-ket" th:text="${r.selisihTeks()}">+13 dibanding bulan lalu</dd>
+      </div>
+      <div class="angka-sel angka-sel-sorot">
+        <dt><span class="titik titik-menunggu" aria-hidden="true"></span>Laporan masuk</dt>
+        <dd><a th:href="@{/admin/kasus(tahap='MENUNGGU')}" th:text="${h.menunggu}">24</a></dd>
+        <dd class="angka-ket">Menunggu verifikasi</dd>
+      </div>
+      <div class="angka-sel">
+        <dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Sedang diproses</dt>
+        <dd><a th:href="@{/admin/kasus(tahap='DIPERBAIKI')}" th:text="${h.diproses()}">38</a></dd>
+        <dd class="angka-ket" th:text="|${h.terverifikasi} terverifikasi · ${h.diperbaiki} diperbaiki|">12 terverifikasi · 26 diperbaiki</dd>
+      </div>
+      <div class="angka-sel">
+        <dt><span class="titik titik-selesai" aria-hidden="true"></span>Laporan selesai</dt>
+        <dd><a th:href="@{/admin/kasus(tahap='SELESAI')}" th:text="${h.selesai}">186</a></dd>
+        <dd class="angka-ket" th:text="|${r.persenSelesai}% dari seluruh laporan|">75% dari seluruh laporan</dd>
+      </div>
     </dl>
   </section>
-  <section class="a-bagian" aria-labelledby="judul-terbaru">
-    <div class="bagian-kepala"><h2 id="judul-terbaru">Kasus dengan laporan terbaru</h2><a class="tautan" th:href="@{/admin/kasus}">Semua kasus menurut urgensi<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
-    <th:block th:if="${ringkasan.terbaru.isEmpty()}"><div th:replace="~{fragments/common :: empty('Belum ada kasus', 'Kasus terbentuk otomatis begitu mahasiswa mengirim laporan.')}"></div></th:block>
-    <th:block th:unless="${ringkasan.terbaru.isEmpty()}"><div th:replace="~{fragments/kasus :: tabel(${ringkasan.terbaru})}"></div></th:block>
+
+  <div class="grid-dua grid-grafik">
+    <section class="kartu kartu-utama" aria-labelledby="judul-grafik">
+      <div class="kartu-kepala">
+        <div>
+          <h2 id="judul-grafik" class="judul-kartu">Statistik laporan</h2>
+          <p class="kartu-sub">Tren laporan masuk dan selesai per bulan</p>
+        </div>
+        <form th:action="@{/admin}" method="get" class="select select-ringkas" data-saring-otomatis>
+          <label class="sr-only" for="rentang">Rentang waktu</label>
+          <select id="rentang" name="rentang" data-saring-langsung>
+            <option value="6" th:selected="${rentang == 6}">6 bulan terakhir</option>
+            <option value="12" th:selected="${rentang == 12}">12 bulan terakhir</option>
+          </select>
+          <button class="tombol tombol-kedua tanpa-js" type="submit">Terapkan</button>
+        </form>
+      </div>
+      <figure class="grafik" th:with="n=${r.grafik.size()}, lebar=${600.0 / n}, batang=${n > 6 ? 12 : 22}">
+        <svg class="grafik-svg" viewBox="0 0 640 196" role="img" aria-labelledby="judul-grafik ringkas-grafik" data-grafik>
+          <desc id="ringkas-grafik" th:text="|Jumlah laporan masuk dan selesai, ${r.grafik[0].labelPanjang} sampai ${r.grafik[n - 1].labelPanjang}. Rincian ada pada tabel di bawah grafik.|"></desc>
+          <g class="grafik-grid">
+            <th:block th:each="k : ${#numbers.sequence(0, 3)}" th:with="y=${160 - k * 50}">
+              <line x1="32" th:y1="${y}" x2="636" th:y2="${y}"/>
+              <text x="24" th:y="${y + 4}" text-anchor="end" th:text="${r.skalaGrafik / 3 * k}">0</text>
+            </th:block>
+          </g>
+          <g th:each="t, s : ${r.grafik}" th:with="x=${36 + s.index * lebar + (lebar - batang * 2 - 6) / 2}">
+            <rect class="batang batang-masuk" th:x="${x}" th:y="${160 - t.masuk * 150.0 / r.skalaGrafik}" th:width="${batang}"
+                  th:height="${t.masuk * 150.0 / r.skalaGrafik}" rx="4" th:style="|--urutan: ${s.index}|"><title th:text="|${t.labelPanjang}: ${t.masuk} masuk|"></title></rect>
+            <rect class="batang batang-selesai" th:x="${x + batang + 6}" th:y="${160 - t.selesai * 150.0 / r.skalaGrafik}" th:width="${batang}"
+                  th:height="${t.selesai * 150.0 / r.skalaGrafik}" rx="4" th:style="|--urutan: ${s.index}|"><title th:text="|${t.labelPanjang}: ${t.selesai} selesai|"></title></rect>
+            <text class="grafik-label" th:x="${x + batang + 3}" y="184" text-anchor="middle" th:text="${t.label}">Jun</text>
+          </g>
+        </svg>
+        <figcaption class="legenda">
+          <span><span class="titik titik-masuk" aria-hidden="true"></span>Masuk</span>
+          <span><span class="titik titik-selesai" aria-hidden="true"></span>Selesai</span>
+        </figcaption>
+        <table class="sr-only">
+          <caption>Laporan masuk dan selesai per bulan</caption>
+          <thead><tr><th scope="col">Bulan</th><th scope="col">Masuk</th><th scope="col">Selesai</th></tr></thead>
+          <tbody><tr th:each="t : ${r.grafik}"><th scope="row" th:text="${t.labelPanjang}"></th><td th:text="${t.masuk}"></td><td th:text="${t.selesai}"></td></tr></tbody>
+        </table>
+      </figure>
+    </section>
+
+    <section class="kartu kartu-dukung" aria-labelledby="judul-donut">
+      <h2 id="judul-donut" class="judul-kartu">Penyelesaian laporan</h2>
+      <p class="kartu-sub">Seluruh laporan hingga hari ini</p>
+      <div class="donut">
+        <svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true" data-donut>
+          <circle class="donut-jalur" cx="64" cy="64" r="52"/>
+          <circle class="donut-busur" cx="64" cy="64" r="52"
+                  th:attr="stroke-dasharray=|${r.busurSelesai()} ${r.kelilingDonut()}|"/>
+        </svg>
+        <p class="donut-angka"><strong th:text="|${r.persenSelesai}%|">75%</strong><span>selesai</span></p>
+      </div>
+      <dl class="legenda-daftar">
+        <div><dt><span class="titik titik-selesai" aria-hidden="true"></span>Selesai</dt><dd th:text="${h.selesai}">186</dd></div>
+        <div><dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Diproses</dt><dd th:text="${h.diproses()}">38</dd></div>
+        <div><dt><span class="titik titik-menunggu" aria-hidden="true"></span>Menunggu</dt><dd th:text="${h.menunggu}">24</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="kartu kartu-utama" aria-labelledby="judul-terbaru">
+    <div class="kartu-kepala">
+      <h2 id="judul-terbaru" class="judul-kartu">Laporan terbaru</h2>
+      <a class="tautan" th:href="@{/admin/kasus}">Lihat semua laporan<svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
+    </div>
+    <div class="kosong" th:if="${r.terbaru.isEmpty()}">
+      <p class="kosong-judul">Belum ada laporan</p>
+      <p>Laporan dari civitas akan tampil di sini begitu dikirim.</p>
+    </div>
+    <th:block th:unless="${r.terbaru.isEmpty()}"><div th:replace="~{fragments/admin :: tabel(${r.terbaru}, '/admin')}"></div></th:block>
   </section>
 </main>
 </body>

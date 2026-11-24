@@ -1,14 +1,32 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Antrean verifikasi')}"></head>
-<body th:replace="~{fragments/common :: petugas('verifikasi', ~{::main})}">
-<main id="main" tabindex="-1" class="p-main">
-  <header class="p-judul">
-    <h1>Antrean verifikasi</h1>
-    <p th:text="|${daftarVerifikasi.size()} kasus menunggu. Periksa bahaya, tingkat gangguan, dan jumlah unit yang rusak di lokasi.|"></p>
+<head th:replace="~{fragments/shell :: head('Pemeriksaan di lokasi')}"></head>
+<body th:replace="~{fragments/shell :: ruang('tugas', ~{::main})}">
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal">
+    <div>
+      <h1>Pemeriksaan di lokasi</h1>
+      <p th:text="|${daftarVerifikasi.size()} laporan menunggu verifikasi. Admin juga bisa memverifikasi langsung dari halaman Laporan.|"></p>
+    </div>
   </header>
-  <th:block th:replace="~{fragments/common :: feedback}"></th:block>
-  <div th:replace="~{fragments/petugas :: antrean(${daftarVerifikasi})}"></div>
+  <section class="kartu kartu-utama" aria-labelledby="judul-antrean">
+    <h2 id="judul-antrean" class="sr-only">Laporan menunggu verifikasi</h2>
+    <div class="kosong" th:if="${daftarVerifikasi.isEmpty()}">
+      <p class="kosong-judul">Tidak ada laporan yang menunggu pemeriksaan</p>
+      <p>Laporan baru dari civitas muncul di sini sampai diverifikasi.</p>
+    </div>
+    <ul class="tugas-daftar" th:unless="${daftarVerifikasi.isEmpty()}">
+      <li class="tugas-item" th:each="k : ${daftarVerifikasi}" th:with="l=${k.laporanUtama}">
+        <div class="tugas-kepala"><span class="tugas-kode" th:text="${l.kode}"></span><span th:replace="~{fragments/shell :: pill(${k.tahap})}"></span></div>
+        <h3 class="tugas-judul" th:text="${l.judul}"></h3>
+        <p class="tugas-lokasi" th:text="${l.lokasiRingkas}"></p>
+        <div class="tugas-kaki">
+          <p class="tugas-waktu" th:text="|Dilaporkan ${@waktu.tanggalJam(l.waktuLaporan)}|"></p>
+          <a class="tombol tombol-kedua" th:href="@{/petugas/kasus/{id}/verifikasi(id=${k.id})}">Periksa<span class="sr-only" th:text="| ${l.kode}|"></span></a>
+        </div>
+      </li>
+    </ul>
+  </section>
 </main>
 </body>
 </html>

@@ -73,7 +73,8 @@ class PageSecurityTest {
         mvc.perform(post("/mahasiswa/laporan").session(mahasiswa).with(csrf()).param("mahasiswaId", id))
                 .andExpect(status().isOk()).andExpect(view().name("mahasiswa/form"))
                 .andExpect(content().string(containsString("Isi deskripsi kerusakan.")))
-                .andExpect(content().string(containsString("Pilih fasilitas.")));
+                .andExpect(content().string(containsString("Pilih fakultas.")))
+                .andExpect(content().string(containsString("Lampirkan foto bukti kerusakan")));
         MockHttpSession admin = Masuk.sebagai(mvc, "admin@example.invalid");
         mvc.perform(get("/admin/kasus/9999999").session(admin)).andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Kasus tidak ditemukan.")))

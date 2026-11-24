@@ -1,29 +1,17 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<!-- Antrean kasus yang menunggu pemeriksaan: lokasi paling menonjol -->
-<div th:fragment="antrean(daftar)" class="p-daftar-wadah">
-  <th:block th:if="${daftar.isEmpty()}"><div th:replace="~{fragments/common :: empty('Tidak ada kasus menunggu pemeriksaan', 'Kasus baru muncul di sini begitu mahasiswa mengirim laporan.')}"></div></th:block>
-  <ul class="p-daftar" th:unless="${daftar.isEmpty()}">
-    <li class="p-kartu" th:each="kasus : ${daftar}">
-      <p class="p-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><strong th:text="${kasus.fasilitas.gedung}"></strong><span th:text="${kasus.fasilitas.ruang}"></span></p>
-      <h3 th:text="|${kasus.fasilitas.nama} · ${kasus.jenisKerusakan.label}|"></h3>
-      <p class="p-meta"><span class="kode" th:text="|K-${kasus.id}|"></span><span th:text="|${kasus.pelaporUnik} pelapor|"></span><span th:text="|laporan terakhir ${#temporals.format(kasus.laporanTerbaru, 'd MMM, HH:mm')}|"></span></p>
-      <a class="tombol tombol-utama tombol-penuh" th:href="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}">Periksa kasus<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-    </li>
-  </ul>
-</div>
-
-<!-- Tugas perbaikan milik petugas -->
-<div th:fragment="tugas(daftar)" class="p-daftar-wadah">
-  <th:block th:if="${daftar.isEmpty()}"><div th:replace="~{fragments/common :: empty('Belum ada tugas perbaikan', 'Tugas dari admin muncul di sini setelah kasus diverifikasi dan kamu ditunjuk.')}"></div></th:block>
-  <ul class="p-daftar" th:unless="${daftar.isEmpty()}">
-    <li class="p-kartu" th:each="tugas : ${daftar}" th:classappend="${tugas.status.name() == 'SELESAI'} ? 'p-kartu-selesai'">
-      <p class="p-lokasi"><svg aria-hidden="true"><use href="#i-pin"/></svg><strong th:text="${tugas.kasus.fasilitas.gedung}"></strong><span th:text="${tugas.kasus.fasilitas.ruang}"></span></p>
-      <h3 th:text="|${tugas.kasus.fasilitas.nama} · ${tugas.kasus.jenisKerusakan.label}|"></h3>
-      <p class="p-meta"><span class="kode" th:text="|T-${tugas.id}|"></span><span th:replace="~{fragments/common :: status(${tugas.status})}"></span><span th:replace="~{fragments/common :: priority(${tugas.kasus.prioritas})}"></span></p>
-      <a class="tombol tombol-penuh" th:classappend="${tugas.status.name() == 'SELESAI'} ? 'tombol-garis' : 'tombol-utama'" th:href="@{/petugas/tugas/{id}(id=${tugas.id})}">
-        <span th:text="${tugas.status.name() == 'DITUGASKAN' ? 'Buka dan mulai perbaikan' : (tugas.status.name() == 'DIKERJAKAN' ? 'Lanjutkan perbaikan' : 'Lihat hasil perbaikan')}"></span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-    </li>
-  </ul>
-</div>
+<!-- Satu baris tugas perbaikan. Tombol utama hanya untuk tugas pertama yang perlu dikerjakan. -->
+<li th:fragment="tugas(t, utama)" class="tugas-item" th:with="l=${t.kasus.laporanUtama}">
+  <div class="tugas-kepala">
+    <span class="tugas-kode" th:text="${l.kode}">UM-0246</span>
+    <span th:replace="~{fragments/shell :: pill(${l.tahap})}"></span>
+  </div>
+  <h3 class="tugas-judul" th:text="${l.judul}">AC ruang kelas tidak dingin</h3>
+  <p class="tugas-lokasi" th:text="${l.fakultas + ' · ' + l.gedungLantai + (l.lokasi != null and l.lokasi.ruang != null ? ' · Ruang ' + l.lokasi.ruang : '')}">Ilmu Pendidikan · D2 · Lantai 3 · Ruang 301</p>
+  <div class="tugas-kaki">
+    <p class="tugas-waktu" th:text="${t.status.name() == 'SELESAI' ? 'Selesai ' + @waktu.tanggalJam(t.waktuSelesai) : 'Ditugaskan ' + @waktu.tanggalJam(t.waktuPenugasan)}">Ditugaskan 19 Nov 2026, 10.30</p>
+    <a class="tombol" th:classappend="${utama} ? 'tombol-utama' : 'tombol-kedua'" th:href="@{/petugas/tugas/{id}(id=${t.id})}">
+      Lihat tugas<span class="sr-only" th:text="| ${l.kode}|"></span><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-panah"/></svg></a>
+  </div>
+</li>
 </html>

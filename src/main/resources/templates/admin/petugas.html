@@ -1,30 +1,140 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Petugas')}"></head>
-<body th:replace="~{fragments/common :: admin('petugas', ~{::main})}">
-<main id="main" tabindex="-1" class="a-isi">
-  <header class="a-kepala">
-    <div><h1>Petugas</h1><p>Keahlian menentukan kasus yang bisa ditangani. Jadwal dalam WIB.</p></div>
-    <a class="tombol tombol-garis" th:href="@{/admin/kasus(status='MENUNGGU_PENUGASAN')}">Kasus menunggu penugasan<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+<head th:replace="~{fragments/shell :: head('Petugas')}"></head>
+<body th:replace="~{fragments/shell :: ruang('petugas', ~{::main})}">
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal">
+    <div>
+      <h1>Petugas</h1>
+      <p>Atur penugasan dan distribusikan laporan sesuai bidang petugas.</p>
+    </div>
+    <button class="tombol tombol-utama" type="button" data-buka-dialog="dialog-tambah" aria-haspopup="dialog">
+      <svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-tambah"/></svg>Tambah petugas</button>
   </header>
-  <dl class="a-angka a-angka-tiga">
-    <div><dt>Terdaftar</dt><dd th:text="${jadwal.size()}">0</dd></div>
-    <div><dt>Tersedia sekarang</dt><dd th:text="${tersedia}">0</dd></div>
-    <div><dt>Sedang bertugas</dt><dd th:text="${sibuk}">0</dd></div>
-  </dl>
-  <div class="tabel-wadah" role="region" aria-label="Jadwal petugas" tabindex="0">
-    <table class="tabel">
-      <thead><tr><th scope="col">Nama</th><th scope="col">Keahlian</th><th scope="col">Jam kerja</th><th scope="col">Ketersediaan</th></tr></thead>
-      <tbody>
-        <tr th:each="item : ${jadwal}">
-          <th scope="row" th:text="${item.petugas.nama}"></th>
-          <td data-label="Keahlian" th:text="${item.petugas.keahlian.label}"></td>
-          <td data-label="Jam kerja" class="angka" th:text="${item.jam()}"></td>
-          <td data-label="Ketersediaan"><span th:class="${item.tersedia ? 'status st-SELESAI' : 'status st-NETRAL'}"><span class="status-tanda" aria-hidden="true"></span><span th:text="${item.status()}"></span></span></td>
-        </tr>
-      </tbody>
-    </table>
+
+  <section class="bagian" aria-labelledby="judul-angka">
+    <h2 id="judul-angka" class="sr-only">Ringkasan petugas</h2>
+    <dl class="strip-angka strip-tiga strip-keterangan">
+      <div class="angka-sel"><dt><span class="titik titik-aktif" aria-hidden="true"></span>Petugas terdaftar</dt><dd th:text="${terdaftar}">12</dd><dd class="angka-ket">Tim fasilitas</dd></div>
+      <div class="angka-sel"><dt><span class="titik titik-selesai" aria-hidden="true"></span>Tersedia</dt><dd th:text="${tersedia}">8</dd><dd class="angka-ket">Siap ditugaskan</dd></div>
+      <div class="angka-sel"><dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Sedang bertugas</dt><dd th:text="${bertugas}">4</dd><dd class="angka-ket">Tugas aktif</dd></div>
+    </dl>
+  </section>
+
+  <div class="grid-dua">
+    <section class="kartu kartu-utama kartu-daftar" aria-labelledby="judul-petugas">
+      <div class="kartu-kepala">
+        <h2 id="judul-petugas" class="judul-kartu">Daftar petugas</h2>
+        <form class="cari cari-ringkas" th:action="@{/admin/petugas}" method="get" role="search" aria-label="Cari petugas" data-saring>
+          <svg class="ikon" aria-hidden="true"><use href="#i-cari"/></svg>
+          <label class="sr-only" for="q">Cari petugas</label>
+          <input id="q" class="input" type="search" name="q" th:value="${q}" autocomplete="off" placeholder="Cari nama atau bidang…">
+          <input type="hidden" name="semua" value="1" th:if="${semua}">
+        </form>
+      </div>
+      <div id="hasil-petugas" data-wilayah aria-live="polite">
+        <div class="kosong" th:if="${daftar.isEmpty()}">
+          <p class="kosong-judul">Belum ada petugas yang cocok.</p>
+          <p>Ubah kata kunci pencarian.</p>
+        </div>
+        <div class="tabel-wadah" th:unless="${daftar.isEmpty()}">
+          <table class="tabel tabel-petugas">
+            <thead><tr><th scope="col">Nama petugas</th><th scope="col">Bidang / tugas</th><th scope="col">Ketersediaan</th><th scope="col"><span class="sr-only">Laporan</span></th></tr></thead>
+            <tbody>
+              <tr th:each="b : ${daftar}">
+                <th scope="row" data-label="Nama petugas"><strong th:text="${b.petugas.nama}">Budi Santoso</strong><small th:text="${b.petugas.kode}">PTG-001</small></th>
+                <td data-label="Bidang / tugas"><span th:text="${b.petugas.keahlian.label}">Kelistrikan &amp; AC</span><small th:text="${b.keteranganTugas()}">2 tugas aktif</small></td>
+                <td data-label="Ketersediaan"><span class="pill" th:classappend="${b.bertugas() ? 'pill-diperbaiki' : (b.dalamJamKerja ? 'pill-selesai' : 'pill-netral')}" th:text="${b.ketersediaan()}">Bertugas</span></td>
+                <td class="tabel-aksi"><a class="tombol-ikon" th:href="@{/admin/kasus(petugas=${b.petugas.id})}"
+                       th:attr="aria-label=|Laporan yang ditangani ${b.petugas.nama}|"><svg class="ikon" aria-hidden="true"><use href="#i-chevron"/></svg></a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="paginasi" th:unless="${daftar.isEmpty()}">
+          <p th:text="|Menampilkan ${daftar.size()} dari ${jumlahCocok} petugas|">Menampilkan 5 dari 12 petugas</p>
+          <a class="tautan" th:if="${daftar.size() < jumlahCocok}" th:href="@{/admin/petugas(q=${q},semua=1)}">Tampilkan semua petugas</a>
+        </div>
+      </div>
+    </section>
+
+    <aside class="kolom-samping">
+      <form class="kartu kartu-dukung form" th:action="@{/admin/penugasan}" method="post" aria-labelledby="judul-tugaskan" data-panel-tugaskan>
+        <h2 id="judul-tugaskan" class="judul-kartu">Tugaskan laporan</h2>
+        <p class="kartu-sub">Pilih laporan yang telah terverifikasi.</p>
+        <div class="field">
+          <label for="kasusId">Laporan</label>
+          <div class="select">
+            <select id="kasusId" name="kasusId" required th:disabled="${siapDitugaskan.isEmpty()}" aria-describedby="ringkasan-tugaskan">
+              <option value="" th:text="${siapDitugaskan.isEmpty() ? 'Belum ada laporan terverifikasi' : 'Pilih laporan'}">Pilih laporan</option>
+              <option th:each="k : ${siapDitugaskan}" th:with="l=${k.laporanUtama}" th:value="${k.id}" th:selected="${kasusTerpilih == k.id}"
+                      th:text="|${l.kode} · ${l.judul}|"
+                      th:attr="data-fakultas=${l.fakultas},data-lokasi=|Gedung ${l.gedungLantai}${l.lokasi != null and l.lokasi.ruang != null ? ' · Ruang ' + l.lokasi.ruang : ''}|,data-deskripsi=${l.deskripsi}"></option>
+            </select>
+          </div>
+        </div>
+        <div class="ringkas-laporan" id="ringkasan-tugaskan" aria-live="polite" data-ringkas-laporan>
+          <p class="ringkas-kosong" th:text="${siapDitugaskan.isEmpty() ? 'Laporan yang sudah diverifikasi di halaman Laporan akan muncul di sini.' : 'Ringkasan laporan tampil setelah laporan dipilih.'}"></p>
+        </div>
+        <div class="field">
+          <label for="petugasId">Petugas</label>
+          <div class="select">
+            <select id="petugasId" name="petugasId" required th:disabled="${siapDitugaskan.isEmpty()}">
+              <option value="">Pilih petugas</option>
+              <option th:each="b : ${petugasPilihan}" th:value="${b.petugas.id}" th:disabled="${!b.dalamJamKerja}"
+                      th:text="|${b.petugas.nama} · ${b.petugas.keahlian.label}|"></option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="catatan">Catatan penugasan</label>
+          <textarea id="catatan" name="catatan" class="input" rows="3" maxlength="1000" placeholder="Contoh: Periksa lampu dan sambungan listrik."
+                    th:disabled="${siapDitugaskan.isEmpty()}"></textarea>
+        </div>
+        <button class="tombol tombol-utama tombol-penuh" type="submit" th:disabled="${siapDitugaskan.isEmpty()}" data-memproses="Menugaskan…">Tugaskan petugas</button>
+      </form>
+    </aside>
   </div>
+
+  <dialog class="modal modal-kecil" id="dialog-tambah" aria-labelledby="judul-tambah" th:attr="data-buka-otomatis=${formPetugas != null ? 'ya' : null}">
+    <form class="modal-isi" th:action="@{/admin/petugas}" method="post" novalidate data-validasi>
+      <header class="modal-kepala">
+        <div><h2 id="judul-tambah">Tambah petugas</h2><p>Kode petugas dibuat otomatis.</p></div>
+        <button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
+      </header>
+      <div class="modal-badan">
+        <div class="field">
+          <label for="nama-baru">Nama lengkap <span aria-hidden="true">*</span></label>
+          <input id="nama-baru" class="input" name="nama" required maxlength="100" autocomplete="off" autofocus data-pesan="Isi nama petugas."
+                 th:value="${formPetugas != null ? formPetugas.nama : ''}" aria-describedby="nama-baru-galat">
+          <p id="nama-baru-galat" class="galat-field"></p>
+        </div>
+        <div class="field">
+          <label for="email-baru">Email <span aria-hidden="true">*</span></label>
+          <input id="email-baru" class="input" name="email" type="email" required maxlength="150" autocomplete="off" spellcheck="false"
+                 data-pesan="Isi email petugas yang valid, misalnya nama@um.ac.id." placeholder="nama@um.ac.id"
+                 th:value="${formPetugas != null ? formPetugas.email : ''}" aria-describedby="email-baru-bantuan email-baru-galat">
+          <p id="email-baru-bantuan" class="bantuan-field">Petugas masuk ke UM Peduli dengan email ini.</p>
+          <p id="email-baru-galat" class="galat-field"></p>
+        </div>
+        <div class="field">
+          <label for="bidang-baru">Bidang <span aria-hidden="true">*</span></label>
+          <div class="select">
+            <select id="bidang-baru" name="bidang" required data-pesan="Pilih bidang petugas." aria-describedby="bidang-baru-galat">
+              <option value="">Pilih bidang</option>
+              <option th:each="b : ${bidang}" th:value="${b.name()}" th:text="${b.label}"
+                      th:selected="${formPetugas != null and formPetugas.bidang == b}"></option>
+            </select>
+          </div>
+          <p id="bidang-baru-galat" class="galat-field"></p>
+        </div>
+      </div>
+      <footer class="modal-kaki">
+        <button class="tombol tombol-kedua" type="button" data-tutup-modal>Batal</button>
+        <button class="tombol tombol-utama" type="submit" data-memproses="Menyimpan…">Simpan petugas</button>
+      </footer>
+    </form>
+  </dialog>
 </main>
 </body>
 </html>

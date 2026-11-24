@@ -1,53 +1,54 @@
 # Sistem desain UM Peduli
 
-Arah visual: layanan publik universitas yang tenang dan rapi, seperti formulir resmi yang dirancang dengan baik. Satu fondasi identitas dipakai bersama, tetapi tiap ruang kerja punya komposisi sesuai tugas penggunanya.
-
-Semua nilai ada di `src/main/resources/static/css/tokens.css`. `app.css` hanya membaca variabel dari berkas itu.
+Bahasa visual mengikuti referensi relate.so (sampling piksel, lihat `ANALISIS.md` bagian C), diterapkan untuk aplikasi kerja, bukan landing page. Semua nilai ada di `src/main/resources/static/css/tokens.css`; `app.css` hanya membaca variabel dari berkas itu.
 
 ## Warna
 
-| Token | Nilai | Alasan |
+| Token | Nilai | Peran |
 | --- | --- | --- |
-| `--um-700` | `#273984` | Biru tua UM dari aset lama dan lambang. Satu-satunya warna merek untuk tombol utama dan penanda aktif. |
-| `--um-900` | `#151f4f` | Latar sidebar admin. Lebih gelap agar tabel di area konten menjadi pusat perhatian. |
-| `--gold-500` / `--gold-600` | `#c8971b` / `#7d5c0d` | Emas dari lambang UM. Aksen terkendali: garis bawah CTA, tab aktif petugas, penanda tahap yang sedang berjalan, nomor langkah. `gold-600` dipakai untuk teks (kontras 5,6:1). |
-| `--canvas` / `--paper` | `#f5f4ef` / `#ffffff` | Netral sedikit hangat seperti kertas formulir, membedakan dari "biru SaaS" yang dingin. |
-| `--ink`, `--ink-2`, `--ink-3` | `#161b2e`, `#3a4156`, `#5c6275` | Tiga tingkat teks. Kontras terendah 5,0:1 di atas `--canvas-strong`. |
+| `--canvas` / `--surface` / `--surface-2` / `--surface-3` | `#fbfbfb` / `#ffffff` / `#f9f9fb` / `#f3f3f6` | Kanvas halaman, kartu, sidebar dan kepala tabel, kotak bantuan |
+| `--ink` / `--ink-2` / `--ink-3` | `#14141e` / `#364150` / `#6b6b75` | Teks utama, teks isi/menu, teks sekunder (5,0:1 pada kanvas) |
+| `--ink-display-2` | `#87878c` | Baris kedua headline dua nada. **Hanya teks ≥ 22 px tebal** (3,2–3,45:1) |
+| `--accent` / `--accent-ink` | `#1569ff` / `#1055e6` | Satu aksen: tombol utama, tautan, tab dan menu aktif di bottom nav |
+| `--line` / `--line-strong` / `--line-kontrol` | `#ececef` / `#e2e2e6` / `#909098` | Garis kartu, tombol sekunder, batas input (3,17:1, WCAG 1.4.11) |
+| `--hero-*` | `#fbfbfb → #dfe8fb → #a9c3f9` + grid putih 45% | **Satu-satunya gradasi**: hero dashboard civitas (dan hero landing publik) |
+| `--navy-edge` / `--navy-core` | `#0e1d3a` / `#050f22` | **Satu-satunya blok gelap**: panel fokus dashboard petugas |
 
-**Status kasus (5 tahap)** memakai pasangan warna teks/latar dengan kontras 6,1–7,4:1, **plus** label teks dan bentuk penanda yang berbeda: lingkaran kosong (menunggu verifikasi), setengah terisi (menunggu penugasan), titik (ditugaskan), kotak (sedang diperbaiki), centang (selesai). Linimasa mahasiswa juga menulis "Tahap n/5".
+Status selalu berupa teks di dalam pill bertint (tidak bergantung pada warna):
 
-**Prioritas** memakai label teks dan meter 1–4 batang (Rendah 1, Sedang 2, Tinggi 3, Kritis 4), jadi tetap terbaca tanpa warna. Baris kasus kritis aktif di tabel admin diberi garis merah di sisi kiri.
+| Tahap | Latar | Teks (kontras) | Titik |
+| --- | --- | --- | --- |
+| Menunggu Verifikasi | `#fff7e6` | `#8a5a00` (5,56) | `#f0a020` |
+| Terverifikasi | `#eef4ff` | `#1d4fc4` (6,41) | `#1890ff` |
+| Sedang Diperbaiki | `#f1f0ff` | `#4a3fb0` (7,09) | `#6c5ce7` |
+| Selesai | `#f2fbf4` | `#127a2c` (5,17) | `#16ca2d` |
+| Galat | `#fef6f5` | `#b3261e` (6,14) | `#f26052` |
 
 ## Tipografi
 
-- **Source Serif 4** (judul halaman, angka ringkasan mahasiswa). Serif bergaya buku memberi suara institusi akademik dan membedakan judul dari isi formulir. Sumbu `opsz` membuat judul besar tetap rapat.
-- **Public Sans** (seluruh antarmuka). Dirancang untuk layanan pemerintah, netral, sangat terbaca di ukuran kecil, dan memiliki angka tabular (`tnum`) untuk ID kasus, waktu, dan jumlah unit.
-- Ruang petugas sengaja memakai Public Sans tebal untuk judul: lebih cepat dibaca di lapangan.
-- Kedua font di-host lokal (`static/fonts/`, lisensi SIL OFL disertakan). Tidak ada CDN.
-- Skala: 12, 13, 14, 15, 16, 17, 22, 28, 36 px, judul landing `clamp(2rem … 3.25rem)`. Tinggi baris 1,15 (judul), 1,3 (subjudul), 1,55 (isi).
+Inter variable, self-host (`static/fonts/inter-latin*.woff2`, OFL di `OFL-inter.txt`), `font-display: swap`. Skala: hero 40/44 700 −0,03em (28 px di ponsel); h1 30/36 650 −0,02em; angka statistik 34/40 650 tabular; judul kartu 18/25 600; isi 15/23; sekunder 13; label 12 tanpa huruf kapital dan tanpa tracking negatif. Headline dua nada (hitam + abu) hanya pada hero civitas, judul tips form, dan panel navy.
 
-## Jarak, bentuk, gerak
+## Bentuk dan kedalaman
 
-- Grid 4/8: `--s-1` 4 px sampai `--s-20` 80 px.
-- Radius kecil (4, 6, 10 px). Tidak ada bayangan besar; pemisahan memakai garis tipis `--line`.
-- Target sentuh minimal 44 px, kolom penting 56 px (login, tombol besar, pilihan petugas).
-- Transisi 120–180 ms untuk hover/fokus. `prefers-reduced-motion` membuat durasi 0.
-- Fokus keyboard: garis 3 px `--focus` dengan offset; di latar gelap memakai kuning `#ffd36b`.
+| Tingkat | Radius | Padding | Bayangan |
+| --- | --- | --- | --- |
+| Hero, panel navy | 28 | 32–40 | tanpa (garis tipis) |
+| Kartu utama (form, detail, tabel, grafik) | 20 | 24 | `--shadow-panel` |
+| Kartu pendukung (tips, timeline, statistik di ponsel) | 14 | 20 | `--shadow-card` |
+| Kontrol (input, select, dropzone) | 10 | 0 14 | tanpa |
+| Tombol, pill status | 999 | 0 20 / 2 10 | tombol sekunder `--shadow-pill` |
+| Modal | 20 (ponsel: 20 di atas saja, bottom sheet) | 20–24 | `--shadow-float` |
+
+Spasi kelipatan 4 px (`--s-1` 4 px … `--s-16` 64 px).
 
 ## Komponen
 
-`tombol` (utama, garis, teks, besar, penuh), `field` + `field-pesan` (galat dengan `aria-invalid` dan `aria-live`), `langkah` (fieldset bernomor), `pilihan` (radio sebagai kartu), `alert` (sukses, galat, waspada), `status`, `prio`, `tahap`, `kosong`, `sorot`, `fakta`, `blok`, `tabel`. Ikon: satu sprite SVG di `fragments/common :: symbols`, garis 1,75 px pada grid 24. Tidak ada emoji.
+`shell` (sidebar 248 px, topbar, bottom nav), `kepala-hal`, `hero`, `strip-angka` + `angka-sel` (statistik satu strip dengan titik status, sel "Laporan masuk" bertint), `pill-*`, `tab` + `tab-indikator`, `saring` + `cari`, `baris` (laporan terakhir), `laporan-item`, `tugas-item`, `tabel` (berubah jadi kartu berlabel < 720 px), `paginasi`, `field` + `galat-field` + `bantuan-field`, `dropzone`, `rincian` + `fakta` + `foto-bukti`, `linimasa` (garis putus-putus ala relate), `panel-info`, `panel-waspada`, `panel-navy`, `modal` (`<dialog>`), `pop-panel` (notifikasi, menu akun), `toast`, `kosong`, `skeleton`. Ikon: satu sprite SVG di `fragments/shell :: ikon`, stroke 1,75 px.
 
-## Tiga ruang kerja
+## Gerak
 
-| Ruang | Shell | Keputusan |
-| --- | --- | --- |
-| Mahasiswa | Navigasi atas putih, satu kolom 760 px | Tugasnya satu: melapor lalu memantau. Form tiga langkah bernomor, jenis kerusakan sebagai pilihan besar, riwayat berupa daftar dengan garis 5 tahap. Bahasa "kamu". |
-| Petugas | Bilah gelap, tab bawah di ponsel | Dipakai satu tangan di lokasi. Kartu berbingkai tebal, gedung tampil paling besar, tombol 52–56 px, verifikasi berupa empat langkah dengan pilihan besar, bukan dropdown. |
-| Admin | Sidebar biru tua tetap, konten lebar | Pekerjaan memindai dan memutuskan. Angka ringkasan dalam satu strip, tabel padat 14 px dengan angka tabular, panel samping lengket untuk verifikasi dan penugasan. Di ponsel tabel berubah menjadi daftar berlabel. |
+Hanya `transform` dan `opacity`, satu kurva `cubic-bezier(.2,.7,.2,1)`: fade halaman 140 ms, modal 160 ms (bottom sheet 200 ms), toast 200 ms, tab 200 ms, popover 120 ms, batang grafik tumbuh sekali per sesi (480 ms, stagger 40 ms), donut tersapu sekali, pill berkedip tint sekali setelah status berubah, garis linimasa terisi bila tahap bertambah sejak kunjungan terakhir. `prefers-reduced-motion: reduce` mematikan semuanya.
 
-## Uji "AI slop"
+## Responsif
 
-1. **Ganti logo.** Judul landing menyebut AC kelas, kursi patah, dan keran bocor; langkah alur menyebut gedung, ruang, bahaya, dan unit rusak; kartu petugas menonjolkan nama gedung. Mengganti nama produk membuat isi tidak masuk akal, jadi desain terikat pada layanan ini.
-2. **Tutup teks.** Tanpa kalimat pemasaran, struktur tetap menjelaskan layanan: satu tombol menuju login, tiga langkah bernomor, garis lima tahap, tabel dengan kolom prioritas dan unit rusak.
-3. **Alasan.** Setiap pilihan warna, font, dan komponen di atas punya alasan yang terkait konteks. Tidak ada gradasi, glassmorphism, ilustrasi, statistik karangan, testimoni, atau emoji. Semua angka berasal dari database.
+≥ 1200 px sidebar penuh; 900–1199 px sidebar ikon 76 px; < 1024 px kolom kanan turun; < 900 px bottom nav (civitas 3, petugas 2, admin 3) + topbar ringkas; < 720 px tabel jadi kartu berlabel, statistik 2 kolom, modal jadi bottom sheet, tombol utama lebar penuh. Target sentuh ≥ 44 px di layar sentuh.

@@ -1,13 +1,31 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Tugas saya')}"></head>
-<body th:replace="~{fragments/common :: petugas('tugas', ~{::main})}">
-<main id="main" tabindex="-1" class="p-main">
-  <header class="p-judul">
-    <h1>Tugas saya</h1>
-    <p th:text="|${daftarTugas.size()} penugasan untuk ${akun.nama}, terbaru di atas.|"></p>
+<head th:replace="~{fragments/shell :: head('Tugas saya')}"></head>
+<body th:replace="~{fragments/shell :: ruang('tugas', ~{::main})}">
+<main id="main" class="isi" tabindex="-1"
+      th:with="aktif=${daftarTugas.?[status.name() != 'SELESAI']}, selesai=${daftarTugas.?[status.name() == 'SELESAI']}">
+  <header class="kepala-hal">
+    <div>
+      <h1>Tugas Saya</h1>
+      <p th:text="|${aktif.size()} tugas aktif, ${selesai.size()} selesai.|">2 tugas aktif, 14 selesai.</p>
+    </div>
   </header>
-  <div th:replace="~{fragments/petugas :: tugas(${daftarTugas})}"></div>
+  <section class="kartu kartu-utama" aria-labelledby="judul-aktif">
+    <h2 id="judul-aktif" class="judul-kartu">Perlu ditangani</h2>
+    <div class="kosong" th:if="${aktif.isEmpty()}">
+      <p class="kosong-judul">Tidak ada tugas aktif</p>
+      <p>Tugas baru dari admin muncul di sini.</p>
+    </div>
+    <ul class="tugas-daftar" th:unless="${aktif.isEmpty()}">
+      <th:block th:each="t, s : ${aktif}"><li th:replace="~{fragments/petugas :: tugas(${t}, ${s.first})}"></li></th:block>
+    </ul>
+  </section>
+  <section class="kartu kartu-utama bagian" aria-labelledby="judul-selesai" th:unless="${selesai.isEmpty()}">
+    <h2 id="judul-selesai" class="judul-kartu">Sudah selesai</h2>
+    <ul class="tugas-daftar">
+      <th:block th:each="t : ${selesai}"><li th:replace="~{fragments/petugas :: tugas(${t}, false)}"></li></th:block>
+    </ul>
+  </section>
 </main>
 </body>
 </html>

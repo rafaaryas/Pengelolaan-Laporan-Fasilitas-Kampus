@@ -79,6 +79,7 @@
           </button>
           <div class="pop-panel pop-menu" id="pop-pengguna" hidden>
             <p class="pop-akun"><strong th:text="${profil.nama}"></strong><small th:text="${akunMasuk.identitas}"></small></p>
+            <a class="pop-item hanya-sempit" th:href="@{/bantuan}"><svg class="ikon" aria-hidden="true"><use href="#i-bantuan"/></svg>Pusat bantuan</a>
             <form th:action="@{/logout}" method="post">
               <input type="hidden" name="lanjut" value="login">
               <button type="submit" class="pop-item"><svg class="ikon" aria-hidden="true"><use href="#i-tukar"/></svg>Masuk dengan akun lain</button>
@@ -131,8 +132,12 @@
   </th:block>
 </th:block>
 
-<!-- Pill status 4 tahap: tint + teks pekat, tidak bergantung pada warna saja -->
+<!-- Label status dan prioritas tetap terbaca tanpa warna. -->
 <span th:fragment="pill(tahap)" th:class="|pill pill-${tahap.kelas}|" th:text="${tahap.label}">Status</span>
+
+<span th:fragment="prioritas(p)" class="pill pill-prioritas"
+      th:classappend="${p == null ? 'prioritas-kosong' : 'prioritas-' + #strings.toLowerCase(p.name())}"
+      th:text="${p == null ? 'Belum dinilai' : p.label}">Belum dinilai</span>
 
 <!-- Kepala halaman detail dengan tautan kembali -->
 <a th:fragment="kembali(href, teks)" class="kembali" th:href="@{${href}}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-kembali"/></svg><span th:text="${teks}"></span></a>

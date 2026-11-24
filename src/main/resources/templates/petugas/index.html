@@ -1,61 +1,15 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/shell :: head('Dashboard')}"></head>
+<head th:replace="~{fragments/shell :: head('Dashboard petugas')}"></head>
 <body th:replace="~{fragments/shell :: ruang('dashboard', ~{::main})}">
 <main id="main" class="isi" tabindex="-1">
-  <header class="kepala-hal">
-    <div>
-      <h1 th:text="|${@waktu.sapaan()}, ${sapaanNama}|">Selamat pagi, Budi</h1>
-      <p>Berikut tugas perbaikan fasilitas yang perlu Anda tangani hari ini.</p>
-    </div>
-  </header>
-
-  <section class="bagian" aria-labelledby="judul-angka">
-    <h2 id="judul-angka" class="sr-only">Ringkasan tugas</h2>
-    <dl class="strip-angka">
-      <div class="angka-sel"><dt><span class="titik titik-aktif" aria-hidden="true"></span>Tugas aktif</dt><dd th:text="${ringkasan.aktif}">2</dd></div>
-      <div class="angka-sel"><dt><span class="titik titik-verifikasi" aria-hidden="true"></span>Perlu diperiksa</dt><dd th:text="${ringkasan.perluDiperiksa}">1</dd></div>
-      <div class="angka-sel"><dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Sedang diperbaiki</dt><dd th:text="${ringkasan.diperbaiki}">1</dd></div>
-      <div class="angka-sel"><dt><span class="titik titik-selesai" aria-hidden="true"></span>Diselesaikan bulan ini</dt><dd th:text="${ringkasan.selesaiBulanIni}">14</dd></div>
-    </dl>
+  <header class="kepala-hal"><div><h1>Dashboard Petugas</h1><p>Pantau penugasan, pemeriksaan, dan perbaikan fasilitas.</p></div></header>
+  <dl th:replace="~{fragments/petugas :: ringkasan(${ringkasan})}"></dl>
+  <section class="kartu kartu-utama bagian" aria-labelledby="judul-aktif">
+    <div class="kartu-kepala"><h2 id="judul-aktif" class="judul-kartu">Tugas aktif</h2><a class="tautan" th:href="@{/petugas/tugas}">Lihat semua tugas</a></div>
+    <p class="kosong" th:if="${ringkasan.tugasAktif.isEmpty()}">Belum ada tugas aktif.</p>
+    <ul class="tugas-daftar"><th:block th:each="t : ${ringkasan.tugasAktif}"><li th:replace="~{fragments/petugas :: tugas(${t})}"></li></th:block></ul>
   </section>
-
-  <div class="grid-dua">
-    <section class="kartu kartu-utama" aria-labelledby="judul-tugas">
-      <div class="kartu-kepala kartu-kepala-tumpuk">
-        <h2 id="judul-tugas" class="judul-kartu">Tugas Saya</h2>
-        <p class="kartu-sub">Prioritaskan pemeriksaan sesuai penugasan admin.</p>
-      </div>
-      <th:block th:if="${ringkasan.tugasAktif.isEmpty()}">
-        <div class="kosong">
-          <p class="kosong-judul">Belum ada tugas aktif</p>
-          <p>Tugas dari admin muncul di sini begitu laporan diverifikasi dan Anda ditugaskan.</p>
-          <a class="tombol tombol-kedua" th:href="@{/petugas/tugas}">Lihat riwayat tugas</a>
-        </div>
-      </th:block>
-      <ul class="tugas-daftar" th:unless="${ringkasan.tugasAktif.isEmpty()}">
-        <th:block th:each="t, s : ${ringkasan.tugasAktif}"><li th:replace="~{fragments/petugas :: tugas(${t}, ${s.first})}"></li></th:block>
-      </ul>
-    </section>
-
-    <aside class="kolom-samping" aria-label="Fokus dan panduan">
-      <section class="panel-navy" aria-labelledby="judul-fokus">
-        <h2 id="judul-fokus" class="panel-navy-judul" th:if="${ringkasan.aktif > 0}"><span th:text="|${ringkasan.aktif} tugas,|">2 tugas,</span> <span class="nada-2">1 kampus lebih baik.</span></h2>
-        <h2 id="judul-fokus" class="panel-navy-judul" th:unless="${ringkasan.aktif > 0}"><span>Belum ada tugas aktif.</span> <span class="nada-2">Tugas baru tampil di sini.</span></h2>
-        <p>Periksa lokasi, dokumentasikan pekerjaan, dan perbarui status setelah penanganan.</p>
-        <p class="panel-navy-bidang" th:text="${akun.keahlian.label}">Kelistrikan &amp; AC</p>
-      </section>
-      <section class="kartu kartu-dukung" aria-labelledby="judul-sebelum">
-        <h2 id="judul-sebelum" class="judul-kartu">Sebelum menyelesaikan tugas</h2>
-        <ol class="urutan urutan-rapat">
-          <li><span class="urutan-no" aria-hidden="true">1</span><p><span>Pastikan lokasi sudah sesuai.</span></p></li>
-          <li><span class="urutan-no" aria-hidden="true">2</span><p><span>Lakukan pemeriksaan dengan aman.</span></p></li>
-          <li><span class="urutan-no" aria-hidden="true">3</span><p><span>Tambahkan catatan penanganan.</span></p></li>
-          <li><span class="urutan-no" aria-hidden="true">4</span><p><span>Unggah foto hasil perbaikan.</span></p></li>
-        </ol>
-      </section>
-    </aside>
-  </div>
 </main>
 </body>
 </html>

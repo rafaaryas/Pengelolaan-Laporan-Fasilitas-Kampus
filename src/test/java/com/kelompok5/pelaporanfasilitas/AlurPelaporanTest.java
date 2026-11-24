@@ -89,16 +89,17 @@ class AlurPelaporanTest {
         sistem.verifikasi(terpisah, dimas, false, Gangguan.SEBAGIAN, 1, "");
         // Sesuai layar Admin Petugas, satu petugas boleh memegang beberapa tugas aktif (Budi: "2 tugas aktif").
         long kedua = sistem.tugaskanPetugas(terpisah, dimas, "");
+        var buktiHasil = new Berkas("hasil-uji.jpg", "hasil.jpg", 1024);
         assertThrows(DataTidakDitemukan.class, () -> sistem.mulaiTugas(pekerjaan, raka));
-        assertThrows(IllegalStateException.class, () -> sistem.selesaikanTugas(pekerjaan, dimas, "Terlalu awal."));
+        assertThrows(IllegalStateException.class, () -> sistem.selesaikanTugas(pekerjaan, dimas, "Terlalu awal.", buktiHasil));
 
         sistem.mulaiTugas(pekerjaan, dimas);
         assertEquals(StatusKasus.DIKERJAKAN, kasus(k1).getStatus());
         assertThrows(IllegalStateException.class, () -> sistem.mulaiTugas(pekerjaan, dimas));
         sistem.catatProgres(pekerjaan, dimas, "Suku cadang tiba.");
         assertEquals("Suku cadang tiba.", pantauan.detailTugas(pekerjaan, dimas).getCatatan());
-        assertThrows(IllegalArgumentException.class, () -> sistem.selesaikanTugas(pekerjaan, dimas, " "));
-        sistem.selesaikanTugas(pekerjaan, dimas, "Kompresor diganti.");
+        assertThrows(IllegalArgumentException.class, () -> sistem.selesaikanTugas(pekerjaan, dimas, " ", buktiHasil));
+        sistem.selesaikanTugas(pekerjaan, dimas, "Kompresor diganti.", buktiHasil);
         var hasil = pantauan.detailTugas(pekerjaan, dimas);
         assertEquals(StatusTugas.SELESAI, hasil.getStatus());
         assertEquals("Kompresor diganti.", hasil.getCatatan());
@@ -109,7 +110,7 @@ class AlurPelaporanTest {
         assertTrue(pengguna.petugasDemo().stream().filter(p -> p.getId() == dimas).findFirst().orElseThrow().isSibuk(),
                 "Masih ada tugas kedua yang aktif, jadi petugas tetap Bertugas");
         sistem.mulaiTugas(kedua, dimas);
-        sistem.selesaikanTugas(kedua, dimas, "Sambungan pipa AC dikencangkan.");
+        sistem.selesaikanTugas(kedua, dimas, "Sambungan pipa AC dikencangkan.", buktiHasil);
         assertFalse(pengguna.petugasDemo().stream().filter(p -> p.getId() == dimas).findFirst().orElseThrow().isSibuk());
         assertThrows(IllegalStateException.class, () -> sistem.tugaskanPetugas(k1, dimas, ""));
 
@@ -126,7 +127,6 @@ class AlurPelaporanTest {
         var lokasi = new Lokasi("Teknik", "B11", 2, "204");
         var bukti = new Berkas("bukti-uji.jpg", "ac-ruang-204.jpg", 1_258_291);
 
-        assertThrows(IllegalArgumentException.class, () -> sistem.laporkan(nadia, lokasi, "AC tidak dingin.", null));
         long id = sistem.laporkan(nadia, lokasi,
                 "AC di ruang kuliah 204 tidak terasa dingin meskipun sudah dinyalakan. Mohon diperiksa.", bukti);
         var laporan = pantauan.detailLaporan(id, nadia).laporan();
@@ -139,11 +139,18 @@ class AlurPelaporanTest {
         assertTrue(pantauan.hitungMahasiswa(nadia, "").menunggu() >= 1);
 
         sistem.verifikasiAdmin(kasusId, budi, "Periksa kompresor.");
-        assertEquals(Tahap.TERVERIFIKASI, pantauan.detailLaporan(id, nadia).laporan().getTahap());
+        assertEquals(Tahap.DITUGASKAN, pantauan.detailLaporan(id, nadia).laporan().getTahap());
         assertThrows(IllegalStateException.class, () -> sistem.verifikasiAdmin(kasusId, null, ""));
         long tugasId = pantauan.detailLaporan(id, nadia).tugas().getId();
         assertEquals(1, pantauan.ringkasanPetugas(budi).perluDiperiksa());
 
+        assertThrows(IllegalStateException.class, () -> sistem.mulaiTugas(tugasId, budi));
+        assertThrows(IllegalStateException.class, () -> sistem.ajukanTindakLanjut(tugasId, budi, "Butuh unit.", "Teknisi."));
+        assertNull(kasus(kasusId).getPrioritas());
+        sistem.periksaTugas(tugasId, budi, true, Gangguan.RINGAN, 1, "Sambungan terbuka.");
+        assertEquals(Prioritas.KRITIS, kasus(kasusId).getPrioritas());
+        assertTrue(pantauan.ringkasanAdmin(6).kritisAktif() > 0);
+        sistem.mulaiTugas(tugasId, budi);
         assertThrows(IllegalArgumentException.class, () -> sistem.perbaruiProgres(tugasId, budi, " "));
         sistem.perbaruiProgres(tugasId, budi, "Filter AC kotor, sedang dibersihkan.");
         assertEquals(Tahap.DIPERBAIKI, pantauan.detailLaporan(id, nadia).laporan().getTahap());
@@ -157,6 +164,40 @@ class AlurPelaporanTest {
         assertTrue(akhir.tugas().isAdaFotoHasil());
         assertEquals(1, pantauan.ringkasanPetugas(budi).selesaiBulanIni());
         assertFalse(pengguna.petugasDemo().stream().filter(p -> p.getId() == budi).findFirst().orElseThrow().isSibuk());
+    }
+
+    @Test
+    void laporanTanpaFotoTindakLanjutRendahDanPengalihanMempertahankanPemeriksaan() {
+        long pelapor = pengguna.mahasiswaDemo().get(0).getId();
+        long petugasAwal = petugas("Raka Santoso");
+        long petugasBaru = petugas("Dimas Pratama");
+        var lokasi = new Lokasi("Teknik", "B11", 2, "207");
+        long id = sistem.laporkan(pelapor, lokasi, "Kaki kursi longgar.", null);
+        var awal = pantauan.detailLaporan(id, pelapor);
+        assertFalse(awal.laporan().isAdaFoto());
+        long kasusId = awal.laporan().getKasus().getId();
+        sistem.verifikasiAdmin(kasusId, petugasAwal, null);
+        long tugasId = pantauan.detailLaporan(id, pelapor).tugas().getId();
+        assertThrows(DataTidakDitemukan.class, () -> sistem.periksaTugas(tugasId, petugasBaru, true, Gangguan.BERAT, 1, ""));
+        sistem.periksaTugas(tugasId, petugasAwal, false, Gangguan.RINGAN, 1, "Baut perlu diganti.");
+        assertEquals(Prioritas.RENDAH, kasus(kasusId).getPrioritas());
+        assertThrows(IllegalArgumentException.class, () -> sistem.ajukanTindakLanjut(tugasId, petugasAwal, "", "Baut"));
+        sistem.ajukanTindakLanjut(tugasId, petugasAwal, "Stok habis.", "Baut pengganti");
+        assertEquals(Tahap.TINDAK_LANJUT, pantauan.detailLaporan(id, pelapor).laporan().getTahap());
+        assertTrue(pantauan.notifikasiAdmin().stream().anyMatch(n -> n.tautan().endsWith("/" + kasusId)));
+        assertThrows(IllegalStateException.class, () -> sistem.catatProgres(tugasId, petugasAwal, "Dikerjakan."));
+        assertThrows(IllegalArgumentException.class, () -> sistem.putuskanTindakLanjut(kasusId, petugasBaru, ""));
+        sistem.putuskanTindakLanjut(kasusId, null, "Stok tiba.");
+        assertEquals(StatusTugas.DIKERJAKAN, pantauan.detailTugas(tugasId, petugasAwal).getStatus());
+        sistem.ajukanTindakLanjut(tugasId, petugasAwal, "Butuh teknisi lain.", "Penggantian baut");
+        sistem.putuskanTindakLanjut(kasusId, petugasBaru, "Alihkan ke teknisi yang tersedia.");
+        assertThrows(DataTidakDitemukan.class, () -> sistem.catatProgres(tugasId, petugasAwal, "Salah petugas."));
+        assertEquals(tugasId, pantauan.detailLaporan(id, pelapor).tugas().getId());
+        assertEquals(petugasAwal, kasus(kasusId).getPemeriksa().getId());
+        assertEquals(Prioritas.RENDAH, kasus(kasusId).getPrioritas());
+        assertEquals("Alihkan ke teknisi yang tersedia.", pantauan.detailTugas(tugasId, petugasBaru).getKeputusanAdmin());
+        sistem.selesaikanTugas(tugasId, petugasBaru, "Baut diganti.", new Berkas("hasil-uji.jpg", "hasil.jpg", 900_000));
+        assertEquals(Tahap.SELESAI, pantauan.detailLaporan(id, pelapor).laporan().getTahap());
     }
 
     @Test

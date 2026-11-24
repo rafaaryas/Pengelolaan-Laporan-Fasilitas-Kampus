@@ -33,7 +33,17 @@ public class PenyimpananBerkas {
         this.folder = Path.of(folder).toAbsolutePath().normalize();
     }
 
-    /** Memvalidasi lalu menyimpan foto. Mengembalikan kosong bila tidak ada berkas yang dipilih. */
+    public void hapus(Berkas berkas) {
+        Path jalur = folder.resolve(berkas.getSimpan()).normalize();
+        if (!folder.equals(jalur.getParent()) || berkas.getSimpan().startsWith(AWALAN_CONTOH)) return;
+        try {
+            Files.deleteIfExists(jalur);
+        } catch (IOException e) {
+            org.slf4j.LoggerFactory.getLogger(PenyimpananBerkas.class).warn("Gagal membersihkan foto yang belum tercatat.", e);
+        }
+    }
+
+    /** Memvalidasi dan menyimpan foto jika ada berkas yang dipilih. */
     public Optional<Berkas> simpan(MultipartFile foto) {
         if (foto == null || foto.isEmpty()) return Optional.empty();
         if (foto.getSize() > UKURAN_MAKS) throw new IllegalArgumentException(PESAN_FORMAT);

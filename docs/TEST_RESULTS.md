@@ -1,5 +1,21 @@
 # Hasil pengujian
 
+
+## Pemeriksaan petugas dan tindak lanjut · 24 November 2026
+
+Dijalankan dengan JDK 21, Maven Wrapper, Playwright Chromium, dan MySQL 8.4 pada salinan QA di port 8083.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| Maven | 52 tes lulus. Mencakup autentikasi, izin akses dan kepemilikan, aturan prioritas, pengelompokan pada jalur katalog, serta kedua jalur perbaikan. |
+| Kasus Kritis | UM-0255 diperiksa, muncul di daftar Kritis aktif, diperbaiki langsung, dan ditutup petugas dengan catatan serta foto hasil. |
+| Kasus Rendah | UM-0256 dikirim tanpa foto, diperiksa, diajukan untuk tindak lanjut, dialihkan ke petugas lain, dan diselesaikan dengan bukti. Pemeriksaan tetap tercatat dan petugas lama kehilangan akses. |
+| Interaksi browser | Pratinjau dan hapus foto pada 320 px, validasi form, notifikasi, filter dan tautan ekspor, fokus keyboard pada notifikasi dan dialog, reduced motion, dan tautan detail admin tanpa JavaScript. |
+| Layout | 15 halaman diperiksa pada 320, 375, 390, 430, 768, 1024, 1366, 1440, dan 1920 px. Tidak ditemukan luapan horizontal melewati toleransi 2 px atau galat JavaScript halaman pada putaran terakhir. |
+| Persistensi | Flyway V101 tervalidasi pada MySQL. Data awal 248 laporan dan hasil pengujian sebelumnya tetap tersedia setelah restart QA. |
+
+Buka URL demo yang ingin diuji dalam sesi Playwright CLI, lalu jalankan `playwright-cli -s=kampus-qa run-code --filename=./scripts/test-browser-demo.js`. Skrip memakai origin tab aktif, membuat dua laporan uji, dan menyimpan tangkapan layar ke `target/qa-screens`. Gunakan skema demo khusus pengujian.
+
 ## Tema relate.so dan alur layar acuan · 24 November 2026
 
 Dijalankan di Windows (JDK 21, Maven Wrapper, MySQL Laragon 8.4.3, Chrome) pada branch `redesain-um-peduli`, aplikasi di port 8080 dengan data demo `db/demo/V100`. Rincian dan audit: `docs/redesain/LAPORAN.md`.
@@ -13,7 +29,7 @@ Dijalankan di Windows (JDK 21, Maven Wrapper, MySQL Laragon 8.4.3, Chrome) pada 
 | Keyboard dan gerak | Menu akun (Enter, panah, Esc + fokus kembali), tab (panah), modal `<dialog>` (fokus terkunci, Esc, kembali ke pemicu). `prefers-reduced-motion` mematikan semua animasi dan transisi. |
 | Kontras | 30 pasangan warna lulus; placeholder dan batas input disesuaikan. |
 
-Untuk menjalankan skrip browser terhadap port lain, set `globalThis.UMPEDULI_BASE` sebelum `run-code` (bawaan `http://127.0.0.1:8081`). Skrip membuat satu laporan dan satu tugas selesai di skema yang dipakai.
+Catatan historis: hasil pada bagian ini berasal dari versi skrip sebelum pembaruan alur pemeriksaan dan tindak lanjut.
 
 ## Redesain dan login email/NIM · 22 November 2026
 

@@ -1,30 +1,16 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/shell :: head('Tugas saya')}"></head>
+<head th:replace="~{fragments/shell :: head('Tugas Saya')}"></head>
 <body th:replace="~{fragments/shell :: ruang('tugas', ~{::main})}">
-<main id="main" class="isi" tabindex="-1"
-      th:with="aktif=${daftarTugas.?[status.name() != 'SELESAI']}, selesai=${daftarTugas.?[status.name() == 'SELESAI']}">
-  <header class="kepala-hal">
-    <div>
-      <h1>Tugas Saya</h1>
-      <p th:text="|${aktif.size()} tugas aktif, ${selesai.size()} selesai.|">2 tugas aktif, 14 selesai.</p>
+<main id="main" class="isi" tabindex="-1">
+  <header class="kepala-hal"><div><h1>Tugas Saya</h1></div></header>
+  <dl th:replace="~{fragments/petugas :: ringkasan(${ringkasan})}"></dl>
+  <section class="kartu kartu-utama bagian" aria-labelledby="judul-daftar">
+    <div class="kartu-kepala"><h2 id="judul-daftar" class="judul-kartu" th:text="${hanyaBelumDiperiksa ? 'Perlu diperiksa' : (statusAktif != null ? statusAktif.label : (hanyaAktif ? 'Tugas aktif' : 'Semua tugas'))}"></h2>
+      <a class="tautan" th:if="${statusAktif != null or hanyaBelumDiperiksa or hanyaAktif}" th:href="@{/petugas/tugas}">Tampilkan semua</a>
     </div>
-  </header>
-  <section class="kartu kartu-utama" aria-labelledby="judul-aktif">
-    <h2 id="judul-aktif" class="judul-kartu">Perlu ditangani</h2>
-    <div class="kosong" th:if="${aktif.isEmpty()}">
-      <p class="kosong-judul">Tidak ada tugas aktif</p>
-      <p>Tugas baru dari admin muncul di sini.</p>
-    </div>
-    <ul class="tugas-daftar" th:unless="${aktif.isEmpty()}">
-      <th:block th:each="t, s : ${aktif}"><li th:replace="~{fragments/petugas :: tugas(${t}, ${s.first})}"></li></th:block>
-    </ul>
-  </section>
-  <section class="kartu kartu-utama bagian" aria-labelledby="judul-selesai" th:unless="${selesai.isEmpty()}">
-    <h2 id="judul-selesai" class="judul-kartu">Sudah selesai</h2>
-    <ul class="tugas-daftar">
-      <th:block th:each="t : ${selesai}"><li th:replace="~{fragments/petugas :: tugas(${t}, false)}"></li></th:block>
-    </ul>
+    <p class="kosong" th:if="${daftarTugas.isEmpty()}">Tidak ada tugas pada daftar ini.</p>
+    <ul class="tugas-daftar"><th:block th:each="t : ${daftarTugas}"><li th:replace="~{fragments/petugas :: tugas(${t})}"></li></th:block></ul>
   </section>
 </main>
 </body>

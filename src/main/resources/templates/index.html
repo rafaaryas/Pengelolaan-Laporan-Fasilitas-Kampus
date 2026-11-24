@@ -5,23 +5,27 @@
   <a class="lompat" href="#main">Lewati ke konten</a>
   <svg th:replace="~{fragments/shell :: ikon}"></svg>
   <header th:replace="~{fragments/publik :: bar}"></header>
-  <main id="main" class="pub-isi">
+  <main id="main" class="beranda">
     <div class="galat-global galat-sukses" role="status" th:if="${param.keluar != null}">
       <svg class="ikon" aria-hidden="true"><use href="#i-centang"/></svg><p>Anda sudah keluar dari UM Peduli.</p>
     </div>
-    <section class="hero hero-landing" aria-labelledby="judul">
-      <h1 id="judul" class="hero-judul"><span>AC kelas mati, kursi patah, keran bocor?</span> <span class="nada-2">Laporkan, lalu pantau sampai diperbaiki.</span></h1>
-      <p class="hero-teks">Admin memverifikasi setiap laporan, petugas memperbaikinya, dan statusnya bisa Anda ikuti dari satu halaman.</p>
-      <a class="tombol tombol-hero" th:href="@{/login}">Masuk dan laporkan kerusakan</a>
-      <p class="hero-catatan">Masuk dengan email kampus atau NIM. Tidak perlu kata sandi dalam mode demo ini.</p>
-    </section>
-    <section class="alur" aria-labelledby="alur-judul">
-      <h2 id="alur-judul" class="sr-only">Alur penanganan laporan</h2>
-      <ol class="urutan urutan-mendatar">
-        <li><span class="urutan-no" aria-hidden="true">1</span><p><strong>Laporkan</strong><span>Pilih fakultas, gedung, dan lantai, jelaskan kerusakannya, lalu lampirkan foto.</span></p></li>
-        <li><span class="urutan-no" aria-hidden="true">2</span><p><strong>Diverifikasi</strong><span>Admin memeriksa kelengkapan laporan dan menugaskan petugas sesuai bidangnya.</span></p></li>
-        <li><span class="urutan-no" aria-hidden="true">3</span><p><strong>Diperbaiki</strong><span>Petugas mencatat penanganan dan melampirkan foto hasil saat selesai.</span></p></li>
-      </ol>
+    <section class="beranda-hero" aria-labelledby="judul">
+      <div class="beranda-isi">
+        <div>
+          <h1 id="judul">Sistem Pelaporan Fasilitas Kampus</h1>
+          <p>Laporkan kerusakan fasilitas Universitas Negeri Malang dan pantau penanganannya hingga selesai.</p>
+          <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}"
+             th:if="${akunMasuk != null and akunMasuk.beranda() == '/mahasiswa'}">Laporkan kerusakan</a>
+          <a class="tombol tombol-utama" th:href="@{/login}" th:if="${akunMasuk == null}">Laporkan kerusakan</a>
+          <a class="tombol tombol-utama" th:href="@{${akunMasuk.beranda()}}"
+             th:if="${akunMasuk != null and akunMasuk.beranda() != '/mahasiswa'}">Buka ruang kerja</a>
+        </div>
+        <ol class="beranda-tahap">
+          <li><span class="urutan-no" aria-hidden="true">1</span><div><strong>Kirim laporan</strong><p>Isi lokasi dan jelaskan kerusakan.</p></div></li>
+          <li><span class="urutan-no" aria-hidden="true">2</span><div><strong>Pemeriksaan</strong><p>Admin mengecek laporan. Petugas memeriksa kondisi di lokasi.</p></div></li>
+          <li><span class="urutan-no" aria-hidden="true">3</span><div><strong>Pantau perbaikan</strong><p>Lihat perkembangan dan bukti hasil di Laporan Saya.</p></div></li>
+        </ol>
+      </div>
     </section>
   </main>
   <footer th:replace="~{fragments/publik :: kaki}"></footer>

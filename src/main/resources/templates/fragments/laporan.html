@@ -32,4 +32,16 @@
     </p>
   </section>
 </article>
+<section th:fragment="pemeriksaan(kasus)" class="rincian-proses" th:if="${kasus.sudahDiperiksa}">
+  <h3>Hasil pemeriksaan</h3>
+  <p class="prioritas-baris"><span th:replace="~{fragments/shell :: prioritas(${kasus.prioritas})}"></span><span th:text="${kasus.alasanPrioritas}"></span></p>
+  <dl class="fakta">
+    <div><dt>Pemeriksa</dt><dd th:text="${kasus.pemeriksa.nama}"></dd></div>
+    <div><dt>Diperiksa pada</dt><dd th:text="|${@waktu.tanggalJam(kasus.waktuPemeriksaan)} WIB|"></dd></div>
+    <div><dt>Bahaya keselamatan kritis</dt><dd th:text="${kasus.bahayaKritis ? 'Ada' : 'Tidak ada'}"></dd></div>
+    <div><dt>Tingkat gangguan</dt><dd th:text="${kasus.gangguan.label}"></dd></div>
+    <div><dt>Unit rusak</dt><dd th:text="${kasus.unitRusak}"></dd></div>
+    <div th:if="${kasus.catatanPemeriksaan != null}" class="fakta-penuh"><dt>Catatan pemeriksaan</dt><dd class="teks-pengguna" th:text="${kasus.catatanPemeriksaan}"></dd></div>
+  </dl>
+</section>
 </html>

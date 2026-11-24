@@ -1,13 +1,11 @@
 package com.kelompok5.pelaporanfasilitas.model;
 
-/**
- * Empat tahap yang dilihat pengguna. Status kasus internal punya lima nilai;
- * "Menunggu penugasan" dan "Ditugaskan" sama-sama tampil sebagai Terverifikasi.
- */
 public enum Tahap {
     MENUNGGU("Menunggu Verifikasi", "Menunggu", "menunggu"),
-    TERVERIFIKASI("Terverifikasi", "Terverifikasi", "verifikasi"),
+    TERVERIFIKASI("Menunggu Penugasan", "Menunggu Penugasan", "verifikasi"),
+    DITUGASKAN("Ditugaskan", "Ditugaskan", "verifikasi"),
     DIPERBAIKI("Sedang Diperbaiki", "Diperbaiki", "diperbaiki"),
+    TINDAK_LANJUT("Perlu Tindak Lanjut", "Tindak Lanjut", "tindak-lanjut"),
     SELESAI("Selesai", "Selesai", "selesai");
 
     private final String label;
@@ -23,8 +21,10 @@ public enum Tahap {
     public static Tahap dari(StatusKasus status) {
         return switch (status) {
             case MENUNGGU_VERIFIKASI -> MENUNGGU;
-            case MENUNGGU_PENUGASAN, DITUGASKAN -> TERVERIFIKASI;
+            case MENUNGGU_PENUGASAN -> TERVERIFIKASI;
+            case DITUGASKAN -> DITUGASKAN;
             case DIKERJAKAN -> DIPERBAIKI;
+            case PERLU_TINDAK_LANJUT -> TINDAK_LANJUT;
             case SELESAI -> SELESAI;
         };
     }
@@ -35,5 +35,4 @@ public enum Tahap {
     public String getLabelPendek() { return labelPendek; }
     /** Akhiran kelas CSS untuk pill dan titik status. */
     public String getKelas() { return kelas; }
-    public int getUrutan() { return ordinal() + 1; }
 }

@@ -1,48 +1,33 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/shell :: head('Masuk')}"></head>
-<body class="publik">
+<body class="publik halaman-masuk">
   <a class="lompat" href="#main">Lewati ke konten</a>
   <svg th:replace="~{fragments/shell :: ikon}"></svg>
-  <header th:replace="~{fragments/publik :: bar}"></header>
-  <main id="main" class="pub-isi masuk">
-    <section class="kartu kartu-utama masuk-form" aria-labelledby="judul-masuk">
+  <header th:replace="~{fragments/publik :: bar(judulHalamanPublik='masuk')}"></header>
+  <main id="main" class="masuk-bagi">
+    <section class="masuk-form" aria-labelledby="judul-masuk">
       <a th:replace="~{fragments/shell :: kembali('/', 'Beranda')}"></a>
       <h1 id="judul-masuk">Masuk ke UM Peduli</h1>
-      <p class="kartu-sub">Satu kolom untuk semua. Sistem membaca email atau NIM Anda dan membuka ruang kerja yang sesuai.</p>
+      <p class="kartu-sub">Gunakan email kampus atau NIM Anda.</p>
       <form th:action="@{/login}" method="post" novalidate data-validasi>
         <div class="field" th:classappend="${kesalahan != null} ? 'field-galat'">
           <label for="identitas">Email kampus atau NIM</label>
           <input id="identitas" class="input" name="identitas" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false"
-                 maxlength="150" required autofocus th:value="${identitas}" placeholder="nama@students.um.ac.id"
+                 maxlength="150" required th:value="${identitas}" placeholder="nama@students.um.ac.id"
                  data-pesan="Isi email kampus atau NIM untuk masuk."
                  aria-describedby="identitas-bantuan identitas-galat" th:attr="aria-invalid=${kesalahan != null}">
-          <p id="identitas-bantuan" class="bantuan-field">NIM terdiri dari 12 digit angka, misalnya 240535600101.</p>
+          <p id="identitas-bantuan" class="bantuan-field">NIM terdiri dari 12 digit angka.</p>
           <p id="identitas-galat" class="galat-field" aria-live="polite"><span th:if="${kesalahan != null}" th:text="${kesalahan}"></span></p>
         </div>
         <button class="tombol tombol-utama tombol-penuh" type="submit" data-memproses="Memeriksa…">Masuk</button>
       </form>
-      <aside class="panel-waspada" aria-label="Catatan keamanan">
-        <p><strong>Mode demo akademik.</strong> Masuk tidak memakai kata sandi atau kode OTP, jadi jangan gunakan aplikasi ini untuk data sungguhan.</p>
-      </aside>
+      <p class="catatan-demo">Mode demo akademik · Masuk tanpa kata sandi</p>
     </section>
-    <section class="kartu kartu-dukung masuk-ruang" aria-labelledby="judul-ruang">
-      <h2 id="judul-ruang" class="judul-kartu">Ke mana Anda akan dibawa</h2>
-      <dl class="daftar-ruang">
-        <div><dt><span class="titik titik-masuk" aria-hidden="true"></span>Civitas</dt>
-          <dd>Melapor kerusakan dan memantau statusnya. Email atau NIM mahasiswa yang belum terdaftar otomatis dibuatkan akun.</dd></div>
-        <div><dt><span class="titik titik-diperbaiki" aria-hidden="true"></span>Petugas</dt>
-          <dd>Menangani tugas perbaikan, mencatat progres, dan mengunggah foto hasil. Hanya untuk email yang terdaftar sebagai petugas.</dd></div>
-        <div><dt><span class="titik titik-selesai" aria-hidden="true"></span>Admin</dt>
-          <dd>Memverifikasi laporan dan menugaskan petugas. Hanya untuk email yang terdaftar sebagai admin.</dd></div>
-      </dl>
-      <p class="label-kecil">Akun demo</p>
-      <ul class="akun-demo">
-        <li><code>nadia@example.invalid</code><span>Civitas</span></li>
-        <li><code>budi.santoso@example.invalid</code><span>Petugas</span></li>
-        <li><code>admin@example.invalid</code><span>Admin</span></li>
-      </ul>
-    </section>
+    <figure class="masuk-foto">
+      <img th:src="@{/images/kampus-1.webp}" alt="Gedung kampus UM dilihat dari atas" fetchpriority="high">
+      <figcaption>Universitas Negeri Malang</figcaption>
+    </figure>
   </main>
   <footer th:replace="~{fragments/publik :: kaki}"></footer>
 </body>

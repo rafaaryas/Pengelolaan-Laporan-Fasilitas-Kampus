@@ -2,7 +2,7 @@
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/shell :: head('Detail laporan')}"></head>
 <body th:replace="~{fragments/shell :: ruang('laporan', ~{::main})}">
-<main id="main" class="isi" tabindex="-1" th:with="tahap=${laporan.tahap}, n=${laporan.tahap.urutan}, kasus=${laporan.kasus}">
+<main id="main" class="isi" tabindex="-1" th:with="kasus=${laporan.kasus}">
   <a th:replace="~{fragments/shell :: kembali('/mahasiswa/laporan', 'Kembali ke Laporan Saya')}"></a>
   <header class="kepala-hal">
     <div>
@@ -17,63 +17,39 @@
     <aside class="kolom-samping" aria-label="Perkembangan">
       <section class="kartu kartu-dukung" aria-labelledby="judul-perkembangan">
         <h2 id="judul-perkembangan" class="judul-kartu">Perkembangan laporan</h2>
-        <ol class="linimasa" th:attr="data-tahap=${n}">
-          <li th:class="${n > 1 ? 'lewat' : 'kini'}">
+        <ol class="linimasa">
+          <li class="lewat">
             <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
-            <div>
-              <strong>Menunggu Verifikasi</strong>
-              <time th:datetime="${@waktu.iso(laporan.waktuLaporan)}" th:text="${@waktu.tanggalTitikJam(laporan.waktuLaporan)}"></time>
-              <p th:text="${n == 1 ? 'Laporan diterima dan menunggu peninjauan admin.' : 'Laporan diterima.'}"></p>
-            </div>
+            <div><strong>Laporan diterima</strong><time th:datetime="${@waktu.iso(laporan.waktuLaporan)}" th:text="${@waktu.tanggalTitikJam(laporan.waktuLaporan)}"></time></div>
           </li>
-          <li th:class="${n > 2 ? 'lewat' : (n == 2 ? 'kini' : '')}">
-            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon" th:if="${n >= 2}"><use href="#i-centang"/></svg><span th:unless="${n >= 2}">2</span></span>
-            <div>
-              <strong>Terverifikasi</strong>
-              <time th:if="${kasus.waktuVerifikasi != null}" th:datetime="${@waktu.iso(kasus.waktuVerifikasi)}" th:text="${@waktu.tanggalTitikJam(kasus.waktuVerifikasi)}"></time>
-              <p th:if="${n < 2}">Menunggu verifikasi admin</p>
-              <p th:if="${n >= 2}" th:text="${tugas != null ? 'Diverifikasi admin. Ditugaskan ke ' + tugas.petugas.nama + '.' : 'Diverifikasi admin. Menunggu penugasan petugas.'}"></p>
-            </div>
+          <li class="lewat" th:if="${kasus.waktuVerifikasi != null}">
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
+            <div><strong>Laporan diverifikasi</strong><time th:text="${@waktu.tanggalTitikJam(kasus.waktuVerifikasi)}"></time><p th:if="${tugas == null}">Menunggu penugasan petugas.</p></div>
           </li>
-          <li th:class="${n > 3 ? 'lewat' : (n == 3 ? 'kini' : '')}">
-            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon" th:if="${n >= 3}"><use href="#i-centang"/></svg><span th:unless="${n >= 3}">3</span></span>
-            <div>
-              <strong>Sedang Diperbaiki</strong>
-              <time th:if="${tugas != null and tugas.waktuMulai != null}" th:datetime="${@waktu.iso(tugas.waktuMulai)}" th:text="${@waktu.tanggalTitikJam(tugas.waktuMulai)}"></time>
-              <p th:if="${n < 3}">Menunggu penanganan petugas</p>
-              <p th:if="${n >= 3}" class="teks-pengguna" th:text="${tugas != null and tugas.catatan != null ? tugas.catatan : 'Petugas sedang menangani kerusakan.'}"></p>
-            </div>
+          <li class="lewat" th:if="${tugas != null and tugas.waktuMulai != null}">
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
+            <div><strong>Perbaikan dimulai</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuMulai)}"></time></div>
           </li>
-          <li th:class="${n == 4 ? 'lewat' : ''}">
-            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon" th:if="${n == 4}"><use href="#i-centang"/></svg><span th:unless="${n == 4}">4</span></span>
-            <div>
-              <strong>Selesai</strong>
-              <time th:if="${tugas != null and tugas.waktuSelesai != null}" th:datetime="${@waktu.iso(tugas.waktuSelesai)}" th:text="${@waktu.tanggalTitikJam(tugas.waktuSelesai)}"></time>
-              <p>Fasilitas siap digunakan kembali</p>
-              <a class="tautan" th:if="${tugas != null and tugas.adaFotoHasil}" th:href="@{/berkas/hasil/{id}(id=${tugas.id})}" target="_blank" rel="noopener">Lihat foto hasil perbaikan<svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-keluar-tautan"/></svg></a>
+          <li class="kini" th:if="${laporan.tahap.name() == 'DITUGASKAN'}">
+            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <div><strong>Ditugaskan</strong><p th:text="${kasus.sudahDiperiksa ? 'Petugas sudah memeriksa fasilitas.' : 'Petugas akan memeriksa fasilitas.'}"></p></div>
+          </li>
+          <li class="kini" th:if="${laporan.tahap.name() == 'TINDAK_LANJUT'}">
+            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <div><strong>Perlu Tindak Lanjut</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuTindakLanjut)}"></time><p>Admin sedang meninjau langkah berikutnya.</p></div>
+          </li>
+          <li class="kini" th:if="${tugas != null and tugas.catatan != null and tugas.waktuSelesai == null}">
+            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <div><strong>Catatan perkembangan</strong><p class="teks-pengguna" th:text="${tugas.catatan}"></p></div>
+          </li>
+          <li class="lewat" th:if="${tugas != null and tugas.waktuSelesai != null}">
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
+            <div><strong>Selesai</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuSelesai)}"></time>
+              <p class="teks-pengguna" th:text="${tugas.catatan}"></p>
+              <a class="tautan" th:if="${tugas.adaFotoHasil}" th:href="@{/berkas/hasil/{id}(id=${tugas.id})}">Lihat bukti hasil perbaikan</a>
             </div>
           </li>
         </ol>
-      </section>
-
-      <section class="panel-info" aria-labelledby="judul-info" th:switch="${tahap.name()}">
-        <th:block th:case="'MENUNGGU'">
-          <h2 id="judul-info">Laporanmu sudah kami terima</h2>
-          <p>Admin akan memeriksa kelengkapan laporan. Kamu bisa memantau setiap pembaruan status di halaman ini.</p>
-        </th:block>
-        <th:block th:case="'TERVERIFIKASI'">
-          <h2 id="judul-info">Laporanmu sudah diverifikasi</h2>
-          <p>Petugas akan menangani kerusakan ini. Setiap perubahan status tampil di perkembangan laporan.</p>
-        </th:block>
-        <th:block th:case="'DIPERBAIKI'">
-          <h2 id="judul-info">Perbaikan sedang berjalan</h2>
-          <p>Catatan penanganan terbaru dari petugas tampil di perkembangan laporan.</p>
-        </th:block>
-        <th:block th:case="*">
-          <h2 id="judul-info">Perbaikan selesai</h2>
-          <p>Fasilitas sudah diperbaiki. Buat laporan baru bila kerusakan yang sama muncul lagi.</p>
-        </th:block>
-        <p class="panel-info-penutup">Terima kasih telah peduli fasilitas UM.</p>
       </section>
     </aside>
   </div>

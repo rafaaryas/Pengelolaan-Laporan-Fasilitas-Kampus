@@ -25,7 +25,7 @@ class PageSecurityTest {
     @Test
     void landingMengarahkanKeLoginTanpaPemilihPeran() throws Exception {
         mvc.perform(get("/")).andExpect(status().isOk())
-                .andExpect(content().string(containsString("Masuk dan laporkan kerusakan")))
+                .andExpect(content().string(containsString("Laporkan kerusakan")))
                 .andExpect(content().string(containsString("href=\"/login\"")))
                 .andExpect(content().string(not(containsString("Pilih ruang kerja"))));
         mvc.perform(get("/login")).andExpect(status().isOk())
@@ -51,11 +51,18 @@ class PageSecurityTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/petugas", "/petugas/verifikasi", "/petugas/tugas"})
+    @ValueSource(strings = {"/petugas", "/petugas/tugas"})
     void halamanPetugasTerbukaSetelahMasuk(String route) throws Exception {
         var sesi = Masuk.sebagai(mvc, "dimas@example.invalid");
         mvc.perform(get(route).session(sesi)).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Dimas Pratama")));
+    }
+
+    @Test
+    void antreanVerifikasiLamaMengarahkanKeTugasMilikPetugas() throws Exception {
+        var sesi = Masuk.sebagai(mvc, "dimas@example.invalid");
+        mvc.perform(get("/petugas/verifikasi").session(sesi))
+                .andExpect(redirectedUrl("/petugas/tugas?perluDiperiksa=true"));
     }
 
     @ParameterizedTest
@@ -74,7 +81,7 @@ class PageSecurityTest {
                 .andExpect(status().isOk()).andExpect(view().name("mahasiswa/form"))
                 .andExpect(content().string(containsString("Isi deskripsi kerusakan.")))
                 .andExpect(content().string(containsString("Pilih fakultas.")))
-                .andExpect(content().string(containsString("Lampirkan foto bukti kerusakan")));
+                .andExpect(content().string(containsString("Foto bukti kerusakan (opsional)")));
         MockHttpSession admin = Masuk.sebagai(mvc, "admin@example.invalid");
         mvc.perform(get("/admin/kasus/9999999").session(admin)).andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Kasus tidak ditemukan.")))

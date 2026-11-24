@@ -39,6 +39,7 @@ public class KasusKerusakan {
     @ManyToOne(fetch = FetchType.LAZY)
     private Admin verifikator;
     private LocalDateTime waktuVerifikasi;
+    private LocalDateTime waktuPemeriksaan;
     @Column(length = 1000)
     private String catatanPemeriksaan;
 
@@ -78,6 +79,22 @@ public class KasusKerusakan {
         if (status != StatusKasus.MENUNGGU_VERIFIKASI) {
             throw new IllegalStateException("Kasus ini sudah diverifikasi.");
         }
+        isiPemeriksaan(petugas, bahaya, gangguan, unit, catatan, waktu);
+        this.waktuVerifikasi = waktu;
+        this.terverifikasi = true;
+        ubahStatus(StatusKasus.MENUNGGU_PENUGASAN);
+    }
+
+    public void catatPemeriksaanTugas(Petugas petugas, boolean bahaya, Gangguan gangguan, int unit,
+                                     String catatan, LocalDateTime waktu) {
+        if (isSudahDiperiksa() || (status != StatusKasus.DITUGASKAN && status != StatusKasus.DIKERJAKAN)) {
+            throw new IllegalStateException("Pemeriksaan hanya dapat dicatat sekali pada tugas yang sedang ditangani.");
+        }
+        isiPemeriksaan(petugas, bahaya, gangguan, unit, catatan, waktu);
+    }
+
+    private void isiPemeriksaan(Petugas petugas, boolean bahaya, Gangguan gangguan, int unit,
+                                String catatan, LocalDateTime waktu) {
         int batas = fasilitas == null ? Integer.MAX_VALUE : fasilitas.getJumlahUnit();
         if (gangguan == null || unit < 1 || unit > batas) {
             throw new IllegalArgumentException("Pilih tingkat gangguan dan masukkan jumlah unit rusak antara 1 dan " + batas + ".");
@@ -87,9 +104,7 @@ public class KasusKerusakan {
         this.gangguan = gangguan;
         this.unitRusak = unit;
         this.catatanPemeriksaan = catatan;
-        this.waktuVerifikasi = waktu;
-        this.terverifikasi = true;
-        ubahStatus(StatusKasus.MENUNGGU_PENUGASAN);
+        this.waktuPemeriksaan = waktu;
     }
 
     /** Admin memeriksa kelengkapan laporan; kasus siap ditugaskan. */
@@ -104,13 +119,21 @@ public class KasusKerusakan {
     }
 
     public void tetapkanPrioritas(Prioritas prioritas, String alasan) {
-        if (!terverifikasi) throw new IllegalStateException("Verifikasi kasus sebelum menentukan prioritas.");
+        if (!isSudahDiperiksa()) throw new IllegalStateException("Catat pemeriksaan sebelum menentukan prioritas.");
         this.prioritas = prioritas;
         this.alasanPrioritas = alasan;
     }
 
     void ubahStatus(StatusKasus berikutnya) {
-        if (berikutnya.ordinal() != status.ordinal() + 1) {
+        boolean sah = switch (status) {
+            case MENUNGGU_VERIFIKASI -> berikutnya == StatusKasus.MENUNGGU_PENUGASAN;
+            case MENUNGGU_PENUGASAN -> berikutnya == StatusKasus.DITUGASKAN;
+            case DITUGASKAN -> berikutnya == StatusKasus.DIKERJAKAN || berikutnya == StatusKasus.PERLU_TINDAK_LANJUT;
+            case DIKERJAKAN -> berikutnya == StatusKasus.SELESAI || berikutnya == StatusKasus.PERLU_TINDAK_LANJUT;
+            case PERLU_TINDAK_LANJUT -> berikutnya == StatusKasus.DIKERJAKAN;
+            case SELESAI -> false;
+        };
+        if (!sah) {
             throw new IllegalStateException("Urutan perubahan status kasus tidak valid.");
         }
         status = berikutnya;
@@ -139,5 +162,9 @@ public class KasusKerusakan {
     public String getAlasanPrioritas() { return alasanPrioritas; }
     public Petugas getPemeriksa() { return pemeriksa; }
     public LocalDateTime getWaktuVerifikasi() { return waktuVerifikasi; }
+    public boolean isSudahDiperiksa() { return pemeriksa != null && gangguan != null && unitRusak != null; }
+    public LocalDateTime getWaktuPemeriksaan() {
+        return waktuPemeriksaan != null ? waktuPemeriksaan : (isSudahDiperiksa() ? waktuVerifikasi : null);
+    }
     public String getCatatanPemeriksaan() { return catatanPemeriksaan; }
 }

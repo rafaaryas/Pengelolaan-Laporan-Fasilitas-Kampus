@@ -33,15 +33,23 @@ public class PetugasController {
     String dashboard(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
         Petugas akun = identitas.petugas(masuk, model);
         model.addAttribute("ringkasan", pantauan.ringkasanPetugas(akun.getId()));
-        // Layar menulis "Pak Budi"; sapaan bergender tidak ditebak dari nama, jadi dipakai nama depan.
-        model.addAttribute("sapaanNama", akun.getNama().split(" ")[0]);
         return "petugas/index";
     }
 
     @GetMapping("/tugas")
-    String daftarTugas(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
+    String daftarTugas(@RequestParam(required = false) StatusTugas status,
+                       @RequestParam(defaultValue = "false") boolean perluDiperiksa,
+                       @RequestParam(defaultValue = "false") boolean aktif,
+                       @AuthenticationPrincipal AkunMasuk masuk, Model model) {
         Petugas akun = identitas.petugas(masuk, model);
-        model.addAttribute("daftarTugas", pantauan.tugasPetugas(akun.getId()));
+        var daftar = pantauan.tugasPetugas(akun.getId()).stream()
+                .filter(t -> !aktif || t.getStatus() != StatusTugas.SELESAI)
+                .filter(t -> !perluDiperiksa || (t.getStatus() != StatusTugas.SELESAI && !t.getKasus().isSudahDiperiksa()));
+        model.addAttribute("daftarTugas", daftar.filter(t -> status == null || t.getStatus() == status).toList());
+        model.addAttribute("ringkasan", pantauan.ringkasanPetugas(akun.getId()));
+        model.addAttribute("statusAktif", status);
+        model.addAttribute("hanyaBelumDiperiksa", perluDiperiksa);
+        model.addAttribute("hanyaAktif", aktif);
         return "petugas/tugas";
     }
 
@@ -52,18 +60,18 @@ public class PetugasController {
         model.addAttribute("tugas", tugas);
         model.addAttribute("kasus", tugas.getKasus());
         model.addAttribute("laporan", tugas.getKasus().getLaporanUtama());
+        model.addAttribute("tingkatGangguan", Gangguan.values());
+        if (!model.containsAttribute("pemeriksaan")) {
+            model.addAttribute("pemeriksaan", new PemeriksaanForm(null, null, null, ""));
+        }
         return "petugas/detail";
     }
 
-    /** "Simpan pembaruan": memulai perbaikan bila belum dimulai dan menyimpan catatan penanganan. */
     @PostMapping("/tugas/{id}/progres")
     String progres(@PathVariable long id, @RequestParam(defaultValue = "") String catatan,
-                   @RequestParam(defaultValue = "DIKERJAKAN") String status,
-                   @RequestParam(value = "foto", required = false) MultipartFile foto,
                    @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
-        if ("SELESAI".equals(status)) return selesai(id, catatan, foto, masuk, model, flash);
         Petugas akun = identitas.petugas(masuk, model);
-        return ubahTugas(id, flash, "Pembaruan tersimpan. Status laporan: Sedang Diperbaiki.",
+        return ubahTugas(id, flash, "Catatan perkembangan tersimpan.",
                 () -> sistem.perbaruiProgres(id, akun.getId(), catatan));
     }
 
@@ -74,10 +82,21 @@ public class PetugasController {
                    @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
         Petugas akun = identitas.petugas(masuk, model);
         return ubahTugas(id, flash, "Tugas ditandai selesai. Pelapor bisa melihat hasilnya.", () -> {
-            if (catatan.isBlank()) throw new IllegalArgumentException("Isi catatan penanganan sebelum menandai selesai.");
+            var pekerjaan = pantauan.detailTugas(id, akun.getId());
+            if (pekerjaan.getStatus() != StatusTugas.DIKERJAKAN || !pekerjaan.getKasus().isSudahDiperiksa()) {
+                throw new IllegalStateException("Kasus harus diperiksa dan sedang diperbaiki sebelum ditutup.");
+            }
+            if (catatan.isBlank() || catatan.length() > 1000) {
+                throw new IllegalArgumentException("Isi catatan perbaikan, maksimal 1000 karakter.");
+            }
             Berkas berkas = penyimpanan.simpan(foto)
                     .orElseThrow(() -> new IllegalArgumentException("Unggah foto hasil perbaikan sebelum menandai selesai."));
-            sistem.selesaikanTugas(id, akun.getId(), catatan, berkas);
+            try {
+                sistem.selesaikanTugas(id, akun.getId(), catatan, berkas);
+            } catch (RuntimeException e) {
+                penyimpanan.hapus(berkas);
+                throw e;
+            }
         });
     }
 
@@ -87,42 +106,49 @@ public class PetugasController {
         return ubahTugas(id, flash, "Perbaikan dimulai.", () -> sistem.mulaiTugas(id, akun.getId()));
     }
 
-    // ----- Pemeriksaan di lokasi (alur lama, tidak tampil di menu) -----
-
-    @GetMapping("/verifikasi")
-    String daftarVerifikasi(@AuthenticationPrincipal AkunMasuk masuk, Model model) {
-        identitas.petugas(masuk, model);
-        model.addAttribute("daftarVerifikasi", pantauan.daftarKasus("", StatusKasus.MENUNGGU_VERIFIKASI, null));
-        return "petugas/verifikasi";
-    }
-
-    @GetMapping("/kasus/{id}/verifikasi")
-    String formVerifikasi(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+    @PostMapping("/tugas/{id}/pemeriksaan")
+    String periksa(@PathVariable long id, @Valid @ModelAttribute("pemeriksaan") PemeriksaanForm pemeriksaan,
+                   BindingResult hasil, @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
         Petugas akun = identitas.petugas(masuk, model);
-        model.addAttribute("form", new VerifikasiForm(akun.getId(), null, null, null, ""));
-        return siapkanVerifikasi(id, model);
-    }
-
-    @PostMapping("/kasus/{id}/verifikasi")
-    String verifikasi(@PathVariable long id, @Valid @ModelAttribute("form") VerifikasiForm form, BindingResult hasil,
-                      @AuthenticationPrincipal AkunMasuk masuk, Model model, RedirectAttributes flash) {
-        Petugas akun = identitas.petugas(masuk, model);
-        if (hasil.hasErrors()) return siapkanVerifikasi(id, model);
+        if (hasil.hasErrors()) return detailTugas(id, masuk, model);
         try {
-            identitas.pastikanSama(akun, form.petugasId());
-            sistem.verifikasi(id, akun.getId(), form.bahayaKritis(), form.gangguan(), form.unitRusak(), form.catatan());
-            flash.addFlashAttribute("sukses", "Hasil pemeriksaan tersimpan. Laporan siap ditugaskan admin.");
-            return "redirect:/petugas/verifikasi";
+            sistem.periksaTugas(id, akun.getId(), pemeriksaan.bahayaKritis(), pemeriksaan.gangguan(),
+                    pemeriksaan.unitRusak(), pemeriksaan.catatan());
+            flash.addFlashAttribute("sukses", "Hasil pemeriksaan dan prioritas tersimpan. Pilih langkah berikutnya.");
+            return "redirect:/petugas/tugas/" + id;
         } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("kesalahan", e.getMessage());
-            return siapkanVerifikasi(id, model);
+            return detailTugas(id, masuk, model);
         }
     }
 
-    private String siapkanVerifikasi(long id, Model model) {
-        model.addAttribute("kasus", pantauan.detailKasus(id).kasus());
-        model.addAttribute("tingkatGangguan", Gangguan.values());
-        return "petugas/periksa";
+    @PostMapping("/tugas/{id}/tindak-lanjut")
+    String tindakLanjut(@PathVariable long id, @RequestParam(defaultValue = "") String alasan,
+                        @RequestParam(defaultValue = "") String kebutuhan, @AuthenticationPrincipal AkunMasuk masuk,
+                        Model model, RedirectAttributes flash) {
+        Petugas akun = identitas.petugas(masuk, model);
+        try {
+            sistem.ajukanTindakLanjut(id, akun.getId(), alasan, kebutuhan);
+            flash.addFlashAttribute("sukses", "Pengajuan dikirim. Tunggu keputusan admin.");
+            return "redirect:/petugas/tugas/" + id;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            model.addAttribute("kesalahan", e.getMessage());
+            model.addAttribute("alasanDraf", alasan);
+            model.addAttribute("kebutuhanDraf", kebutuhan);
+            return detailTugas(id, masuk, model);
+        }
+    }
+
+    @GetMapping("/verifikasi")
+    String antreanLama() {
+        return "redirect:/petugas/tugas?perluDiperiksa=true";
+    }
+
+    @GetMapping("/kasus/{id}/verifikasi")
+    String pemeriksaanLama(@PathVariable long id, @AuthenticationPrincipal AkunMasuk masuk, Model model) {
+        Petugas akun = identitas.petugas(masuk, model);
+        return pantauan.tugasKasus(id).filter(t -> t.getPetugas().getId().equals(akun.getId()))
+                .map(t -> "redirect:/petugas/tugas/" + t.getId()).orElse("redirect:/petugas/tugas");
     }
 
     private String ubahTugas(long id, RedirectAttributes flash, String sukses, Runnable aksi) {
@@ -136,8 +162,7 @@ public class PetugasController {
         return "redirect:/petugas/tugas/" + id;
     }
 
-    public record VerifikasiForm(
-            @NotNull(message = "Sesi petugas tidak ditemukan.") Long petugasId,
+    public record PemeriksaanForm(
             @NotNull(message = "Pilih hasil pemeriksaan keselamatan.") Boolean bahayaKritis,
             @NotNull(message = "Pilih tingkat gangguan.") Gangguan gangguan,
             @NotNull(message = "Isi jumlah unit rusak.") @Min(value = 1, message = "Jumlah unit rusak minimal 1.") Integer unitRusak,

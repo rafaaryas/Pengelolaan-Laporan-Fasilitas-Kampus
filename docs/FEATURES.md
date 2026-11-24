@@ -3,11 +3,11 @@
 
 | Peran | Halaman GET | Aksi POST |
 | --- | --- | --- |
-| Publik | `/`, `/login`, `/akses-ditolak` | `/login` |
+| Publik | `/`, `/login`, `/bantuan`, `/akses-ditolak` | `/login` |
 | Semua yang sudah masuk | | `/logout` |
 | Mahasiswa | `/mahasiswa`, `/mahasiswa/laporan`, `/mahasiswa/laporan/baru`, `/mahasiswa/laporan/{id}` | `/mahasiswa/laporan` |
-| Admin | `/admin`, `/admin/kasus`, `/admin/kasus/{id}`, `/admin/petugas` | `/admin/kasus/{id}/penugasan`, `/admin/kasus/{id}/laporan/{laporanId}/pisahkan` |
-| Petugas | `/petugas`, `/petugas/verifikasi`, `/petugas/kasus/{id}/verifikasi`, `/petugas/tugas`, `/petugas/tugas/{id}` | `/petugas/kasus/{id}/verifikasi`, `/petugas/tugas/{id}/mulai`, `/petugas/tugas/{id}/progres`, `/petugas/tugas/{id}/selesai` |
+| Admin | `/admin`, `/admin/kasus`, `/admin/kasus/{id}`, `/admin/petugas` | `/admin/kasus/{id}/verifikasi`, `/admin/kasus/{id}/penugasan`, `/admin/kasus/{id}/tindak-lanjut`, `/admin/kasus/{id}/laporan/{laporanId}/pisahkan`, `/admin/petugas` |
+| Petugas | `/petugas`, `/petugas/tugas`, `/petugas/tugas/{id}` | `/petugas/tugas/{id}/pemeriksaan`, `/petugas/tugas/{id}/tindak-lanjut`, `/petugas/tugas/{id}/mulai`, `/petugas/tugas/{id}/progres`, `/petugas/tugas/{id}/selesai` |
 
 ## Masuk dan proteksi route
 
@@ -19,13 +19,16 @@
 
 ## Status kasus
 
-1. **Menunggu verifikasi.** Sistem mencatat laporan dan mencari kasus aktif dengan fasilitas serta jenis kerusakan yang sama.
-2. **Menunggu penugasan.** Petugas memeriksa kasus, lalu sistem menyimpan hasil dan alasan prioritas.
-3. **Ditugaskan.** Admin memilih petugas yang cocok, berada dalam jam kerja, dan bebas tugas aktif.
-4. **Sedang diperbaiki.** Petugas memulai tugas dan dapat menyimpan catatan sementara.
-5. **Selesai.** Petugas menyimpan hasil akhir. Waktu selesai tercatat, petugas kembali tersedia sesuai jadwal, dan kondisi fasilitas dihitung ulang. Laporan berjenis sama setelah penutupan dapat memulai kasus baru.
+1. **Menunggu verifikasi.** Mahasiswa mengisi lokasi dan deskripsi. Foto kerusakan bersifat opsional.
+2. **Menunggu penugasan.** Admin telah memeriksa laporan. Kasus melewati antrean ini jika admin sekaligus menentukan petugas.
+3. **Ditugaskan.** Petugas terpilih memeriksa kondisi di lokasi. Sistem menyimpan temuan, prioritas, dan alasan penetapannya.
+4. **Sedang diperbaiki.** Petugas melanjutkan tugas setelah pemeriksaan dan dapat mencatat perkembangan.
+5. **Perlu tindak lanjut.** Jika perlu keputusan admin, petugas mengirim alasan dan kebutuhan. Admin dapat menginstruksikan petugas sekarang untuk melanjutkan atau mengalihkan tugas yang sama dengan alasan tertulis. Selanjutnya status kembali ke Sedang Diperbaiki.
+6. **Selesai.** Petugas menutup tugas dengan catatan dan foto hasil. Kondisi fasilitas dari katalog serta ketersediaan petugas diperbarui.
 
-Mahasiswa dapat mencari dan memfilter riwayat miliknya sendiri; laporan milik akun lain mengembalikan HTTP 404. Admin dapat mencari kasus berdasarkan ID, fasilitas, jenis, atau lokasi dan memfilter status serta prioritas. Admin dapat memisahkan laporan yang salah dikelompokkan sebelum verifikasi jika kasus asal masih memiliki laporan lain. Laporan tetap menyimpan pelapor, waktu, dan isi awal, dan kasus hasil koreksi diperiksa secara terpisah.
+Mahasiswa dapat membuka, mencari, dan memfilter laporan miliknya. Admin dapat menyaring laporan, membuka antrean tindak lanjut, melihat kasus aktif Kritis, dan mengekspor hasil filter. Tautan lama ke antrean verifikasi petugas mengarah ke tugas petugas yang belum diperiksa.
+
+Penggabungan berdasarkan fasilitas dan jenis kerusakan berjalan pada alur berbasis katalog. Admin masih dapat memisahkan laporan yang salah dikelompokkan sebelum verifikasi. Form berbasis lokasi membuat satu kasus per laporan.
 
 ## Prioritas
 
@@ -36,4 +39,4 @@ Mahasiswa dapat mencari dan memfilter riwayat miliknya sendiri; laporan milik ak
 | Sedang | Sebagian fungsi fasilitas terganggu. |
 | Rendah | Gangguan penggunaan terbatas. |
 
-Daftar kasus aktif diurutkan berdasarkan prioritas, jumlah unit rusak, jumlah pelapor unik, dan waktu laporan terbaru. Kasus selesai tampil setelah kasus aktif. Aturan prioritas adalah kebijakan simulasi akademik Kelompok 5 untuk demo mata kuliah Advance Programming. Standar penanganan resmi mengikuti kebijakan Universitas Negeri Malang.
+Antrean tindak lanjut diurutkan berdasarkan prioritas, lalu waktu pengajuan terlama. Kasus Kritis yang masih aktif terlihat pada dashboard admin walaupun sedang diperbaiki langsung. Aturan prioritas adalah kebijakan simulasi akademik Kelompok 5 untuk demo mata kuliah Advance Programming. Standar penanganan resmi mengikuti kebijakan Universitas Negeri Malang.

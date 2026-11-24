@@ -4,7 +4,7 @@
 <div th:fragment="tabel(daftar, kembali)" class="tabel-wadah">
   <table class="tabel">
     <thead>
-      <tr><th scope="col">ID</th><th scope="col">Nama pelapor</th><th scope="col">Fakultas</th><th scope="col">Gedung</th><th scope="col">Tanggal</th><th scope="col">Status</th></tr>
+      <tr><th scope="col">ID</th><th scope="col">Laporan</th><th scope="col">Fakultas</th><th scope="col">Gedung</th><th scope="col">Tanggal</th><th scope="col">Status</th><th scope="col">Prioritas</th></tr>
     </thead>
     <tbody>
       <tr th:each="l : ${daftar}" th:classappend="${berubahKasus == l.kasus.id} ? 'baru-berubah'">
@@ -12,11 +12,12 @@
           <a class="tabel-kode" th:href="@{/admin/kasus/{id}(id=${l.kasus.id},kembali=${kembali})}" data-modal
              th:attr="aria-label=|${l.kode}, ${l.judul}|" th:text="${l.kode}">UM-0248</a>
         </th>
-        <td data-label="Nama pelapor"><span class="potong" th:text="${l.pelapor.nama}" th:title="${l.pelapor.nama}">Nadia Putri</span></td>
+        <td data-label="Laporan"><span><strong class="tabel-judul" th:text="${l.judul}"></strong><small class="tabel-nama" th:text="${l.pelapor.nama}"></small></span></td>
         <td data-label="Fakultas"><span class="potong" th:text="${l.fakultas}" th:title="${l.fakultas}">Teknik</span></td>
         <td data-label="Gedung" th:text="${l.gedungLantai}">B11 · Lantai 2</td>
         <td data-label="Tanggal"><time th:datetime="${@waktu.iso(l.waktuLaporan)}" th:text="${@waktu.tanggal(l.waktuLaporan)}">20 Nov 2026</time></td>
         <td data-label="Status"><span th:replace="~{fragments/shell :: pill(${l.tahap})}"></span></td>
+        <td data-label="Prioritas"><span th:replace="~{fragments/shell :: prioritas(${l.kasus.prioritas})}"></span></td>
       </tr>
     </tbody>
   </table>

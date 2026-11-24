@@ -1,55 +1,35 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/shell :: head('Periksa laporan')}"></head>
-<body th:replace="~{fragments/shell :: ruang('tugas', ~{::main})}">
-<main id="main" class="isi" tabindex="-1" th:with="laporan=${kasus.laporanUtama}">
-  <a th:replace="~{fragments/shell :: kembali('/petugas/verifikasi', 'Kembali ke pemeriksaan')}"></a>
-  <header class="kepala-hal">
-    <div>
-      <h1>Periksa laporan</h1>
-      <p th:text="|${laporan.kode} · ${kasus.daftarLaporan.size()} laporan dari ${kasus.pelaporUnik} pelapor|"></p>
+<form th:fragment="form" class="form" method="post" th:action="@{/petugas/tugas/{id}/pemeriksaan(id=${tugas.id})}" th:object="${pemeriksaan}">
+  <fieldset class="field" aria-describedby="bahaya-galat">
+    <legend>Apakah ada bahaya keselamatan kritis?</legend>
+    <div class="pilihan-grid">
+      <label class="pilihan"><input type="radio" th:field="*{bahayaKritis}" value="false" required><span>Tidak ada</span></label>
+      <label class="pilihan"><input type="radio" th:field="*{bahayaKritis}" value="true"><span>Ada bahaya kritis</span></label>
     </div>
-  </header>
-  <div class="grid-dua grid-detail">
-    <article th:replace="~{fragments/laporan :: rincian(${laporan}, true)}"></article>
-    <aside class="kolom-samping">
-      <section class="kartu kartu-dukung" th:if="${kasus.terverifikasi}" aria-labelledby="judul-sudah">
-        <h2 id="judul-sudah" class="judul-kartu">Laporan sudah diverifikasi</h2>
-        <p class="kartu-sub">Laporan menunggu penugasan dari admin.</p>
-      </section>
-      <form class="kartu kartu-dukung form" th:unless="${kasus.terverifikasi}" th:action="@{/petugas/kasus/{id}/verifikasi(id=${kasus.id})}"
-            th:object="${form}" method="post" novalidate>
-        <h2 class="judul-kartu">Hasil pemeriksaan</h2>
-        <input type="hidden" name="petugasId" th:value="${akun.id}">
-        <fieldset class="field" th:classappend="${#fields.hasErrors('bahayaKritis')} ? 'field-galat'">
-          <legend>Ada bahaya keselamatan kritis?</legend>
-          <div class="pilihan-grup">
-            <label class="pilihan"><input type="radio" th:field="*{bahayaKritis}" value="false" required><span>Tidak ada</span></label>
-            <label class="pilihan"><input type="radio" th:field="*{bahayaKritis}" value="true"><span>Ada bahaya kritis</span></label>
-          </div>
-          <p class="galat-field" th:errors="*{bahayaKritis}"></p>
-        </fieldset>
-        <fieldset class="field" th:classappend="${#fields.hasErrors('gangguan')} ? 'field-galat'">
-          <legend>Seberapa terganggu fungsinya?</legend>
-          <div class="pilihan-grup pilihan-tumpuk">
-            <label class="pilihan" th:each="item : ${tingkatGangguan}"><input type="radio" th:field="*{gangguan}" th:value="${item}" required><span th:text="${item.label}"></span></label>
-          </div>
-          <p class="galat-field" th:errors="*{gangguan}"></p>
-        </fieldset>
-        <div class="field" th:classappend="${#fields.hasErrors('unitRusak')} ? 'field-galat'">
-          <label for="unitRusak">Jumlah unit rusak</label>
-          <input id="unitRusak" class="input" type="number" inputmode="numeric" min="1" required th:field="*{unitRusak}">
-          <p class="galat-field" th:errors="*{unitRusak}"></p>
-        </div>
-        <div class="field">
-          <label for="catatan">Catatan (opsional)</label>
-          <textarea id="catatan" class="input" rows="3" maxlength="1000" th:field="*{catatan}"></textarea>
-          <p class="galat-field" th:errors="*{catatan}"></p>
-        </div>
-        <button class="tombol tombol-utama" type="submit">Simpan hasil pemeriksaan</button>
-      </form>
-    </aside>
+    <p class="galat-field" id="bahaya-galat" th:errors="*{bahayaKritis}"></p>
+  </fieldset>
+  <div class="form-grid">
+    <div class="field">
+      <label for="gangguan">Tingkat gangguan</label>
+      <div class="select"><select id="gangguan" th:field="*{gangguan}" required aria-describedby="gangguan-galat">
+        <option value="">Pilih tingkat gangguan</option>
+        <option th:each="g : ${tingkatGangguan}" th:value="${g}" th:text="${g.label}"></option>
+      </select></div>
+      <p id="gangguan-galat" class="galat-field" th:errors="*{gangguan}"></p>
+    </div>
+    <div class="field">
+      <label for="unitRusak">Jumlah unit rusak</label>
+      <input id="unitRusak" class="input" type="number" inputmode="numeric" min="1" th:max="${kasus.fasilitas != null ? kasus.fasilitas.jumlahUnit : null}"
+             th:field="*{unitRusak}" required aria-describedby="unit-galat">
+      <p id="unit-galat" class="galat-field" th:errors="*{unitRusak}"></p>
+    </div>
   </div>
-</main>
-</body>
+  <div class="field">
+    <label for="catatan">Catatan pemeriksaan (opsional)</label>
+    <textarea id="catatan" class="input" rows="3" maxlength="1000" th:field="*{catatan}" aria-describedby="pemeriksaan-catatan-galat"></textarea>
+    <p id="pemeriksaan-catatan-galat" class="galat-field" th:errors="*{catatan}"></p>
+  </div>
+  <button class="tombol tombol-utama" type="submit" data-memproses="Menyimpan pemeriksaan…">Simpan Pemeriksaan</button>
+</form>
 </html>

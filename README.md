@@ -1,6 +1,6 @@
 # UM Peduli · Pelaporan Fasilitas Kampus
 
-Aplikasi demo untuk mencatat kerusakan fasilitas, mengelompokkan laporan, menentukan prioritas, dan mengikuti perbaikan. Proyek Advance Programming (OOP), Kelompok 5 · Offering C · Teknik Informatika Universitas Negeri Malang.
+Aplikasi demo untuk melaporkan kerusakan fasilitas, menentukan prioritas dari pemeriksaan petugas, dan memantau perbaikan. Proyek Advance Programming (OOP), Kelompok 5 · Offering C · Teknik Informatika Universitas Negeri Malang.
 
 Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan Flyway berjalan dalam satu aplikasi. Ketiga ruang kerja memakai database yang sama. Pengguna masuk dengan email atau NIM, lalu diarahkan ke ruang kerja sesuai perannya.
 
@@ -35,15 +35,15 @@ Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan
 
    Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/). Pakai port dari `SERVER_PORT` jika konfigurasi berbeda. Hentikan proses yang dijalankan dari terminal dengan Ctrl+C.
 
-Flyway membuat lima tabel bisnis (`V1`–`V3`) dan menambah kolom alur layar acuan (`V4`: fakultas, gedung, lantai, ruang, foto bukti, foto hasil, verifikator admin). Aplikasi juga memuat `db/demo/V100__data_demo_layar.sql`, yaitu data persis seperti 13 layar acuan (248 laporan, 12 petugas). Data itu dibuat ulang dengan `python scripts/buat-data-demo.py src/main/resources/db/demo/V100__data_demo_layar.sql`. Tes hanya memakai `db/migration`. Foto unggahan disimpan di `data/unggahan/` (diabaikan Git, ubah dengan `UNGGAHAN_FOLDER`). Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
+Flyway membuat lima tabel bisnis (`V1`–`V3`) dan menambah kolom alur layar acuan (`V4`: fakultas, gedung, lantai, ruang, foto bukti, foto hasil, verifikator admin). Aplikasi juga memuat `db/demo/V100__data_demo_layar.sql`, yaitu data persis seperti 13 layar acuan (248 laporan, 12 petugas). Data itu dibuat ulang dengan `python scripts/buat-data-demo.py src/main/resources/db/demo/V100__data_demo_layar.sql`. Migrasi `V101` menambah catatan pemeriksaan dan tindak lanjut pada data yang sudah ada. Tes hanya memakai `db/migration`. Foto unggahan disimpan di `data/unggahan/` (diabaikan Git, ubah dengan `UNGGAHAN_FOLDER`). Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
 
 ## Masuk dan urutan demo
 
-Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/), klik **Masuk dan laporkan kerusakan**, lalu isi **email atau NIM**. Ruang kerja ditentukan dari data di tabel `pengguna`, bukan dari teks atau domain email.
+Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/), klik **Laporkan kerusakan**, lalu isi **email atau NIM**. Ruang kerja ditentukan dari data di tabel `pengguna`, bukan dari teks atau domain email.
 
 | Peran | Email demo | Catatan |
 | --- | --- | --- |
-| Civitas | `nadia@example.invalid` (NIM `240535600201`) | 8 laporan seperti layar: 2 menunggu, 1 terverifikasi, 2 diperbaiki, 3 selesai |
+| Civitas | `nadia@example.invalid` (NIM `240535600201`) | 8 laporan contoh dengan berbagai status |
 | Petugas | `budi.santoso@example.invalid` | PTG-001, Kelistrikan & AC, 2 tugas aktif |
 | Admin | `admin@example.invalid` | Administrator UM |
 
@@ -51,11 +51,15 @@ Petugas lain: `agus@`, `siti@`, `rudi@`, `dimas@`, `raka@example.invalid`, dan l
 
 | Langkah | Masuk sebagai | Aksi |
 | --- | --- | --- |
-| 1 | `nadia@example.invalid` | **Buat Laporan**: pilih fakultas, gedung, lantai, isi deskripsi, unggah foto JPG/PNG (maks. 5 MB), lalu **Kirim Laporan**. Status: Menunggu Verifikasi. |
-| 2 | `admin@example.invalid` | **Laporan**: klik baris laporan untuk membuka modal, pilih petugas (opsional), lalu **Verifikasi laporan**. Status: Terverifikasi. Penugasan juga bisa dari halaman **Petugas**. |
-| 3 | `budi.santoso@example.invalid` | **Lihat tugas**, isi catatan penanganan, lalu **Simpan pembaruan**. Status: Sedang Diperbaiki. |
-| 4 | `budi.santoso@example.invalid` | Unggah foto hasil, lalu **Tandai selesai** (foto wajib). Status: Selesai. |
-| 5 | `nadia@example.invalid` | Buka laporan di **Laporan Saya**: timeline 4 tahap terisi, foto hasil bisa dibuka. |
+| 1 | `nadia@example.invalid` | **Buat Laporan**. Pilih lokasi dan isi deskripsi. Foto bukti opsional, JPG/PNG maksimal 5 MB. |
+| 2 | `admin@example.invalid` | Buka laporan, cek kelengkapannya, lalu klik **Verifikasi laporan**. Pilih petugas saat verifikasi atau kemudian di antrean **Menunggu Penugasan**. |
+| 3 | `budi.santoso@example.invalid` | Buka tugas dan klik **Simpan Pemeriksaan** setelah mencatat bahaya, gangguan, dan jumlah unit rusak. Sistem menentukan prioritas dan alasannya. |
+| 4 | `budi.santoso@example.invalid` | Pilih **Lanjutkan Perbaikan**, atau **Ajukan Tindak Lanjut** dengan alasan dan kebutuhan. Admin membuka antrean tindak lanjut untuk meneruskan atau mengalihkan tugas. |
+| 5 | Petugas yang ditugaskan | Tambahkan catatan dan foto hasil, lalu klik **Tandai Selesai**. Mahasiswa melihat perkembangan dan bukti di **Laporan Saya**. |
+
+Satu kasus tetap memiliki satu tugas. Pengalihan mengganti petugas pada tugas tersebut dan menyimpan pemeriksaan serta keputusan terakhir. Kasus aktif berprioritas Kritis terlihat pada dashboard admin.
+
+Penggabungan laporan berdasarkan fasilitas dan jenis kerusakan tetap tersedia untuk alur berbasis katalog. Form berbasis lokasi saat ini membuat satu kasus per laporan. Penggabungan laporan dari form tersebut merupakan pengembangan terpisah.
 
 Menu akun di kanan atas berisi **Masuk dengan akun lain** dan **Keluar**. Membuka ruang kerja peran lain menampilkan halaman 403. Membuka ruang kerja tanpa masuk mengarah ke `/login`, lalu kembali ke halaman semula setelah masuk.
 

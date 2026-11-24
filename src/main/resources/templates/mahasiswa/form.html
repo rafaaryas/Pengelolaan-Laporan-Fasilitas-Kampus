@@ -6,10 +6,14 @@
   <header class="kepala-hal">
     <div>
       <h1><span class="hanya-lebar">Buat laporan kerusakan</span><span class="hanya-sempit">Buat laporan</span></h1>
-      <p class="hanya-lebar">Ceritakan kendala fasilitas yang kamu temukan. Kami siap membantu.</p>
-      <p class="hanya-sempit">Bantu kami memahami kerusakannya.</p>
+      <p>Isi lokasi fasilitas dan jelaskan kerusakannya.</p>
     </div>
   </header>
+
+  <section class="peringatan-laporan peringatan-sebaris" aria-labelledby="judul-selamat">
+    <h3 id="judul-selamat">Bahaya langsung</h3>
+    <p>Jika kondisi membahayakan keselamatan, hindari area dan hubungi keamanan kampus.</p>
+  </section>
 
   <div class="grid-dua">
     <form class="kartu kartu-utama form" th:action="@{/mahasiswa/laporan}" th:object="${form}" method="post"
@@ -73,38 +77,26 @@
       </div>
 
       <div class="field" th:classappend="${galatFoto != null} ? 'field-galat'">
-        <label for="foto">Foto bukti kerusakan <span aria-hidden="true">*</span></label>
-        <div th:replace="~{fragments/unggah :: dropzone('foto', 'Unggah foto bukti kerusakan', true)}"></div>
-        <p id="foto-bantuan" class="bantuan-field">JPG atau PNG, maksimal 5 MB. Pastikan foto terlihat jelas.</p>
+        <label for="foto">Foto bukti kerusakan (opsional)</label>
+        <div th:replace="~{fragments/unggah :: dropzone('foto', 'Pilih foto', false)}"></div>
+        <span id="foto-bantuan" class="sr-only">JPG atau PNG, maksimal 5 MB.</span>
         <p id="foto-galat" class="galat-field" th:text="${galatFoto}"></p>
       </div>
 
+      <p class="identitas-laporan">Pelapor <strong th:text="${akun.nama}"></strong></p>
       <div class="form-aksi">
-        <a class="tombol tombol-kedua hanya-lebar" th:href="@{/mahasiswa}">Batal</a>
+        <a class="tombol tombol-kedua" th:href="@{/mahasiswa}">Batal</a>
         <button class="tombol tombol-utama" type="submit" data-memproses="Mengirim…">Kirim Laporan</button>
       </div>
     </form>
 
-    <aside class="kolom-samping hanya-lebar" aria-label="Panduan laporan">
-      <section class="kartu kartu-dukung" aria-labelledby="judul-tips">
-        <h2 id="judul-tips" class="judul-tips">Laporan yang baik, <span class="nada-2">penanganan lebih cepat.</span></h2>
-        <ul class="tips">
-          <li><strong>Pastikan lokasi tepat</strong><span>Pilih fakultas, gedung, dan lantai sesuai lokasi kerusakan.</span></li>
-          <li><strong>Ceritakan dengan jelas</strong><span>Sebutkan fasilitas yang rusak dan kondisi yang kamu temukan.</span></li>
-          <li><strong>Sertakan foto</strong><span>Ambil foto dari jarak aman dengan pencahayaan cukup.</span></li>
-        </ul>
-      </section>
-      <section class="kartu kartu-dukung atas-nama" aria-labelledby="judul-atas-nama">
-        <h2 id="judul-atas-nama" class="label-kecil">Laporan atas nama</h2>
-        <p class="atas-nama-nama" th:text="${akun.nama}">Nadia Putri</p>
-        <p class="atas-nama-ket" th:text="${akun.keterangan}">Mahasiswa · Fakultas Teknik</p>
-        <p class="atas-nama-catatan">Identitas terisi otomatis dari akun UM.</p>
-      </section>
-      <section class="panel-waspada" aria-labelledby="judul-selamat">
-        <h2 id="judul-selamat">Utamakan keselamatan</h2>
-        <p>Jika ada risiko listrik, kebakaran, atau bahaya langsung, hindari area dan segera hubungi keamanan kampus.</p>
-        <p class="panel-waspada-tegas">Jangan mencoba memperbaiki sendiri.</p>
-      </section>
+    <aside class="panduan-laporan" aria-labelledby="judul-tips">
+      <h2 id="judul-tips" class="judul-kartu">Panduan pelaporan</h2>
+      <ul>
+        <li>Pilih gedung dan lantai tempat kerusakan ditemukan.</li>
+        <li>Sebutkan fasilitas, kondisi, dan dampaknya pada penggunaan.</li>
+        <li>Lampirkan foto dari jarak aman bila tersedia.</li>
+      </ul>
     </aside>
   </div>
 </main>

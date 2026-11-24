@@ -38,8 +38,6 @@ public class MahasiswaController {
         var riwayat = pantauan.laporanMahasiswa(akun.getId(), "", null);
         model.addAttribute("hitung", pantauan.hitungMahasiswa(akun.getId(), ""));
         model.addAttribute("riwayat", riwayat.stream().limit(3).toList());
-        model.addAttribute("riwayatMobile", riwayat.stream().limit(2).toList());
-        model.addAttribute("namaDepan", akun.getNama().split(" ")[0]);
         model.addAttribute("semuaTahap", Tahap.values());
         return "mahasiswa/index";
     }
@@ -73,15 +71,18 @@ public class MahasiswaController {
                 && !KatalogLokasi.sah(form.fakultas(), form.gedung())) {
             hasil.rejectValue("gedung", "lokasi", "Pilih gedung yang ada di fakultas tersebut.");
         }
-        if (foto == null || foto.isEmpty()) {
-            model.addAttribute("galatFoto", "Lampirkan foto bukti kerusakan. Format JPG atau PNG, maksimal 5 MB.");
-        }
-        if (hasil.hasErrors() || model.containsAttribute("galatFoto")) return siapkanForm(model);
+        if (hasil.hasErrors()) return siapkanForm(model);
         try {
             identitas.pastikanSama(akun, form.mahasiswaId());
-            Berkas berkas = penyimpanan.simpan(foto).orElseThrow();
-            long id = sistem.laporkan(akun.getId(), new Lokasi(form.fakultas(), form.gedung(), form.lantai(), form.ruang()),
-                    form.deskripsi(), berkas);
+            Berkas berkas = penyimpanan.simpan(foto).orElse(null);
+            long id;
+            try {
+                id = sistem.laporkan(akun.getId(), new Lokasi(form.fakultas(), form.gedung(), form.lantai(), form.ruang()),
+                        form.deskripsi(), berkas);
+            } catch (RuntimeException e) {
+                if (berkas != null) penyimpanan.hapus(berkas);
+                throw e;
+            }
             flash.addFlashAttribute("sukses", "Laporan terkirim. Admin akan memverifikasinya.");
             return "redirect:/mahasiswa/laporan/" + id;
         } catch (IllegalArgumentException e) {

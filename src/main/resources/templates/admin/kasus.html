@@ -30,7 +30,8 @@
         <input id="q" class="input" type="search" name="q" th:value="${q}" autocomplete="off" placeholder="Cari ID, pelapor, atau lokasi…">
       </div>
       <div class="saring-pilihan">
-        <div class="select select-ringkas">
+        <div class="select select-ringkas select-berikon">
+          <svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-saring"/></svg>
           <label class="sr-only" for="tahap">Status</label>
           <select id="tahap" name="tahap" data-saring-langsung>
             <option value="">Semua status</option>

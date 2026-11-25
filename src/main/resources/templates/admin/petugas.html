@@ -91,7 +91,7 @@
           <textarea id="catatan" name="catatan" class="input" rows="3" maxlength="1000" placeholder="Contoh: Periksa lampu dan sambungan listrik."
                     th:disabled="${siapDitugaskan.isEmpty()}"></textarea>
         </div>
-        <button class="tombol tombol-utama tombol-penuh" type="submit" th:disabled="${siapDitugaskan.isEmpty()}" data-memproses="Menugaskan…">Tugaskan petugas</button>
+        <button class="tombol tombol-utama tombol-penuh" type="submit" th:disabled="${siapDitugaskan.isEmpty()}" data-memproses="Menugaskan…"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-penugasan"/></svg>Tugaskan petugas</button>
       </form>
     </aside>
   </div>
@@ -100,7 +100,7 @@
     <form class="modal-isi" th:action="@{/admin/petugas}" method="post" novalidate data-validasi>
       <header class="modal-kepala">
         <div><h2 id="judul-tambah">Tambah petugas</h2><p>Kode petugas dibuat otomatis.</p></div>
-        <button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
+        <button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup" title="Tutup dialog"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
       </header>
       <div class="modal-badan">
         <div class="field">

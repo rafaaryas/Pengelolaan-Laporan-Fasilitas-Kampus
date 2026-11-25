@@ -1,33 +1,48 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/shell :: head('Laporkan kerusakan fasilitas kampus')}"></head>
-<body class="publik">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080f1e">
+  <title>Sistem Pelaporan Fasilitas Kampus · UM Peduli</title>
+  <link rel="icon" th:href="@{/images/um-emblem.png}">
+  <link rel="preload" th:href="@{/fonts/inter-latin.woff2}" as="font" type="font/woff2" crossorigin>
+  <script>
+    try {
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches &&
+          !navigator.connection?.saveData && !sessionStorage.getItem('um-peduli-cakra-seen')) {
+        document.documentElement.dataset.cakra = 'loading';
+      }
+    } catch { /* The static poster is available if storage is blocked. */ }
+  </script>
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+  <script type="module" th:src="@{/cinematic/landing.js}"></script>
+</head>
+<body class="publik landing">
   <a class="lompat" href="#main">Lewati ke konten</a>
   <svg th:replace="~{fragments/shell :: ikon}"></svg>
   <header th:replace="~{fragments/publik :: bar}"></header>
-  <main id="main" class="beranda">
-    <div class="galat-global galat-sukses" role="status" th:if="${param.keluar != null}">
-      <svg class="ikon" aria-hidden="true"><use href="#i-centang"/></svg><p>Anda sudah keluar dari UM Peduli.</p>
+  <main id="main" class="landing-hero" tabindex="-1" aria-labelledby="judul">
+    <div class="landing-scene" aria-hidden="true">
+      <canvas id="cakra-canvas"></canvas>
     </div>
-    <section class="beranda-hero" aria-labelledby="judul">
-      <div class="beranda-isi">
-        <div>
-          <h1 id="judul">Sistem Pelaporan Fasilitas Kampus</h1>
-          <p>Laporkan kerusakan fasilitas Universitas Negeri Malang dan pantau penanganannya hingga selesai.</p>
-          <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}"
-             th:if="${akunMasuk != null and akunMasuk.beranda() == '/mahasiswa'}">Laporkan kerusakan</a>
-          <a class="tombol tombol-utama" th:href="@{/login}" th:if="${akunMasuk == null}">Laporkan kerusakan</a>
-          <a class="tombol tombol-utama" th:href="@{${akunMasuk.beranda()}}"
-             th:if="${akunMasuk != null and akunMasuk.beranda() != '/mahasiswa'}">Buka ruang kerja</a>
-        </div>
-        <ol class="beranda-tahap">
-          <li><span class="urutan-no" aria-hidden="true">1</span><div><strong>Kirim laporan</strong><p>Isi lokasi dan jelaskan kerusakan.</p></div></li>
-          <li><span class="urutan-no" aria-hidden="true">2</span><div><strong>Pemeriksaan</strong><p>Admin mengecek laporan. Petugas memeriksa kondisi di lokasi.</p></div></li>
-          <li><span class="urutan-no" aria-hidden="true">3</span><div><strong>Pantau perbaikan</strong><p>Lihat perkembangan dan bukti hasil di Laporan Saya.</p></div></li>
-        </ol>
-      </div>
-    </section>
+    <div class="landing-mask" aria-hidden="true"></div>
+    <div class="landing-content">
+      <h1 id="judul">Sistem Pelaporan<br class="landing-break"> Fasilitas Kampus</h1>
+      <p>Laporkan kerusakan fasilitas Universitas Negeri Malang dan pantau penanganannya hingga selesai.</p>
+      <a class="tombol tombol-utama landing-cta" th:href="@{/mahasiswa/laporan/baru}"
+         th:if="${akunMasuk != null and akunMasuk.beranda() == '/mahasiswa'}"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-buat-laporan"/></svg>Laporkan kerusakan</a>
+      <a class="tombol tombol-utama landing-cta" th:href="@{/login}"
+         th:if="${akunMasuk == null}"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-buat-laporan"/></svg>Laporkan kerusakan</a>
+      <a class="tombol tombol-utama landing-cta" th:href="@{${akunMasuk.beranda()}}"
+         th:if="${akunMasuk != null and akunMasuk.beranda() != '/mahasiswa'}">Buka ruang kerja</a>
+    </div>
+    <div class="landing-notice" role="status" th:if="${param.keluar != null}">Anda sudah keluar dari UM Peduli.</div>
+    <button type="button" class="landing-motion" id="cakra-motion" hidden aria-label="Jeda animasi" title="Jeda animasi">
+      <span aria-hidden="true"></span>
+    </button>
   </main>
-  <footer th:replace="~{fragments/publik :: kaki}"></footer>
 </body>
 </html>

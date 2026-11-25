@@ -19,7 +19,7 @@
         <h2 id="judul-perkembangan" class="judul-kartu">Perkembangan laporan</h2>
         <ol class="linimasa">
           <li class="lewat">
-            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-dokumen"/></svg></span>
             <div><strong>Laporan diterima</strong><time th:datetime="${@waktu.iso(laporan.waktuLaporan)}" th:text="${@waktu.tanggalTitikJam(laporan.waktuLaporan)}"></time></div>
           </li>
           <li class="lewat" th:if="${kasus.waktuVerifikasi != null}">
@@ -27,26 +27,26 @@
             <div><strong>Laporan diverifikasi</strong><time th:text="${@waktu.tanggalTitikJam(kasus.waktuVerifikasi)}"></time><p th:if="${tugas == null}">Menunggu penugasan petugas.</p></div>
           </li>
           <li class="lewat" th:if="${tugas != null and tugas.waktuMulai != null}">
-            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-kunci"/></svg></span>
             <div><strong>Perbaikan dimulai</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuMulai)}"></time></div>
           </li>
           <li class="kini" th:if="${laporan.tahap.name() == 'DITUGASKAN'}">
-            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-penugasan"/></svg></span>
             <div><strong>Ditugaskan</strong><p th:text="${kasus.sudahDiperiksa ? 'Petugas sudah memeriksa fasilitas.' : 'Petugas akan memeriksa fasilitas.'}"></p></div>
           </li>
           <li class="kini" th:if="${laporan.tahap.name() == 'TINDAK_LANJUT'}">
-            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tindak-lanjut"/></svg></span>
             <div><strong>Perlu Tindak Lanjut</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuTindakLanjut)}"></time><p>Admin sedang meninjau langkah berikutnya.</p></div>
           </li>
           <li class="kini" th:if="${tugas != null and tugas.catatan != null and tugas.waktuSelesai == null}">
-            <span class="linimasa-tanda" aria-hidden="true"></span>
+            <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-dokumen"/></svg></span>
             <div><strong>Catatan perkembangan</strong><p class="teks-pengguna" th:text="${tugas.catatan}"></p></div>
           </li>
           <li class="lewat" th:if="${tugas != null and tugas.waktuSelesai != null}">
             <span class="linimasa-tanda" aria-hidden="true"><svg class="ikon"><use href="#i-centang"/></svg></span>
             <div><strong>Selesai</strong><time th:text="${@waktu.tanggalTitikJam(tugas.waktuSelesai)}"></time>
               <p class="teks-pengguna" th:text="${tugas.catatan}"></p>
-              <a class="tautan" th:if="${tugas.adaFotoHasil}" th:href="@{/berkas/hasil/{id}(id=${tugas.id})}">Lihat bukti hasil perbaikan</a>
+              <a class="tautan" th:if="${tugas.adaFotoHasil}" th:href="@{/berkas/hasil/{id}(id=${tugas.id})}"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-gambar"/></svg>Lihat bukti hasil perbaikan</a>
             </div>
           </li>
         </ol>

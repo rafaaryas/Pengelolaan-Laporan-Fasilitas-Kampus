@@ -64,7 +64,7 @@
             <p class="pop-judul">Notifikasi</p>
             <ul th:unless="${notifikasi.isEmpty()}">
               <li th:each="n : ${notifikasi}"><a th:href="@{${n.tautan}}">
-                <strong th:text="${n.judul}"></strong><span th:text="${n.isi}"></span>
+                <strong th:text="${n.judul}"></strong><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg><span th:text="${n.isi}"></span>
                 <time th:datetime="${@waktu.iso(n.waktu)}" th:text="${@waktu.relatif(n.waktu)}"></time></a></li>
             </ul>
             <p class="pop-kosong" th:if="${notifikasi.isEmpty()}">Belum ada pembaruan. Perubahan status laporan akan muncul di sini.</p>
@@ -106,7 +106,7 @@
   <div class="toast-wadah" aria-live="polite" aria-atomic="true">
     <div class="toast" th:if="${sukses != null}" data-toast>
       <svg class="ikon" aria-hidden="true"><use href="#i-centang"/></svg><p th:text="${sukses}"></p>
-      <button class="tombol-ikon" type="button" data-tutup-toast aria-label="Tutup pemberitahuan"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
+      <button class="tombol-ikon" type="button" data-tutup-toast aria-label="Tutup pemberitahuan" title="Tutup pemberitahuan"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
     </div>
   </div>
   <div class="modal-akar" id="modal-akar"></div>
@@ -116,7 +116,7 @@
 <th:block th:fragment="menu(peran, aktif)">
   <th:block th:if="${peran == 'MAHASISWA'}">
     <li><a th:href="@{/mahasiswa}" th:attr="aria-current=${aktif == 'dashboard' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dasbor"/></svg><span>Dashboard</span></a></li>
-    <li><a th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${aktif == 'baru' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-tambah"/></svg><span>Buat Laporan</span></a></li>
+    <li><a th:href="@{/mahasiswa/laporan/baru}" th:attr="aria-current=${aktif == 'baru' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-buat-laporan"/></svg><span>Buat Laporan</span></a></li>
     <li><a th:href="@{/mahasiswa/laporan}" th:attr="aria-current=${aktif == 'laporan' ? 'page' : null}"><svg class="ikon" aria-hidden="true"><use href="#i-dokumen"/></svg><span>Laporan Saya</span></a></li>
   </th:block>
   <th:block th:if="${peran == 'PETUGAS'}">
@@ -133,11 +133,25 @@
 </th:block>
 
 <!-- Label status dan prioritas tetap terbaca tanpa warna. -->
-<span th:fragment="pill(tahap)" th:class="|pill pill-${tahap.kelas}|" th:text="${tahap.label}">Status</span>
+<span th:fragment="pill(tahap)" th:class="|pill pill-${tahap.kelas}|">
+  <th:block th:replace="~{fragments/shell :: ikonTahap(${tahap})}"></th:block>
+  <span th:text="${tahap.label}">Status</span>
+</span>
+
+<th:block th:fragment="ikonTahap(tahap)" th:switch="${tahap.name()}">
+  <th:block th:case="'MENUNGGU'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-jam"/></svg></th:block>
+  <th:block th:case="'TERVERIFIKASI'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-orang"/></svg></th:block>
+  <th:block th:case="'DITUGASKAN'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-penugasan"/></svg></th:block>
+  <th:block th:case="'DIPERBAIKI'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-kunci"/></svg></th:block>
+  <th:block th:case="'TINDAK_LANJUT'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tindak-lanjut"/></svg></th:block>
+  <th:block th:case="'SELESAI'"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tuntas"/></svg></th:block>
+</th:block>
 
 <span th:fragment="prioritas(p)" class="pill pill-prioritas"
-      th:classappend="${p == null ? 'prioritas-kosong' : 'prioritas-' + #strings.toLowerCase(p.name())}"
-      th:text="${p == null ? 'Belum dinilai' : p.label}">Belum dinilai</span>
+      th:classappend="${p == null ? 'prioritas-kosong' : 'prioritas-' + #strings.toLowerCase(p.name())}">
+  <th:block th:if="${p != null and p.name() == 'KRITIS'}"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-peringatan"/></svg></th:block>
+  <span th:text="${p == null ? 'Belum dinilai' : p.label}">Belum dinilai</span>
+</span>
 
 <!-- Kepala halaman detail dengan tautan kembali -->
 <a th:fragment="kembali(href, teks)" class="kembali" th:href="@{${href}}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-kembali"/></svg><span th:text="${teks}"></span></a>
@@ -173,5 +187,13 @@
   <symbol id="i-gambar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4.5 18 5-5 3.5 3.5 2.5-2.5 4 4"/></symbol>
   <symbol id="i-hapus" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></symbol>
   <symbol id="i-saring" viewBox="0 0 24 24"><path d="M4.5 6h15M7.5 12h9M10.5 18h3"/></symbol>
+  <symbol id="i-buat-laporan" viewBox="0 0 24 24"><path d="M13.5 3h-7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V8zM13.5 3v5h5M9 14h6m-3-3v6"/></symbol>
+  <symbol id="i-lokasi" viewBox="0 0 24 24"><path d="M19 10c0 4.5-7 10-7 10s-7-5.5-7-10a7 7 0 1 1 14 0z"/><circle cx="12" cy="10" r="2.2"/></symbol>
+  <symbol id="i-jam" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/></symbol>
+  <symbol id="i-periksa" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 18 5h-2m-7 8 2 2 4-4"/></symbol>
+  <symbol id="i-penugasan" viewBox="0 0 24 24"><circle cx="9" cy="7.5" r="3.5"/><path d="M2.5 19v-1a5 5 0 0 1 5-5h3a5 5 0 0 1 4 2m1 2.5 2 2 4.5-4.5"/></symbol>
+  <symbol id="i-tindak-lanjut" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 18 5h-2m-7 6h6m-6 4h6"/></symbol>
+  <symbol id="i-tuntas" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8.4 12.1 2.3 2.3 4.9-4.9"/></symbol>
+  <symbol id="i-kirim" viewBox="0 0 24 24"><path d="m20.5 3.5-5.1 17-3.8-7.6-7.6-3.8 16.5-5.6zm-8.9 9.4 8.9-9.4"/></symbol>
 </svg>
 </html>

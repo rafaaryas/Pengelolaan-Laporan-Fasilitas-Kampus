@@ -222,7 +222,7 @@ async function bukaModalLaporan(tautan) {
     $("[data-tutup-modal]", dialog)?.focus();
   } catch {
     dialog.innerHTML = '<div class="modal-isi"><header class="modal-kepala"><h2 id="judul-modal">Detail laporan gagal dimuat</h2>'
-      + '<button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup">×</button></header>'
+      + '<button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup" title="Tutup dialog"><svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-silang"/></svg></button></header>'
       + '<div class="modal-badan"><p>Periksa koneksi, lalu coba lagi, atau <a class="tautan"></a>.</p></div></div>';
     const cadangan = $(".modal-badan a", dialog);
     cadangan.href = tautan.href;
@@ -368,6 +368,7 @@ $$("[data-dropzone]").forEach((zona) => {
     input.files = dt.files;
     tampilkan();
   });
+  $("[data-ganti-berkas]", zona)?.addEventListener("click", () => input.click());
   $("[data-hapus-berkas]", zona)?.addEventListener("click", () => { input.value = ""; tampilkan(); input.focus(); });
 });
 

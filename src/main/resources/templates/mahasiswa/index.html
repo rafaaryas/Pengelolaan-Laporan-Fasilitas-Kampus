@@ -8,7 +8,7 @@
       <h1>Dashboard Mahasiswa</h1>
       <p>Pantau laporan fasilitas yang kamu kirim.</p>
     </div>
-    <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon" aria-hidden="true"><use href="#i-tambah"/></svg>Buat Laporan</a>
+    <a class="tombol tombol-utama" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon" aria-hidden="true"><use href="#i-buat-laporan"/></svg>Buat Laporan</a>
   </header>
 
   <section class="bagian" aria-labelledby="judul-ringkasan">
@@ -18,7 +18,7 @@
     </div>
     <dl class="strip-angka strip-enam">
       <div class="angka-sel" th:each="t : ${semuaTahap}">
-        <dt><span th:class="|titik titik-${t.kelas}|" aria-hidden="true"></span><span th:text="${t.label}">Menunggu Verifikasi</span></dt>
+        <dt><th:block th:replace="~{fragments/shell :: ikonTahap(${t})}"></th:block><span th:text="${t.label}">Menunggu Verifikasi</span></dt>
         <dd><a th:attr="aria-label=|${t.label}: ${hitung.jumlah(t)} laporan|" th:href="@{/mahasiswa/laporan(tahap=${t.name()})}" th:text="${hitung.jumlah(t)}">2</a></dd>
       </div>
     </dl>

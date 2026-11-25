@@ -11,7 +11,7 @@
   </header>
 
   <section class="peringatan-laporan peringatan-sebaris" aria-labelledby="judul-selamat">
-    <h3 id="judul-selamat">Bahaya langsung</h3>
+    <h3 id="judul-selamat" class="bersama-ikon"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-peringatan"/></svg>Bahaya langsung</h3>
     <p>Jika kondisi membahayakan keselamatan, hindari area dan hubungi keamanan kampus.</p>
   </section>
 
@@ -86,7 +86,7 @@
       <p class="identitas-laporan">Pelapor <strong th:text="${akun.nama}"></strong></p>
       <div class="form-aksi">
         <a class="tombol tombol-kedua" th:href="@{/mahasiswa}">Batal</a>
-        <button class="tombol tombol-utama" type="submit" data-memproses="Mengirim…">Kirim Laporan</button>
+        <button class="tombol tombol-utama" type="submit" data-memproses="Mengirim…"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-kirim"/></svg>Kirim Laporan</button>
       </div>
     </form>
 

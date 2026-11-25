@@ -60,7 +60,7 @@ Untuk menjalankan JAR dalam sesi baru:
 .\scripts\dev.ps1 -Task Info
 .\scripts\Import-LocalEnv.ps1
 $env:SPRING_PROFILES_ACTIVE = 'local'
-java -jar .\target\pelaporan-fasilitas-kampus-0.0.1-SNAPSHOT.jar
+java -jar .\target\pelaporan-fasilitas-kampus-0.2.0.jar
 ```
 
 Profil local menambahkan tiga akun demo (`mahasiswa`, `admin`, `petugas`) dengan password dari masing-masing DEMO_*_PASSWORD. Password di-hash BCrypt dalam memori saat startup; akun tidak ditulis ke database. Jangan gunakan profil ini untuk deployment publik. Autentikasi produksi, HTTPS dan pengelolaan akun belum merupakan cakupan setup ini.

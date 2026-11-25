@@ -4,7 +4,7 @@
   <div class="tugas-info">
     <p class="tugas-kode" th:text="${l.kode}"></p>
     <h3 class="tugas-judul" th:text="${l.judul}"></h3>
-    <p class="tugas-lokasi" th:text="|${l.fakultas} · ${l.gedungRuang} · Lantai ${l.lantai}|"></p>
+    <p class="tugas-lokasi bersama-ikon"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-lokasi"/></svg><span th:text="|${l.fakultas} · ${l.gedungRuang} · Lantai ${l.lantai}|"></span></p>
   </div>
   <div class="tugas-label">
     <span th:replace="~{fragments/shell :: pill(${t.kasus.tahap})}"></span>
@@ -17,10 +17,10 @@
 </li>
 
 <dl th:fragment="ringkasan(r)" class="strip-angka strip-lima">
-  <div class="angka-sel"><dt>Tugas aktif</dt><dd><a th:href="@{/petugas/tugas(aktif=true)}" th:text="${r.aktif}" th:attr="aria-label=|${r.aktif} tugas aktif|"></a></dd></div>
-  <div class="angka-sel"><dt>Perlu diperiksa</dt><dd><a th:href="@{/petugas/tugas(perluDiperiksa=true)}" th:text="${r.perluDiperiksa}" th:attr="aria-label=|${r.perluDiperiksa} tugas perlu diperiksa|"></a></dd></div>
-  <div class="angka-sel"><dt>Sedang diperbaiki</dt><dd><a th:href="@{/petugas/tugas(status='DIKERJAKAN')}" th:text="${r.diperbaiki}" th:attr="aria-label=|${r.diperbaiki} tugas sedang diperbaiki|"></a></dd></div>
-  <div class="angka-sel"><dt>Perlu tindak lanjut</dt><dd><a th:href="@{/petugas/tugas(status='PERLU_TINDAK_LANJUT')}" th:text="${r.tindakLanjut}" th:attr="aria-label=|${r.tindakLanjut} tugas perlu tindak lanjut|"></a></dd></div>
-  <div class="angka-sel"><dt>Tugas selesai</dt><dd><a th:href="@{/petugas/tugas(status='SELESAI')}" th:text="${r.selesaiTotal}" th:attr="aria-label=|${r.selesaiTotal} tugas selesai|"></a></dd></div>
+  <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-dokumen"/></svg>Tugas aktif</dt><dd><a th:href="@{/petugas/tugas(aktif=true)}" th:text="${r.aktif}" th:attr="aria-label=|${r.aktif} tugas aktif|"></a></dd></div>
+  <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-periksa"/></svg>Perlu diperiksa</dt><dd><a th:href="@{/petugas/tugas(perluDiperiksa=true)}" th:text="${r.perluDiperiksa}" th:attr="aria-label=|${r.perluDiperiksa} tugas perlu diperiksa|"></a></dd></div>
+  <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-kunci"/></svg>Sedang diperbaiki</dt><dd><a th:href="@{/petugas/tugas(status='DIKERJAKAN')}" th:text="${r.diperbaiki}" th:attr="aria-label=|${r.diperbaiki} tugas sedang diperbaiki|"></a></dd></div>
+  <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tindak-lanjut"/></svg>Perlu tindak lanjut</dt><dd><a th:href="@{/petugas/tugas(status='PERLU_TINDAK_LANJUT')}" th:text="${r.tindakLanjut}" th:attr="aria-label=|${r.tindakLanjut} tugas perlu tindak lanjut|"></a></dd></div>
+  <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tuntas"/></svg>Tugas selesai</dt><dd><a th:href="@{/petugas/tugas(status='SELESAI')}" th:text="${r.selesaiTotal}" th:attr="aria-label=|${r.selesaiTotal} tugas selesai|"></a></dd></div>
 </dl>
 </html>

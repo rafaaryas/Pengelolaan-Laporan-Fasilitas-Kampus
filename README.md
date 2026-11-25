@@ -37,6 +37,12 @@ Spring Boot 4.1.2, Java 21, Spring MVC, Thymeleaf, Spring Data JPA, MySQL 8, dan
 
 Flyway membuat lima tabel bisnis (`V1`–`V3`) dan menambah kolom alur layar acuan (`V4`: fakultas, gedung, lantai, ruang, foto bukti, foto hasil, verifikator admin). Aplikasi juga memuat `db/demo/V100__data_demo_layar.sql`, yaitu data persis seperti 13 layar acuan (248 laporan, 12 petugas). Data itu dibuat ulang dengan `python scripts/buat-data-demo.py src/main/resources/db/demo/V100__data_demo_layar.sql`. Migrasi `V101` menambah catatan pemeriksaan dan tindak lanjut pada data yang sudah ada. Tes hanya memakai `db/migration`. Foto unggahan disimpan di `data/unggahan/` (diabaikan Git, ubah dengan `UNGGAHAN_FOLDER`). Hibernate memvalidasi skema saat startup. Simpan password di `.env` yang diabaikan Git. Aplikasi demo terikat ke `127.0.0.1`.
 
+### Database demo Laragon yang persisten
+
+Jalankan aplikasi dari direktori proyek tanpa profil `test`. Aplikasi membaca `.env` lokal. Gunakan `DB_HOST`, `DB_PORT`, dan `DB_NAME` yang sama pada setiap instalasi yang perlu melihat data yang sama.
+
+Untuk skema demo terpisah, atur `FLYWAY_LOCATIONS=classpath:db/migration` sebelum startup pertama. Setelah Flyway selesai, jalankan [isi-demo-laragon.sql](scripts/isi-demo-laragon.sql) pada skema tersebut. SQL menambahkan laporan contoh untuk Nadia, Rizky, dan Alya. Menjalankannya kembali mempertahankan progres laporan yang sudah ada.
+
 ## Masuk dan urutan demo
 
 Buka [http://127.0.0.1:8080/](http://127.0.0.1:8080/), klik **Laporkan kerusakan**, lalu isi **email atau NIM**. Ruang kerja ditentukan dari data di tabel `pengguna`, bukan dari teks atau domain email.

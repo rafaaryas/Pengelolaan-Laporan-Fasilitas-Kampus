@@ -14,10 +14,10 @@
   <section class="bagian" aria-labelledby="judul-perhatian">
     <h2 id="judul-perhatian">Perlu perhatian</h2>
     <dl class="strip-angka">
-      <div class="angka-sel"><dt>Menunggu verifikasi</dt><dd><a th:href="@{/admin/kasus(tahap='MENUNGGU')}" th:text="${h.menunggu}" th:attr="aria-label=|${h.menunggu} laporan menunggu verifikasi|"></a></dd></div>
-      <div class="angka-sel"><dt>Menunggu penugasan</dt><dd><a th:href="@{/admin/kasus(tahap='TERVERIFIKASI')}" th:text="${h.terverifikasi}" th:attr="aria-label=|${h.terverifikasi} laporan menunggu penugasan|"></a></dd></div>
-      <div class="angka-sel"><dt>Perlu tindak lanjut</dt><dd><a th:href="@{/admin/kasus(tahap='TINDAK_LANJUT')}" th:text="${h.tindakLanjut}" th:attr="aria-label=|${h.tindakLanjut} laporan perlu tindak lanjut|"></a></dd></div>
-      <div class="angka-sel" th:classappend="${r.kritisAktif > 0} ? 'angka-kritis'"><dt>Kritis aktif</dt><dd><a th:href="@{/admin/kasus(kritis=true)}" th:text="${r.kritisAktif}" th:attr="aria-label=|${r.kritisAktif} kasus kritis aktif|"></a></dd></div>
+      <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-jam"/></svg>Menunggu verifikasi</dt><dd><a th:href="@{/admin/kasus(tahap='MENUNGGU')}" th:text="${h.menunggu}" th:attr="aria-label=|${h.menunggu} laporan menunggu verifikasi|"></a></dd></div>
+      <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-orang"/></svg>Menunggu penugasan</dt><dd><a th:href="@{/admin/kasus(tahap='TERVERIFIKASI')}" th:text="${h.terverifikasi}" th:attr="aria-label=|${h.terverifikasi} laporan menunggu penugasan|"></a></dd></div>
+      <div class="angka-sel"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tindak-lanjut"/></svg>Perlu tindak lanjut</dt><dd><a th:href="@{/admin/kasus(tahap='TINDAK_LANJUT')}" th:text="${h.tindakLanjut}" th:attr="aria-label=|${h.tindakLanjut} laporan perlu tindak lanjut|"></a></dd></div>
+      <div class="angka-sel" th:classappend="${r.kritisAktif > 0} ? 'angka-kritis'"><dt><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-peringatan"/></svg>Kritis aktif</dt><dd><a th:href="@{/admin/kasus(kritis=true)}" th:text="${r.kritisAktif}" th:attr="aria-label=|${r.kritisAktif} kasus kritis aktif|"></a></dd></div>
     </dl>
   </section>
   <section class="bagian" aria-labelledby="judul-pantau">

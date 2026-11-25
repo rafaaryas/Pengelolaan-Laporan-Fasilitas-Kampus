@@ -28,7 +28,7 @@
       <th:block th:if="${kasus.sudahDiperiksa}">
         <section th:replace="~{fragments/laporan :: pemeriksaan(${kasus})}"></section>
         <form th:if="${st == 'DITUGASKAN'}" method="post" th:action="@{/petugas/tugas/{id}/mulai(id=${tugas.id})}">
-          <button class="tombol tombol-utama" type="submit" data-memproses="Memulai perbaikan…">Lanjutkan Perbaikan</button>
+          <button class="tombol tombol-utama" type="submit" data-memproses="Memulai perbaikan…"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-kunci"/></svg>Lanjutkan Perbaikan</button>
         </form>
         <th:block th:if="${st == 'DIKERJAKAN'}">
           <form class="form" method="post" th:action="@{/petugas/tugas/{id}/progres(id=${tugas.id})}">
@@ -39,7 +39,7 @@
             <button class="tombol tombol-kedua" type="submit" data-memproses="Menyimpan…">Simpan Perkembangan</button>
           </form>
           <details class="buka-form">
-            <summary>Selesaikan Perbaikan</summary>
+            <summary><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tuntas"/></svg><span>Selesaikan Perbaikan</span><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-chevron-bawah"/></svg></summary>
             <form class="form buka-form-isi" method="post" enctype="multipart/form-data" novalidate data-validasi
                   th:action="@{/petugas/tugas/{id}/selesai(id=${tugas.id})}">
               <div class="field">
@@ -48,7 +48,7 @@
                 <p id="catatan-perbaikan-galat" class="galat-field"></p>
               </div>
               <div class="field">
-                <p class="label-field" id="label-foto-hasil">Bukti hasil perbaikan</p>
+                <label class="label-field" for="foto">Bukti hasil perbaikan</label>
                 <div th:replace="~{fragments/unggah :: dropzone('foto', 'Unggah foto hasil perbaikan', true)}"></div>
                 <p id="foto-bantuan" class="bantuan-field">Wajib untuk menyelesaikan tugas.</p>
                 <p id="foto-galat" class="galat-field"></p>
@@ -59,7 +59,7 @@
         </th:block>
 
         <details class="buka-form" th:if="${st == 'DITUGASKAN' or st == 'DIKERJAKAN'}" th:open="${alasanDraf != null}">
-          <summary>Ajukan Tindak Lanjut</summary>
+          <summary><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-tindak-lanjut"/></svg><span>Ajukan Tindak Lanjut</span><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-chevron-bawah"/></svg></summary>
           <form class="form buka-form-isi" method="post" th:action="@{/petugas/tugas/{id}/tindak-lanjut(id=${tugas.id})}">
             <div class="field"><label for="alasan">Alasan tindak lanjut</label>
               <textarea id="alasan" class="input" name="alasan" rows="3" maxlength="1000" required th:text="${alasanDraf}"></textarea></div>

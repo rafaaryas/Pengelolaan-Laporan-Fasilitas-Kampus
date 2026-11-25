@@ -9,7 +9,7 @@
       <p class="hanya-lebar">Pantau perkembangan dan riwayat laporan kerusakan yang kamu kirim.</p>
       <p class="hanya-sempit">Pantau progres laporan kerusakanmu.</p>
     </div>
-    <a class="tombol tombol-utama hanya-lebar" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-tambah"/></svg>Buat laporan</a>
+    <a class="tombol tombol-utama hanya-lebar" th:href="@{/mahasiswa/laporan/baru}"><svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-buat-laporan"/></svg>Buat laporan</a>
   </header>
 
   <section class="kartu kartu-utama kartu-daftar lepas-sempit" aria-labelledby="judul-daftar">
@@ -28,7 +28,8 @@
         <input id="q" class="input" type="search" name="q" th:value="${q}" autocomplete="off"
                placeholder="Cari ID, kerusakan, atau lokasi…">
       </div>
-      <div class="select select-ringkas">
+      <div class="select select-ringkas select-berikon">
+        <svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-saring"/></svg>
         <label class="sr-only" for="tahap">Status</label>
         <select id="tahap" name="tahap" data-saring-langsung>
           <option value="" th:text="|Semua status (${hitung.semua})|">Semua status</option>

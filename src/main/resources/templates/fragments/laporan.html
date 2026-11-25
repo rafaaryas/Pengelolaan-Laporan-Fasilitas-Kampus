@@ -8,7 +8,7 @@
   <dl class="fakta">
     <div><dt>Nama pelapor</dt><dd th:text="${laporan.pelapor.nama}">Nadia Putri</dd></div>
     <div><dt>Fakultas</dt><dd th:text="${laporan.fakultas}">Teknik</dd></div>
-    <div><dt>Gedung</dt><dd th:text="${laporan.gedungRuang}">B11 · Ruang 204</dd></div>
+    <div><dt>Gedung</dt><dd class="bersama-ikon lokasi-rincian"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-lokasi"/></svg><span th:text="${laporan.gedungRuang}">B11 · Ruang 204</span></dd></div>
     <div><dt>Lantai</dt><dd th:text="${laporan.lantai}">2</dd></div>
     <div class="fakta-penuh"><dt>Deskripsi kerusakan</dt><dd class="teks-pengguna" th:text="${laporan.deskripsi}"></dd></div>
   </dl>
@@ -34,7 +34,8 @@
 </article>
 <section th:fragment="pemeriksaan(kasus)" class="rincian-proses" th:if="${kasus.sudahDiperiksa}">
   <h3>Hasil pemeriksaan</h3>
-  <p class="prioritas-baris"><span th:replace="~{fragments/shell :: prioritas(${kasus.prioritas})}"></span><span th:text="${kasus.alasanPrioritas}"></span></p>
+  <p class="prioritas-baris"><strong>Prioritas</strong><span th:replace="~{fragments/shell :: prioritas(${kasus.prioritas})}"></span></p>
+  <p class="alasan-prioritas" th:if="${kasus.alasanPrioritas != null}" th:text="${kasus.alasanPrioritas}"></p>
   <dl class="fakta">
     <div><dt>Pemeriksa</dt><dd th:text="${kasus.pemeriksa.nama}"></dd></div>
     <div><dt>Diperiksa pada</dt><dd th:text="|${@waktu.tanggalJam(kasus.waktuPemeriksaan)} WIB|"></dd></div>

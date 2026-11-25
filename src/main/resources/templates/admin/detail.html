@@ -38,7 +38,7 @@
       <h2 id="judul-modal">Detail laporan</h2>
       <p th:text="|${laporan.kode} · Dikirim ${@waktu.tanggalJam(laporan.waktuLaporan)} WIB|">UM-0248 · Dikirim 20 Nov 2026, 08.42 WIB</p>
     </div>
-    <button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
+    <button class="tombol-ikon tombol-kotak" type="button" data-tutup-modal aria-label="Tutup" title="Tutup dialog"><svg class="ikon" aria-hidden="true"><use href="#i-silang"/></svg></button>
   </header>
   <div class="modal-badan">
     <article th:replace="~{fragments/laporan :: rincian(${laporan}, false)}"></article>
@@ -50,7 +50,7 @@
     <button class="tombol tombol-kedua" type="button" data-tutup-modal>Tutup</button>
     <button class="tombol tombol-utama" type="submit" form="form-tindak" th:if="${kasus.status.name() == 'MENUNGGU_VERIFIKASI'}" data-memproses="Memverifikasi…">
       <svg class="ikon ikon-kecil" aria-hidden="true"><use href="#i-centang"/></svg>Verifikasi laporan</button>
-    <button class="tombol tombol-utama" type="submit" form="form-tindak" th:if="${kasus.status.name() == 'MENUNGGU_PENUGASAN'}" data-memproses="Menugaskan…">Tugaskan petugas</button>
+    <button class="tombol tombol-utama" type="submit" form="form-tindak" th:if="${kasus.status.name() == 'MENUNGGU_PENUGASAN'}" data-memproses="Menugaskan…"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-penugasan"/></svg>Tugaskan petugas</button>
   </footer>
 </div>
 
@@ -101,7 +101,7 @@
           </div>
         </div>
       </form>
-      <p class="tindak-tanpa-js"><button class="tombol tombol-utama" type="submit" form="form-tindak" data-memproses="Menyimpan…">Tugaskan petugas</button></p>
+      <p class="tindak-tanpa-js"><button class="tombol tombol-utama" type="submit" form="form-tindak" data-memproses="Menyimpan…"><svg class="ikon ikon-kecil" aria-hidden="true" focusable="false"><use href="#i-penugasan"/></svg>Tugaskan petugas</button></p>
     </th:block>
   </th:block>
   <section th:replace="~{fragments/laporan :: pemeriksaan(${kasus})}"></section>

@@ -91,12 +91,7 @@ public class PetugasController {
             }
             Berkas berkas = penyimpanan.simpan(foto)
                     .orElseThrow(() -> new IllegalArgumentException("Unggah foto hasil perbaikan sebelum menandai selesai."));
-            try {
-                sistem.selesaikanTugas(id, akun.getId(), catatan, berkas);
-            } catch (RuntimeException e) {
-                penyimpanan.hapus(berkas);
-                throw e;
-            }
+            sistem.selesaikanTugas(id, akun.getId(), catatan, berkas);
         });
     }
 

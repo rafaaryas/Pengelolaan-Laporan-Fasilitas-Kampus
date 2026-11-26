@@ -35,11 +35,8 @@ public class TugasPerbaikan {
     private LocalDateTime waktuKeputusan;
     @Column(length = 120)
     private String namaPetugasSebelumnya;
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "simpan", column = @Column(name = "foto_hasil", length = 120)),
-            @AttributeOverride(name = "nama", column = @Column(name = "foto_hasil_nama", length = 160)),
-            @AttributeOverride(name = "ukuran", column = @Column(name = "foto_hasil_ukuran"))})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "foto_hasil_id")
     private Berkas fotoHasil;
 
     protected TugasPerbaikan() {}
@@ -127,7 +124,7 @@ public class TugasPerbaikan {
         this.fotoHasil = foto;
     }
 
-    public boolean isAdaFotoHasil() { return fotoHasil != null && fotoHasil.ada(); }
+    public boolean isAdaFotoHasil() { return fotoHasil != null; }
     public Berkas getFotoHasil() { return fotoHasil; }
     public Long getId() { return id; }
     public KasusKerusakan getKasus() { return kasus; }

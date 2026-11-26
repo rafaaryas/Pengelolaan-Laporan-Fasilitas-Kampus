@@ -89,7 +89,7 @@ class AlurPelaporanTest {
         sistem.verifikasi(terpisah, dimas, false, Gangguan.SEBAGIAN, 1, "");
         // Sesuai layar Admin Petugas, satu petugas boleh memegang beberapa tugas aktif (Budi: "2 tugas aktif").
         long kedua = sistem.tugaskanPetugas(terpisah, dimas, "");
-        var buktiHasil = new Berkas("hasil-uji.jpg", "hasil.jpg", 1024);
+        var buktiHasil = new Berkas("hasil.jpg", "image/jpeg", new byte[]{1, 2, 3}, java.time.LocalDateTime.now());
         assertThrows(DataTidakDitemukan.class, () -> sistem.mulaiTugas(pekerjaan, raka));
         assertThrows(IllegalStateException.class, () -> sistem.selesaikanTugas(pekerjaan, dimas, "Terlalu awal.", buktiHasil));
 
@@ -110,7 +110,8 @@ class AlurPelaporanTest {
         assertTrue(pengguna.petugasDemo().stream().filter(p -> p.getId() == dimas).findFirst().orElseThrow().isSibuk(),
                 "Masih ada tugas kedua yang aktif, jadi petugas tetap Bertugas");
         sistem.mulaiTugas(kedua, dimas);
-        sistem.selesaikanTugas(kedua, dimas, "Sambungan pipa AC dikencangkan.", buktiHasil);
+        sistem.selesaikanTugas(kedua, dimas, "Sambungan pipa AC dikencangkan.",
+                new Berkas("hasil-kedua.jpg", "image/jpeg", new byte[]{1, 2, 3}, java.time.LocalDateTime.now()));
         assertFalse(pengguna.petugasDemo().stream().filter(p -> p.getId() == dimas).findFirst().orElseThrow().isSibuk());
         assertThrows(IllegalStateException.class, () -> sistem.tugaskanPetugas(k1, dimas, ""));
 
@@ -125,7 +126,7 @@ class AlurPelaporanTest {
         long nadia = pengguna.mahasiswaDemo().get(0).getId();
         long budi = petugas("Raka Santoso");
         var lokasi = new Lokasi("Teknik", "B11", 2, "204");
-        var bukti = new Berkas("bukti-uji.jpg", "ac-ruang-204.jpg", 1_258_291);
+        var bukti = new Berkas("ac-ruang-204.jpg", "image/jpeg", new byte[]{1, 2, 3}, java.time.LocalDateTime.now());
 
         long id = sistem.laporkan(nadia, lokasi,
                 "AC di ruang kuliah 204 tidak terasa dingin meskipun sudah dinyalakan. Mohon diperiksa.", bukti);
@@ -158,7 +159,7 @@ class AlurPelaporanTest {
 
         assertThrows(IllegalArgumentException.class, () -> sistem.selesaikanTugas(tugasId, budi, "Selesai.", null));
         assertEquals(Tahap.DIPERBAIKI, pantauan.detailLaporan(id, nadia).laporan().getTahap());
-        sistem.selesaikanTugas(tugasId, budi, "AC dingin kembali.", new Berkas("hasil-uji.jpg", "hasil.jpg", 900_000));
+        sistem.selesaikanTugas(tugasId, budi, "AC dingin kembali.", new Berkas("hasil.jpg", "image/jpeg", new byte[]{1, 2, 3}, java.time.LocalDateTime.now()));
         var akhir = pantauan.detailLaporan(id, nadia);
         assertEquals(Tahap.SELESAI, akhir.laporan().getTahap());
         assertTrue(akhir.tugas().isAdaFotoHasil());
@@ -196,7 +197,7 @@ class AlurPelaporanTest {
         assertEquals(petugasAwal, kasus(kasusId).getPemeriksa().getId());
         assertEquals(Prioritas.RENDAH, kasus(kasusId).getPrioritas());
         assertEquals("Alihkan ke teknisi yang tersedia.", pantauan.detailTugas(tugasId, petugasBaru).getKeputusanAdmin());
-        sistem.selesaikanTugas(tugasId, petugasBaru, "Baut diganti.", new Berkas("hasil-uji.jpg", "hasil.jpg", 900_000));
+        sistem.selesaikanTugas(tugasId, petugasBaru, "Baut diganti.", new Berkas("hasil.jpg", "image/jpeg", new byte[]{1, 2, 3}, java.time.LocalDateTime.now()));
         assertEquals(Tahap.SELESAI, pantauan.detailLaporan(id, pelapor).laporan().getTahap());
     }
 

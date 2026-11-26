@@ -11,7 +11,7 @@ public interface TugasRepository extends JpaRepository<TugasPerbaikan, Long> {
     @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan"})
     List<TugasPerbaikan> findByPetugasIdOrderByWaktuPenugasanDescIdDesc(long petugasId);
 
-    @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan", "kasus.daftarLaporan.pelapor", "kasus.pemeriksa", "petugas", "penugas"})
+    @EntityGraph(attributePaths = {"kasus", "kasus.fasilitas", "kasus.daftarLaporan", "kasus.daftarLaporan.pelapor", "kasus.daftarLaporan.fotoBukti", "kasus.pemeriksa", "petugas", "penugas", "fotoHasil"})
     Optional<TugasPerbaikan> findByIdAndPetugasId(long id, long petugasId);
 
     @Query("select t.kasus.id from TugasPerbaikan t where t.id = :id")
@@ -26,7 +26,7 @@ public interface TugasRepository extends JpaRepository<TugasPerbaikan, Long> {
     @Query("select t from TugasPerbaikan t")
     List<TugasPerbaikan> semua();
 
-    @EntityGraph(attributePaths = {"kasus", "kasus.daftarLaporan", "petugas"})
+    @EntityGraph(attributePaths = {"kasus", "kasus.daftarLaporan", "kasus.daftarLaporan.pelapor", "petugas", "fotoHasil"})
     @Query("select t from TugasPerbaikan t where t.id = :id")
     Optional<TugasPerbaikan> denganKasus(long id);
 

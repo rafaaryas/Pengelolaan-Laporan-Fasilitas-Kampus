@@ -76,7 +76,7 @@ BEGIN
             INSERT INTO tugas_perbaikan (
                 kasus_id, petugas_id, penugas_id, status, waktu_penugasan, waktu_mulai, waktu_selesai,
                 catatan_penugasan, catatan, waktu_tindak_lanjut, alasan_tindak_lanjut, kebutuhan_berikutnya,
-                waktu_keputusan, keputusan_admin, nama_petugas_sebelumnya, foto_hasil, foto_hasil_nama, foto_hasil_ukuran
+                waktu_keputusan, keputusan_admin, nama_petugas_sebelumnya, foto_hasil_id
             ) VALUES (
                 kasus_baru, petugas, penugas, keadaan,
                 DATE_ADD(dilaporkan, INTERVAL IF(dialihkan, 50, 20) MINUTE),
@@ -94,9 +94,7 @@ BEGIN
                 IF(dialihkan, DATE_ADD(dilaporkan, INTERVAL 50 MINUTE), NULL),
                 IF(dialihkan, 'Tugas dialihkan ke petugas pengganti untuk melanjutkan perbaikan.', NULL),
                 IF(dialihkan, (SELECT nama FROM pengguna WHERE id = pemeriksa), NULL),
-                IF(foto_ac, 'contoh/ac-ruang.png', NULL),
-                IF(foto_ac, 'foto-ilustrasi-perbaikan-ac.png', NULL),
-                IF(foto_ac, 121417, NULL)
+                IF(foto_ac, (SELECT MIN(id) FROM berkas_foto WHERE mime_type = 'image/png'), NULL)
             );
         END IF;
     END IF;

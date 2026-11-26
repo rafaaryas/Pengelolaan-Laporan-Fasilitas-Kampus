@@ -26,11 +26,8 @@ public class LaporanKerusakan {
     private Lokasi lokasi;
     @Column(nullable = false, length = 1600)
     private String deskripsi;
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "simpan", column = @Column(name = "foto_bukti", length = 120)),
-            @AttributeOverride(name = "nama", column = @Column(name = "foto_bukti_nama", length = 160)),
-            @AttributeOverride(name = "ukuran", column = @Column(name = "foto_bukti_ukuran"))})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "foto_bukti_id")
     private Berkas fotoBukti;
     @Column(length = 200)
     private String fotoKredit;
@@ -109,7 +106,7 @@ public class LaporanKerusakan {
 
     public Tahap getTahap() { return Tahap.dari(kasus.getStatus()); }
 
-    public boolean isAdaFoto() { return fotoBukti != null && fotoBukti.ada(); }
+    public boolean isAdaFoto() { return fotoBukti != null; }
 
     public Long getId() { return id; }
     public Mahasiswa getPelapor() { return pelapor; }

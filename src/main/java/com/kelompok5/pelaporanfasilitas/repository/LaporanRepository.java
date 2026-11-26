@@ -11,14 +11,14 @@ public interface LaporanRepository extends JpaRepository<LaporanKerusakan, Long>
     @EntityGraph(attributePaths = {"fasilitas", "kasus", "pelapor"})
     List<LaporanKerusakan> findByPelaporIdOrderByWaktuLaporanDescIdDesc(long mahasiswaId);
 
-    @EntityGraph(attributePaths = {"fasilitas", "kasus", "pelapor"})
+    @EntityGraph(attributePaths = {"fasilitas", "kasus", "pelapor", "fotoBukti"})
     Optional<LaporanKerusakan> findByIdAndPelaporId(long id, long mahasiswaId);
 
     @EntityGraph(attributePaths = {"fasilitas", "kasus", "pelapor"})
     @Query("select l from LaporanKerusakan l order by l.waktuLaporan desc, l.id desc")
     List<LaporanKerusakan> semua();
 
-    @EntityGraph(attributePaths = {"kasus", "pelapor"})
+    @EntityGraph(attributePaths = {"kasus", "pelapor", "fotoBukti"})
     @Query("select l from LaporanKerusakan l where l.id = :id")
     Optional<LaporanKerusakan> denganKasus(long id);
 }

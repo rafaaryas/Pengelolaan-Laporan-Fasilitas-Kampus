@@ -20,7 +20,7 @@ public interface KasusRepository extends JpaRepository<KasusKerusakan, Long> {
     @Query("select k from KasusKerusakan k where k.id = :id")
     Optional<KasusKerusakan> kunci(long id);
 
-    @EntityGraph(attributePaths = {"fasilitas", "daftarLaporan", "daftarLaporan.pelapor", "pemeriksa"})
+    @EntityGraph(attributePaths = {"fasilitas", "daftarLaporan", "daftarLaporan.pelapor", "daftarLaporan.fotoBukti", "pemeriksa"})
     @Query("select k from KasusKerusakan k where k.id = :id")
     Optional<KasusKerusakan> detail(long id);
 

@@ -75,14 +75,8 @@ public class MahasiswaController {
         try {
             identitas.pastikanSama(akun, form.mahasiswaId());
             Berkas berkas = penyimpanan.simpan(foto).orElse(null);
-            long id;
-            try {
-                id = sistem.laporkan(akun.getId(), new Lokasi(form.fakultas(), form.gedung(), form.lantai(), form.ruang()),
-                        form.deskripsi(), berkas);
-            } catch (RuntimeException e) {
-                if (berkas != null) penyimpanan.hapus(berkas);
-                throw e;
-            }
+            long id = sistem.laporkan(akun.getId(), new Lokasi(form.fakultas(), form.gedung(), form.lantai(), form.ruang()),
+                    form.deskripsi(), berkas);
             flash.addFlashAttribute("sukses", "Laporan terkirim. Admin akan memverifikasinya.");
             return "redirect:/mahasiswa/laporan/" + id;
         } catch (IllegalArgumentException e) {
